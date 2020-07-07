@@ -19,7 +19,7 @@ settings_answer = """
 /about - детальніше про нас
 
 Для отримання розкладу іншої групи, просто відправ її номер
-(Наприклад 101ЕМ, де ЕМ - російськими або українськими літерами)
+<b>(Наприклад 101ЕМ, де ЕМ - російськими або українськими літерами)</b>
 
 З питань підтримки, допомоги, пропозицій писати - @nupp_help
 """
@@ -28,5 +28,15 @@ about_anser = """
 Дизайнер аватара для бота - https://www.instagram.com/your_death_404/
 Програмний код - https://www.instagram.com/poh1dnya/
 
-З питань підтримки, допомоги, пропозицій –– @nupp_help
+<b>З питань підтримки, допомоги, пропозицій</b> –– @nupp_help
 """
+
+# other answers
+not_found_answer = "Команда не знайдена"
+
+# keyboard buttons
+
+keyboard_setting = "Налаштування"
+keyboard_current_lessons = "Заняття на сьогодні"
+keyboard_tomorrow_lessons = "Заняття на завтра"
+keyboard_week_lessons = "Заняття на тиждень"
