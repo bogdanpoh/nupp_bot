@@ -2,6 +2,9 @@
 # bot token
 token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
 
+# database names
+table_users = "users"
+
 # commands answer
 start_answer = """Ласкаво просимо\U00002757
 
@@ -33,9 +36,9 @@ about_anser = """
 
 # other answers
 not_found_answer = "Команда не знайдена"
+pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
 
 # keyboard buttons
-
 keyboard_setting = "Налаштування"
 keyboard_current_lessons = "Заняття на сьогодні"
 keyboard_tomorrow_lessons = "Заняття на завтра"

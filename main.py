@@ -1,34 +1,26 @@
 import telebot
 import constants
+from database.user import User
+from database import db_manager
 
 bot = telebot.TeleBot(constants.token)
 
+# if not exists tables, create it
+db_manager.create_table_users()
 
 def get_user_info(message):
 
-    chat_id = message.chat.id
-    info = ""
+    name = ""
 
-    bot.send_message(chat_id, message.chat)
-
-    last_name = message.chat.last_name
-    first_name = message.chat.first_name
     username = message.chat.username
     user_id = message.from_user.id
 
-    if last_name:
-        print(last_name)
-
-    if first_name:
-        print(first_name)
-
     if username:
-        print(username)
+        name = username
+    else:
+        name = "user_" + user_id
 
-    if user_id:
-        print(user_id)
-
-    return info
+    return User(name_user=name, chat_id=user_id)
 
 # required keyboard
 def get_required_keyboard():
@@ -41,13 +33,16 @@ def get_required_keyboard():
     return markup
 
 
-def parse_send_message(chat_id, text, keyboard=get_required_keyboard()):
+def parse_send_message(chat_id, text, keyboard=None):
+
+    message = None
 
     if keyboard:
-        bot.send_message(chat_id, text, reply_markup=keyboard)
+        message = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
     else:
-        bot.send_message(chat_id, text, parse_mode="HTML")
+        message = bot.send_message(chat_id, text, parse_mode="HTML")
 
+    return message
 
 # commands handler
 @bot.message_handler(commands=["start", "settings", "about"])
@@ -57,7 +52,11 @@ def commands_handler(message):
     chat_id = message.chat.id
 
     if msg == '/start':
-        parse_send_message(chat_id, constants.start_answer)
+        answer = parse_send_message(chat_id, constants.start_answer)
+
+        reply_message = bot.reply_to(answer, constants.pick_your_group)
+
+        bot.register_next_step_handler(reply_message, process_group_step)
 
     elif msg == '/settings':
         parse_send_message(chat_id, constants.settings_answer)
@@ -75,11 +74,35 @@ def message_handler(message):
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
 
+    elif msg == 'db':
+        users = db_manager.get_users()
+
+        list = ""
+
+        if users:
+            for user in users:
+                list += user.format_print() + "\n"
+
+            bot.send_message(chat_id, list)
+
+        else:
+            bot.send_message(chat_id, "Table users is empty")
+
     else:
+        parse_send_message(chat_id, constants.not_found_answer)
 
-        get_user_info(message)
 
-        # parse_send_message(chat_id, constants.not_found_answer)
+def process_group_step(message):
+
+    group_id = str(message.text)
+
+    user = get_user_info(message)
+
+    user.group_id = group_id
+
+    print(user.format_print())
+
+    db_manager.add_user(user)
 
 
 bot.polling(none_stop=True, interval=0)
