@@ -111,24 +111,20 @@ def read_excel(path):
             print(day_name)
 
         if count_last_element > 9:
-            # print(data[-2])
-            # info = last_element
 
             time = data[-2]
+
             info = remove_repetition_in_str(last_element)
-            # print(info)
+
             time_start = format_start_time(time)
             time_end = format_end_time(time)
+
             index = format_index_lesson(time_start)
+
             lesson = Lesson(index, day_name, time_start, time_end, group_id, week, info)
-            print(lesson.format_print())
+            lessons.append(lesson)
 
-
-
-    # for el in clear_data:
-    #     print(el)
-
-
+    return lessons
 
 
 read_excel("")
