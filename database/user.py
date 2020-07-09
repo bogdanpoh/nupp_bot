@@ -1,8 +1,8 @@
 class User(object):
     id = 0
-    name_user = ''
-    group_id = ''
-    chat_id = ''
+    name_user = ""
+    group_id = ""
+    chat_id = ""
 
     def __init__(self, name_user=None, chat_id=None, id=None, group_id=None, data=None):
 

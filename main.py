@@ -8,6 +8,7 @@ bot = telebot.TeleBot(constants.token)
 # if not exists tables, create it
 db_manager.create_table_users()
 
+
 def get_user_info(message):
 
     name = ""
@@ -21,6 +22,7 @@ def get_user_info(message):
         name = "user_" + user_id
 
     return User(name_user=name, chat_id=user_id)
+
 
 # required keyboard
 def get_required_keyboard():
@@ -44,25 +46,54 @@ def parse_send_message(chat_id, text, keyboard=None):
 
     return message
 
+
 # commands handler
-@bot.message_handler(commands=["start", "settings", "about"])
+@bot.message_handler(commands=["start", "settings", "about", "get_users", "drop_users"])
 def commands_handler(message):
 
     msg = message.text
     chat_id = message.chat.id
 
-    if msg == '/start':
+    if msg == "/start":
+
+        users = db_manager.get_users()
+
+        for user in users:
+            if str(chat_id) == user.chat_id:
+                bot.send_message(chat_id, constants.you_is_register, reply_markup=get_required_keyboard())
+                return
+
         answer = parse_send_message(chat_id, constants.start_answer)
 
         reply_message = bot.reply_to(answer, constants.pick_your_group)
 
         bot.register_next_step_handler(reply_message, process_group_step)
 
-    elif msg == '/settings':
+    elif msg == "/settings":
         parse_send_message(chat_id, constants.settings_answer)
 
-    elif msg == '/about':
+    elif msg == "/about":
         parse_send_message(chat_id, constants.about_anser)
+
+    elif msg == "/get_users":
+
+        users = db_manager.get_users()
+
+        answer = ""
+        count_users = len(users)
+
+        if count_users == 0:
+            answer = "DB Users is empty"
+
+        else:
+            answer = "Count users " + str(count_users)
+
+        bot.send_message(chat_id, answer)
+
+    elif msg == "/drop_users":
+        db_manager.remove_users()
+
+        bot.send_message(chat_id, "Table Users cleared")
 
 
 @bot.message_handler(content_types=["text"])
@@ -75,6 +106,7 @@ def message_handler(message):
         parse_send_message(chat_id, constants.settings_answer)
 
     elif msg == 'db':
+
         users = db_manager.get_users()
 
         list = ""
@@ -100,9 +132,9 @@ def process_group_step(message):
 
     user.group_id = group_id
 
-    print(user.format_print())
-
     db_manager.add_user(user)
+
+    bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=get_required_keyboard())
 
 
 bot.polling(none_stop=True, interval=0)

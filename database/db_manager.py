@@ -44,9 +44,13 @@ def get_users():
 def get_user_by_chat_id(chat_id):
     query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
 
-    user = cursor.execute(query)
+    answer = cursor.execute(query)
 
-    return User(data=user[0])
+    if answer:
+        for property in answer:
+            return User(data=property)
+    else:
+        return None
 
 
 def remove_users():

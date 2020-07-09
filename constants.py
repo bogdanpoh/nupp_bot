@@ -37,9 +37,18 @@ about_anser = """
 # other answers
 not_found_answer = "Команда не знайдена"
 pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
+you_is_register = "Ви вже зареєстровані\U00002757"
+thanks_for_a_registration = "Дякуємо за реєстрацію\U0001F60B"
 
 # keyboard buttons
 keyboard_setting = "Налаштування"
 keyboard_current_lessons = "Заняття на сьогодні"
 keyboard_tomorrow_lessons = "Заняття на завтра"
 keyboard_week_lessons = "Заняття на тиждень"
+
+# day names
+monday = "Понеділок"
+tuesday = "Вівторок"
+wednesday = "Середа"
+thursday = "Четвер"
+friday = "П'ятниця"
