@@ -52,3 +52,7 @@ tuesday = "Вівторок"
 wednesday = "Середа"
 thursday = "Четвер"
 friday = "П'ятниця"
+
+# weeks
+first_week = "first_week"
+second_week = "second_week"

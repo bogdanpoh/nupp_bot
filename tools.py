@@ -4,12 +4,18 @@ from itertools import groupby
 from database.lesson import Lesson
 
 
-def format_list(array):
-    return list(filter(None, array))
-
-
 def remove_repetition_in_str(string):
-    return "".join(ch for ch, _ in groupby(string))
+    return " ".join(string.split())
+
+
+def remove_empty_element(data):
+    result = []
+    for el in data:
+        is_empty_str = str(el).replace(" ", "")
+        if el and is_empty_str:
+            result.append(el)
+
+    return list(result)
 
 
 def remove_repetition(data):
@@ -52,17 +58,7 @@ def format_end_time(time):
     return time.split("-")[-1]
 
 
-def remove_empty_str(data):
-    result = []
-
-    for element in data:
-        if element:
-            result.append(element)
-
-    return result
-
 def read_excel(path):
-    path = "101ТК.xlsx"
     wb = xlrd.open_workbook(path)
     sheet = wb.sheet_by_index(0)
     sheet.cell_value(0, 0)
@@ -79,6 +75,8 @@ def read_excel(path):
 
     first_week = "І ТИЖДЕНЬ"
     second_week = "І I ТИЖДЕНЬ"
+    second_week_a = "ІI ТИЖДЕНЬ"
+    second_week_a_a = "ІІ ТИЖДЕНЬ"
 
     clear_data = []
 
@@ -86,45 +84,53 @@ def read_excel(path):
         clear_data.append(remove_repetition(el))
 
     group_id = clear_data[1][-1]
+
+    if not group_id:
+        group_id = clear_data[1][-2]
+
     print(group_id)
 
     lessons = []
 
     for data in clear_data:
 
-        first_element = data[0]
-        last_element = data[-1]
-        count_last_element = len(last_element)
+        clear_element = remove_empty_element(data)
 
-        if first_element == first_week:
-            week = "first_week"
-            print(week)
+        # print(clear_element)
 
-        if first_element == second_week:
-            week = "last_week"
-            print(week)
+        if clear_element:
+            first_element = clear_element[0]
+            last_element = clear_element[-1]
+            count_last_element = len(last_element)
 
-        if first_element == constants.monday or first_element == constants.tuesday \
-                or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
-            day_name = format_name_day(first_element)
+            if first_element == first_week:
+                week = constants.first_week
+                # print(week)
 
-            print(day_name)
+            elif first_element == second_week or first_element == second_week_a or first_element == second_week_a_a:
+                week = constants.second_week
+                # print(week)
 
-        if count_last_element > 9:
+            if first_element == constants.monday or first_element == constants.tuesday \
+                    or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
+                day_name = format_name_day(first_element)
 
-            time = data[-2]
+                # print(day_name)
 
-            info = remove_repetition_in_str(last_element)
+            if count_last_element > 9 and count_last_element > 11:
 
-            time_start = format_start_time(time)
-            time_end = format_end_time(time)
+                if len(clear_element) > 2:
+                    time = clear_element[-2]
 
-            index = format_index_lesson(time_start)
+                # info = last_element
+                info = remove_repetition_in_str(last_element)
 
-            lesson = Lesson(index, day_name, time_start, time_end, group_id, week, info)
-            lessons.append(lesson)
+                time_start = format_start_time(str(time))
+                time_end = format_end_time(str(time))
+
+                index = format_index_lesson(time_start)
+                lesson = Lesson(index, day_name, time_start, time_end, group_id, week, info)
+                # print(lesson.format_print())
+                lessons.append(lesson)
 
     return lessons
-
-
-read_excel("")
