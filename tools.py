@@ -2,6 +2,39 @@ import constants
 import xlrd
 from itertools import groupby
 from database.lesson import Lesson
+from database.user import User
+import telebot
+
+
+def download_file(path, file):
+    with open(path, "wb") as new_file:
+        new_file.write(file)
+
+
+# required keyboard
+def get_required_keyboard():
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    markup.add(constants.keyboard_setting)
+    markup.add(constants.keyboard_current_lessons, constants.keyboard_tomorrow_lessons)
+    markup.add(constants.keyboard_week_lessons)
+
+    return markup
+
+
+def get_user_info(message):
+
+    name = ""
+
+    username = message.chat.username
+    user_id = message.from_user.id
+
+    if username:
+        name = username
+    else:
+        name = "user_" + user_id
+
+    return User(name_user=name, chat_id=user_id)
 
 
 def remove_repetition_in_str(string):
@@ -63,9 +96,9 @@ def read_excel(path):
     sheet = wb.sheet_by_index(0)
     sheet.cell_value(0, 0)
 
-    data = [sheet.row_values(rownum) for rownum in range(sheet.nrows)]
+    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
 
-    index = None
+    row = None
     day_name = None
     time_start = None
     time_end = None
@@ -128,8 +161,8 @@ def read_excel(path):
                 time_start = format_start_time(str(time))
                 time_end = format_end_time(str(time))
 
-                index = format_index_lesson(time_start)
-                lesson = Lesson(index, day_name, time_start, time_end, group_id, week, info)
+                row = format_index_lesson(time_start)
+                lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
                 # print(lesson.format_print())
                 lessons.append(lesson)
 

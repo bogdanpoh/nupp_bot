@@ -2,37 +2,14 @@ import telebot
 import constants
 from database.user import User
 from database import db_manager
+import tools
+import os
 
 bot = telebot.TeleBot(constants.token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
-
-
-def get_user_info(message):
-
-    name = ""
-
-    username = message.chat.username
-    user_id = message.from_user.id
-
-    if username:
-        name = username
-    else:
-        name = "user_" + user_id
-
-    return User(name_user=name, chat_id=user_id)
-
-
-# required keyboard
-def get_required_keyboard():
-    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    markup.add(constants.keyboard_setting)
-    markup.add(constants.keyboard_current_lessons, constants.keyboard_tomorrow_lessons)
-    markup.add(constants.keyboard_week_lessons)
-
-    return markup
+db_manager.create_table_lessons()
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -48,7 +25,7 @@ def parse_send_message(chat_id, text, keyboard=None):
 
 
 # commands handler
-@bot.message_handler(commands=["start", "settings", "about", "get_users", "drop_users"])
+@bot.message_handler(commands=["start", "settings", "about", "get_users", "drop_users", "add_lessons"])
 def commands_handler(message):
 
     msg = message.text
@@ -60,7 +37,7 @@ def commands_handler(message):
 
         for user in users:
             if str(chat_id) == user.chat_id:
-                bot.send_message(chat_id, constants.you_is_register, reply_markup=get_required_keyboard())
+                bot.send_message(chat_id, constants.you_is_register, reply_markup=tools.get_required_keyboard())
                 return
 
         answer = parse_send_message(chat_id, constants.start_answer)
@@ -95,6 +72,9 @@ def commands_handler(message):
 
         bot.send_message(chat_id, "Table Users cleared")
 
+    elif msg == "/add_lessons":
+        tools.read_excel()
+
 
 @bot.message_handler(content_types=["text"])
 def message_handler(message):
@@ -105,7 +85,7 @@ def message_handler(message):
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
 
-    elif msg == 'db':
+    elif msg == "db":
 
         users = db_manager.get_users()
 
@@ -124,17 +104,41 @@ def message_handler(message):
         parse_send_message(chat_id, constants.not_found_answer)
 
 
+# callback functions
 def process_group_step(message):
 
     group_id = str(message.text)
 
-    user = get_user_info(message)
+    user = tools.get_user_info(message)
 
     user.group_id = group_id
 
     db_manager.add_user(user)
 
-    bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=get_required_keyboard())
+    bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
+
+
+def process_download_file_step(message):
+    path = os.path.join(constants.documents_directory, constants.excel_file)
+
+    if not os.path.exists(constants.documents_directory):
+        os.mkdir(constants.documents_directory)
+
+    if not message.content_type == "document":
+        bot.send_message(message.chat.id, constants.file_not_found)
+        return
+
+    file_info = bot.get_file(message.document.file_id)
+    type_file = str(file_info.file_path).split(".")[-1]
+
+    if os.path.exists(path):
+        os.remove(path)
+
+    if type_file == 'xlsx' or type_file == "xls":
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        with open(path+"."+type_file)
+
 
 
 bot.polling(none_stop=True, interval=0)

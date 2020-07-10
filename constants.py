@@ -4,6 +4,7 @@ token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
 
 # database names
 table_users = "users"
+table_lessons = "lessons"
 
 # commands answer
 start_answer = """Ласкаво просимо\U00002757
@@ -39,6 +40,7 @@ not_found_answer = "Команда не знайдена"
 pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
 you_is_register = "Ви вже зареєстровані\U00002757"
 thanks_for_a_registration = "Дякуємо за реєстрацію\U0001F60B"
+file_not_found = "Файл не знайдено"
 
 # keyboard buttons
 keyboard_setting = "Налаштування"
@@ -56,3 +58,7 @@ friday = "П'ятниця"
 # weeks
 first_week = "first_week"
 second_week = "second_week"
+
+# paths
+documents_directory = "documents"
+excel_file = "excel_file"
