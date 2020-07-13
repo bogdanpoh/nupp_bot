@@ -2,6 +2,7 @@ import sqlite3
 import constants
 from database.user import User
 from database.lesson import Lesson
+import tools
 
 db = sqlite3.connect('db_bot.db', check_same_thread=False)
 
@@ -35,6 +36,14 @@ def create_table_lessons():
     db.commit()
 
 
+def create_table_week():
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS {0} (id INTEGER PRIMARY KEY, current_week TEXT)
+    """.format(constants.table_week))
+
+    db.commit()
+
+
 def add_user(user):
     query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES (?, ?, ?)".format(constants.table_users)
 
@@ -49,12 +58,9 @@ def get_users():
 
     data = cursor.execute(query)
 
-    list_users = []
+    users = tools.data_to_list_class(data, "user")
 
-    for el in data:
-        list_users.append(User(data=el))
-
-    return list_users
+    return users
 
 
 def get_user_by_chat_id(chat_id):
@@ -63,8 +69,22 @@ def get_user_by_chat_id(chat_id):
     answer = cursor.execute(query)
 
     if answer:
-        for property in answer:
-            return User(data=property)
+        for data in answer:
+            return User(data=data)
+    else:
+        return None
+
+
+def get_user_group_id(chat_id):
+    query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
+
+    answer = cursor.execute(query)
+
+    if answer:
+        for data in answer:
+            user = User(data=data)
+
+            return user.group_id
     else:
         return None
 
@@ -97,9 +117,72 @@ def get_lessons():
 
     data = cursor.execute(query)
 
-    list_lessons = []
+    lessons = tools.data_to_list_class(data, "lesson")
+
+    return lessons
+
+
+def get_group_list():
+    query = "SELECT * FROM {0}".format(constants.table_lessons)
+
+    data = cursor.execute(query)
+
+    list = []
 
     for el in data:
-        list_lessons.append(Lesson(data=el))
+        list.append(Lesson(data=el).group_id)
 
-    return list_lessons
+    return set(list)
+
+
+def get_lessons_by_day_name(day_name, group_id, week):
+    query = "SELECT * FROM {0} WHERE `day_name`='{1}' AND `group_id`='{2}' AND `week`='{3}'".format(constants.table_lessons, day_name, week, group_id)
+
+    data = cursor.execute(query)
+
+    lessons = tools.data_to_list_class(data, "lesson")
+
+    if lessons:
+        return lessons
+    else:
+        return None
+
+
+def get_lessons_by_week(group_id, week):
+
+    query = "SELECT * FROM {0} WHERE `week`='{1}' AND `group_id`='{2}'".format(constants.table_lessons, week, group_id)
+
+    data = cursor.execute(query)
+
+    lessons = tools.data_to_list_class(data, "lesson")
+
+    return lessons
+
+
+def get_current_week():
+
+    query = "SELECT * FROM {0}".format(constants.table_week)
+
+    current_week = cursor.execute(query)
+
+    for el in current_week:
+        if el:
+            return el[-1]
+
+
+def change_week():
+
+    current_week = get_current_week()
+
+    week = ""
+
+    if current_week == constants.first_week:
+        week = constants.second_week
+    elif current_week == constants.second_week:
+        week = constants.first_week
+
+    query = "UPDATE {0} SET current_week='{1}'".format(constants.table_week, week)
+
+    cursor.execute(query)
+    db.commit()
+

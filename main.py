@@ -1,5 +1,6 @@
 import telebot
 import constants
+import sqlite3
 from database.user import User
 from database import db_manager
 import tools
@@ -10,6 +11,7 @@ bot = telebot.TeleBot(constants.token)
 # if not exists tables, create it
 db_manager.create_table_users()
 db_manager.create_table_lessons()
+db_manager.create_table_week()
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -25,7 +27,7 @@ def parse_send_message(chat_id, text, keyboard=None):
 
 
 # commands handler
-@bot.message_handler(commands=["start", "settings", "about", "get_users", "drop_users", "add_lessons"])
+@bot.message_handler(commands=["start", "settings", "about", "get_users", "drop_users", "add_lessons", "current_week", "change_week"])
 def commands_handler(message):
 
     msg = message.text
@@ -42,7 +44,11 @@ def commands_handler(message):
 
         answer = parse_send_message(chat_id, constants.start_answer)
 
-        reply_message = bot.reply_to(answer, constants.pick_your_group)
+        groups = db_manager.get_group_list()
+
+        list_groups = tools.data_to_str(groups)
+
+        reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups)
 
         bot.register_next_step_handler(reply_message, process_group_step)
 
@@ -73,7 +79,20 @@ def commands_handler(message):
         bot.send_message(chat_id, "Table Users cleared")
 
     elif msg == "/add_lessons":
-        tools.read_excel()
+        handle_message = bot.send_message(chat_id, "Enter file")
+        bot.register_next_step_handler(handle_message, process_download_file_step)
+
+    elif msg == "/current_week":
+        current_week = db_manager.get_current_week()
+
+        bot.send_message(chat_id, current_week)
+
+    elif msg == "/change_week":
+        db_manager.change_week()
+
+        current_week = db_manager.get_current_week()
+
+        bot.send_message(chat_id, current_week)
 
 
 @bot.message_handler(content_types=["text"])
@@ -85,20 +104,63 @@ def message_handler(message):
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
 
-    elif msg == "db":
+    elif msg == constants.keyboard_current_lessons:
+        group_id = db_manager.get_user_group_id(chat_id)
 
-        users = db_manager.get_users()
+        day_name = tools.get_current_day_name()
 
-        list = ""
+        current_week = db_manager.get_current_week()
 
-        if users:
-            for user in users:
-                list += user.format_print() + "\n"
+        lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
-            bot.send_message(chat_id, list)
+        lessons_str = tools.data_to_str(lessons, is_class=True)
 
+        if lessons_str:
+            bot.send_message(chat_id, lessons_str)
         else:
-            bot.send_message(chat_id, "Table users is empty")
+            bot.send_message(chat_id, "Please, send /start")
+
+    elif msg == constants.keyboard_tomorrow_lessons:
+        group_id = db_manager.get_user_group_id(chat_id)
+
+        day_name = tools.get_next_day_name()
+
+        current_week = db_manager.get_current_week()
+
+        lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
+
+        lessons_str = tools.data_to_str(lessons, is_class=True)
+
+        if lessons_str:
+            bot.send_message(chat_id, lessons_str)
+        else:
+            bot.send_message(chat_id, "Please, send /start")
+
+    elif msg == constants.keyboard_week_lessons:
+        group_id = db_manager.get_user_group_id(chat_id)
+
+        current_week = db_manager.get_current_week()
+
+        lessons = db_manager.get_lessons_by_week(group_id, current_week)
+
+        lessons_str = tools.data_to_str(lessons, is_class=True)
+
+        if lessons_str:
+            bot.send_message(chat_id, lessons_str)
+        else:
+            bot.send_message(chat_id, "Please, send /start")
+
+    elif msg == "groups":
+
+        groups = db_manager.get_group_list()
+
+        print(groups)
+
+        # if lessons:
+        #     pass
+        #
+        # else:
+        #     bot.send_message(chat_id, "Table lessons is empty")
 
     else:
         parse_send_message(chat_id, constants.not_found_answer)
@@ -137,8 +199,24 @@ def process_download_file_step(message):
     if type_file == 'xlsx' or type_file == "xls":
         downloaded_file = bot.download_file(file_info.file_path)
 
-        with open(path+"."+type_file)
+        tools.download_file(path+"."+type_file, downloaded_file)
 
+        file_path = ""
+
+        if os.path.isfile(os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)):
+            file_path = os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)
+        elif os.path.isfile(os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type_a)):
+            file_path = os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type_a)
+
+        lessons = tools.read_excel(file_path)
+
+        for lesson in lessons:
+            try:
+                db_manager.add_lesson(lesson)
+            except sqlite3.DatabaseError as error:
+                bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
+
+        bot.send_message(message.chat.id, "File read")
 
 
 bot.polling(none_stop=True, interval=0)

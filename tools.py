@@ -3,7 +3,54 @@ import xlrd
 from itertools import groupby
 from database.lesson import Lesson
 from database.user import User
+import datetime
 import telebot
+
+
+def data_to_str(data, is_class=False):
+
+    answer = ""
+
+    for el in data:
+        try:
+            if is_class:
+                answer += str(el.format_print() + "\n\n")
+            else:
+                answer += str(el) + "\n\n"
+        except Exception as ex:
+            print("Error in func data_to_list_str", ex)
+
+    return answer
+
+
+def data_to_list_class(data, to_class):
+
+    list_answer = []
+
+    for el in data:
+        if to_class == "user":
+            list_answer.append(User(data=el))
+        elif to_class == "lesson":
+            list_answer.append(Lesson(data=el))
+
+    return list_answer
+
+
+def get_current_day_name():
+    now = datetime.datetime.now()
+
+    day_name = now.strftime("%A").casefold()
+
+    return day_name
+
+
+def get_next_day_name():
+
+    next_day = datetime.datetime.now() + datetime.timedelta(days=1)
+
+    day_name = next_day.strftime("%A").casefold()
+
+    return day_name
 
 
 def download_file(path, file):
@@ -120,8 +167,6 @@ def read_excel(path):
 
     if not group_id:
         group_id = clear_data[1][-2]
-
-    print(group_id)
 
     lessons = []
 

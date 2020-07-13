@@ -5,6 +5,7 @@ token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
 # database names
 table_users = "users"
 table_lessons = "lessons"
+table_week = "week"
 
 # commands answer
 start_answer = """Ласкаво просимо\U00002757
@@ -62,3 +63,8 @@ second_week = "second_week"
 # paths
 documents_directory = "documents"
 excel_file = "excel_file"
+excel_file_type = "xlsx"
+excel_file_type_a = "xls"
+
+# admin
+admin_chat_id = 330926012
