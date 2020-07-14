@@ -7,6 +7,36 @@ import datetime
 import telebot
 
 
+def search_teacher_in_str(lesson, teacher_name):
+    # string = "John Appleseed U.S. 07.09"
+
+    end_index = len(str(lesson.info))
+
+    index = lesson.info.find(teacher_name)
+
+    if index < 0:
+        return None
+
+    new_str = ""
+
+    dot_counter = 2
+
+    while index < end_index:
+
+        if dot_counter > 0:
+            new_str += lesson.info[index]
+
+        if lesson.info[index] == ".":
+            dot_counter -= 1
+
+        index += 1
+
+    # print(teacher_name)
+    # print(new_str)
+    if new_str == teacher_name:
+        return lesson
+
+
 def data_to_str(data, is_class=False):
 
     answer = ""
