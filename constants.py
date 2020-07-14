@@ -4,6 +4,7 @@ token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
 
 # database names
 table_users = "users"
+table_teachers = "teachers"
 table_lessons = "lessons"
 table_week = "week"
 

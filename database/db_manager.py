@@ -2,13 +2,14 @@ import sqlite3
 import constants
 from database.user import User
 from database.lesson import Lesson
+from database.teacher import Teacher
 import tools
 
 db = sqlite3.connect('db_bot.db', check_same_thread=False)
 
 cursor = db.cursor()
 
-
+# create tables
 def create_table_users():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0}
@@ -17,6 +18,17 @@ def create_table_users():
     group_id TEXT,
     chat_id TEXT)
     """.format(constants.table_users))
+
+    db.commit()
+
+
+def create_table_teachers():
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS {0}
+    (id INTEGER PRIMARY KEY,
+    name_teacher TEXT,
+    chat_id TEXT)
+    """.format(constants.table_teachers))
 
     db.commit()
 
@@ -43,7 +55,7 @@ def create_table_week():
 
     db.commit()
 
-
+# user
 def add_user(user):
     query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES (?, ?, ?)".format(constants.table_users)
 
@@ -96,6 +108,7 @@ def remove_users():
     db.commit()
 
 
+# lesson
 def add_lesson(lesson):
     query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (?, ?, ?, ?, ?, ?, ?)".format(constants.table_lessons)
 
@@ -159,6 +172,7 @@ def get_lessons_by_week(group_id, week):
     return lessons
 
 
+# week
 def get_current_week():
 
     query = "SELECT * FROM {0}".format(constants.table_week)
@@ -186,3 +200,52 @@ def change_week():
     cursor.execute(query)
     db.commit()
 
+
+# teacher
+def add_teacher(teacher):
+    query = "INSERT INTO {0} (name_teacher, chat_id) VALUES (?, ?)".format(constants.table_teachers)
+
+    val = (teacher.name_teacher, teacher.chat_id)
+
+    cursor.execute(query, val)
+    db.commit()
+
+
+def remove_teachers():
+    query = "DELETE FROM {0}".format(constants.table_teachers)
+
+    cursor.execute(query)
+    db.commit()
+
+
+def get_teachers():
+    query = "SELECT * FROM {0}".format(constants.table_teachers)
+
+    list = []
+
+    result = cursor.execute(query)
+
+    if result:
+        for el in result:
+            list.append(Teacher(data=el))
+
+        return list
+
+    else:
+        return None
+
+
+def get_teacher_by_chat_id(chat_id):
+    query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_teachers, chat_id)
+
+    answer = cursor.execute(query)
+
+    if answer:
+        for data in answer:
+            return Teacher(data=data)
+    else:
+        return None
+
+
+def get_teacher_lessons(day_name, week, chat_id):
+    pass

@@ -2,6 +2,7 @@ import telebot
 import constants
 import sqlite3
 from database.user import User
+from database.teacher import Teacher
 from database import db_manager
 import tools
 import os
@@ -10,6 +11,7 @@ bot = telebot.TeleBot(constants.token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
+db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 
@@ -28,7 +30,7 @@ def parse_send_message(chat_id, text, keyboard=None):
 # commands handler
 @bot.message_handler(
     commands=["start", "settings", "about", "get_users", "drop_users", "add_lessons", "current_week", "change_week",
-              "teacher"])
+              "teacher", "drop_teachers"])
 def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
@@ -68,7 +70,10 @@ def commands_handler(message):
         if count_users == 0:
             answer = "DB Users is empty"
         else:
-            answer = "Count users " + str(count_users)
+            answer = "Count users " + str(count_users) + "\n\n"
+
+        for user in users:
+            answer += user.name_user + " "
 
         bot.send_message(chat_id, answer)
 
@@ -99,6 +104,15 @@ def commands_handler(message):
 
         bot.register_next_step_handler(reply_message, process_register_teacher)
 
+    elif msg == "/drop_teachers":
+
+        db_manager.remove_teachers()
+
+        teachers = db_manager.get_teachers()
+
+        if not teachers:
+            bot.send_message(chat_id, "Table {0} cleared".format(constants.table_teachers))
+
 
 @bot.message_handler(content_types=["text"])
 def message_handler(message):
@@ -111,7 +125,14 @@ def message_handler(message):
     elif msg == constants.keyboard_current_lessons:
         group_id = db_manager.get_user_group_id(chat_id)
 
-        if group_id:
+        teacher = db_manager.get_teacher_by_chat_id(chat_id)
+
+        # print(teacher.format_print())
+
+        if teacher:
+            print(teacher.format_print())
+
+        elif group_id:
             day_name = tools.get_current_day_name()
 
             current_week = db_manager.get_current_week()
@@ -122,6 +143,7 @@ def message_handler(message):
 
             if lessons_str:
                 bot.send_message(chat_id, lessons_str)
+
         else:
             bot.send_message(chat_id, "Please, send /start")
 
@@ -169,22 +191,6 @@ def message_handler(message):
 
         print(groups)
 
-    # elif msg == "teacher":
-
-    # lessons = db_manager.get_lessons()
-    #
-    # list = []
-    #
-    # teacher_name = "Приставка Ю.В."
-    #
-    # for lesson in lessons:
-    #     info = str(lesson.info)
-    #
-    #     result = tools.search_teacher_in_str(lesson, teacher_name)
-    #
-    #     if result:
-    #         print(result.format_print())
-
     else:
         parse_send_message(chat_id, constants.not_found_answer)
 
@@ -203,19 +209,34 @@ def process_register_teacher(message):
         result = tools.search_teacher_in_str(lesson, entered_name)
 
         if result:
+            list.append(result)
             print(result.format_print())
+
+    if len(list) > 1:
+        db_manager.add_teacher(Teacher(entered_name, message.chat.id))
 
 
 def process_group_step(message):
     group_id = str(message.text)
 
-    user = tools.get_user_info(message)
+    groups = db_manager.get_group_list()
 
-    user.group_id = group_id
+    not_registered = True
 
-    db_manager.add_user(user)
+    for group in groups:
+        if group_id == group:
+            user = tools.get_user_info(message)
 
-    bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
+            not_registered = False
+
+            user.group_id = group_id
+
+            db_manager.add_user(user)
+
+            bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
+
+    if not_registered:
+        bot.send_message(message.chat.id, "Dont found your group, please send /start")
 
 
 def process_download_file_step(message):

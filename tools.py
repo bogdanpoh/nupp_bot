@@ -8,8 +8,6 @@ import telebot
 
 
 def search_teacher_in_str(lesson, teacher_name):
-    # string = "John Appleseed U.S. 07.09"
-
     end_index = len(str(lesson.info))
 
     index = lesson.info.find(teacher_name)
@@ -31,8 +29,6 @@ def search_teacher_in_str(lesson, teacher_name):
 
         index += 1
 
-    # print(teacher_name)
-    # print(new_str)
     if new_str == teacher_name:
         return lesson
 
