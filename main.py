@@ -236,7 +236,11 @@ def process_group_step(message):
             bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
 
     if not_registered:
-        bot.send_message(message.chat.id, "Dont found your group, please send /start")
+        list_groups = tools.data_to_str(groups)
+
+        reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
+
+        bot.register_next_step_handler(reply_message, process_group_step)
 
 
 def process_download_file_step(message):
