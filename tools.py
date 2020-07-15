@@ -33,7 +33,7 @@ def search_teacher_in_str(lesson, teacher_name):
         return lesson
 
 
-def data_to_str(data, is_class=False):
+def data_to_str(data, is_class=False, is_message=False):
 
     answer = ""
 
@@ -41,6 +41,8 @@ def data_to_str(data, is_class=False):
         try:
             if is_class:
                 answer += str(el.format_print() + "\n\n")
+            elif is_message:
+                answer += str(el.format_message() + "\n\n")
             else:
                 answer += str(el) + "\n\n"
         except Exception as ex:
@@ -67,6 +69,9 @@ def get_current_day_name():
 
     day_name = now.strftime("%A").casefold()
 
+    if day_name == "sunday" or day_name == "saturday":
+        return None
+
     return day_name
 
 
@@ -75,6 +80,9 @@ def get_next_day_name():
     next_day = datetime.datetime.now() + datetime.timedelta(days=1)
 
     day_name = next_day.strftime("%A").casefold()
+
+    if day_name == "sunday" or day_name == "saturday":
+        return None
 
     return day_name
 
@@ -139,21 +147,49 @@ def format_name_day(name_day):
         return "thursday"
     elif name_day == constants.friday:
         return "friday"
+    elif name_day == "monday":
+        return constants.monday
+    elif name_day == "tuesday":
+        return constants.tuesday
+    elif name_day == "wednesday":
+        return constants.wednesday
+    elif name_day == "thursday":
+        return constants.thursday
+    elif name_day == "friday":
+        return constants.friday
 
 
-def format_index_lesson(time):
+def format_index_lesson(time, markup=False):
     if time == '8.30':
-        return 1
+        if markup:
+            return "\U00000031"
+        else:
+            return 1
     elif time == '10.00':
-        return 2
+        if markup:
+            return "\U00000032"
+        else:
+            return 2
     elif time == '11.50':
-        return 3
+        if markup:
+            return "\U00000033"
+        else:
+            return 3
     elif time == '13.20':
-        return 4
+        if markup:
+            return "\U00000034"
+        else:
+            return 4
     elif time == '14.50':
-        return 5
+        if markup:
+            return "\U00000035"
+        else:
+            return 5
     elif time == '16.20':
-        return 6
+        if markup:
+            return "\U00000036"
+        else:
+            return 6
 
 
 def format_start_time(time):

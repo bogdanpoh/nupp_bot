@@ -1,3 +1,4 @@
+import emoji
 
 # bot token
 token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
@@ -56,6 +57,14 @@ tuesday = "Вівторок"
 wednesday = "Середа"
 thursday = "Четвер"
 friday = "П'ятниця"
+
+# emoji numbers
+one_number = emoji.emojize(':keycap_digit_one:', use_aliases=True)
+two_number = emoji.emojize(':keycap_digit_two:', use_aliases=True)
+three_number = emoji.emojize(':keycap_digit_three:', use_aliases=True)
+four_number = emoji.emojize(':keycap_digit_four:', use_aliases=True)
+five_number = emoji.emojize(':keycap_digit_five:', use_aliases=True)
+six_number = emoji.emojize(':keycap_digit_six:', use_aliases=True)
 
 # weeks
 first_week = "first_week"

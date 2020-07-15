@@ -1,3 +1,6 @@
+import constants
+
+
 class Lesson(object):
     id = 0
     row = ""
@@ -8,7 +11,8 @@ class Lesson(object):
     week = ""
     info = ""
 
-    def __init__(self, row=None, day_name=None, time_start=None, time_end=None, group_id=None, week=None, info=None, id=0, data=None):
+    def __init__(self, row=None, day_name=None, time_start=None, time_end=None, group_id=None, week=None, info=None,
+                 id=0, data=None):
 
         if data:
             self.id = data[0]
@@ -30,4 +34,24 @@ class Lesson(object):
             self.info = info
 
     def format_print(self):
-        return "{0}, {1}, {2}-{3}, {4}, {5}, {6}".format(self.row, self.day_name, self.time_start, self.time_end, self.group_id, self.info, self.week)
+        return "{0}, {1}, {2}-{3}, {4}, {5}, {6}".format(self.row, self.day_name, self.time_start, self.time_end,
+                                                         self.group_id, self.info, self.week)
+
+    def format_message(self):
+
+        row = ""
+
+        if self.row == "1":
+            row = constants.one_number
+        elif self.row == "2":
+            row = constants.two_number
+        elif self.row == "3":
+            row = constants.three_number
+        elif self.row == "4":
+            row = constants.four_number
+        elif self.row == "5":
+            row = constants.five_number
+        elif self.row == "6":
+            row = constants.six_number
+
+        return "{0} {1}-{2} –– {3}".format(row, self.time_start, self.time_end, self.info)
