@@ -54,4 +54,4 @@ class Lesson(object):
         elif self.row == "6":
             row = constants.six_number
 
-        return "{0} {1} - {2} – {3}".format(row, self.time_start, self.time_end, self.info)
+        return "{0} <b>{1}-{2}</b> – <i>{3}</i>".format(row, self.time_start, self.time_end, self.info)

@@ -161,7 +161,8 @@ def message_handler(message):
 
                 answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
 
-                bot.send_message(chat_id, answer)
+                # bot.send_message(chat_id, answer)
+                parse_send_message(chat_id, answer)
 
         else:
             bot.send_message(chat_id, "Please, send /start")
@@ -186,7 +187,8 @@ def message_handler(message):
 
                 answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
 
-                bot.send_message(chat_id, answer)
+                # bot.send_message(chat_id, answer)
+                parse_send_message(chat_id, answer)
         else:
             bot.send_message(chat_id, "Please, send /start")
 
@@ -214,7 +216,8 @@ def message_handler(message):
                         day_name = lesson.day_name
                         answer += "\n" + tools.format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
 
-            bot.send_message(chat_id, answer)
+            # bot.send_message(chat_id, answer)
+            parse_send_message(chat_id, answer)
 
             # if lessons_str:
             #     bot.send_message(chat_id, lessons_str)

@@ -9,6 +9,7 @@ db = sqlite3.connect('db_bot.db', check_same_thread=False)
 
 cursor = db.cursor()
 
+
 # create tables
 def create_table_users():
     cursor.execute("""
@@ -247,5 +248,5 @@ def get_teacher_by_chat_id(chat_id):
         return None
 
 
-def get_teacher_lessons(day_name, week, chat_id):
+def get_teacher_lessons(day_name, week):
     pass
