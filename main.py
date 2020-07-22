@@ -35,9 +35,7 @@ def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
 
-
     if msg == "/start":
-
         users = db_manager.get_users()
 
         for user in users:
@@ -131,6 +129,8 @@ def commands_handler(message):
 def message_handler(message):
     msg = message.text
     chat_id = message.chat.id
+    current_week = db_manager.get_current_week()
+    groups = db_manager.get_group_list()
 
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
@@ -150,8 +150,6 @@ def message_handler(message):
                 bot.send_message(chat_id, "Dont lessons current :)")
                 return
 
-            current_week = db_manager.get_current_week()
-
             lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
             lessons_str = tools.data_to_str(lessons, is_message=True)
@@ -160,7 +158,6 @@ def message_handler(message):
 
                 answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
 
-                # bot.send_message(chat_id, answer)
                 parse_send_message(chat_id, answer)
 
         else:
@@ -175,8 +172,6 @@ def message_handler(message):
             if not day_name:
                 bot.send_message(chat_id, "Dont lessons current :)")
                 return
-
-            current_week = db_manager.get_current_week()
 
             lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
@@ -194,25 +189,10 @@ def message_handler(message):
         group_id = db_manager.get_user_group_id(chat_id)
 
         if group_id:
-            current_week = db_manager.get_current_week()
 
             lessons = db_manager.get_lessons_by_week(group_id, current_week)
 
-            answer = ""
-            day_name = ""
-
-            for lesson in lessons:
-                if not day_name:
-                    day_name = lesson.day_name
-                    answer += tools.format_name_day(day_name) + "\n"
-
-                if day_name:
-                    if day_name == lesson.day_name:
-                        answer += lesson.format_message() + "\n"
-
-                    else:
-                        day_name = lesson.day_name
-                        answer += "\n" + tools.format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
+            answer = tools.format_lessons_week_for_message(lessons)
 
             parse_send_message(chat_id, answer)
 
@@ -227,17 +207,30 @@ def message_handler(message):
 
     elif msg == "groups":
 
-        groups = db_manager.get_group_list()
+        answer = ""
 
-        print(groups)
+        for group in groups:
+            answer += str(group) + ", "
 
-    else:
-        parse_send_message(chat_id, constants.not_found_answer)
+        bot.send_message(chat_id, answer)
 
-    user = tools.get_user_info(message)
-    info = str(user.name_user + " - " + msg)
-    print(info)
-    bot.send_message(constants.admin_log, info)
+
+    is_group = False
+
+    for group in groups:
+        if group == msg:
+            lessons = db_manager.get_lessons_by_week(group, current_week)
+            answer = tools.format_lessons_week_for_message(lessons)
+
+            parse_send_message(chat_id, answer)
+            is_group = True
+
+    if not is_group:
+        user = tools.get_user_info(message)
+        info = str(user.name_user + " - " + msg)
+        print(info)
+        parse_send_message(chat_id, constants.not_found_answer + " - " + msg)
+        bot.send_message(constants.admin_log, info)
 
 
 # callback functions

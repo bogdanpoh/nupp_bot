@@ -33,6 +33,26 @@ def search_teacher_in_str(lesson, teacher_name):
         return lesson
 
 
+def format_lessons_week_for_message(lessons):
+    answer = ""
+    day_name = ""
+
+    for lesson in lessons:
+        if not day_name:
+            day_name = lesson.day_name
+            answer += format_name_day(day_name) + "\n"
+
+        if day_name:
+            if day_name == lesson.day_name:
+                answer += lesson.format_message() + "\n"
+
+            else:
+                day_name = lesson.day_name
+                answer += "\n" + format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
+
+    return answer
+
+
 def data_to_str(data, is_class=False, is_message=False):
 
     answer = ""
@@ -92,7 +112,6 @@ def download_file(path, file):
         new_file.write(file)
 
 
-# required keyboard
 def get_required_keyboard():
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
 
