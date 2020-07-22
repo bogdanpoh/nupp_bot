@@ -35,6 +35,7 @@ def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
 
+
     if msg == "/start":
 
         users = db_manager.get_users()
@@ -47,8 +48,6 @@ def commands_handler(message):
         answer = parse_send_message(chat_id, constants.start_answer)
 
         groups = db_manager.get_group_list()
-
-        # list_groups = tools.data_to_str(groups)
 
         list_groups = ""
 
@@ -187,7 +186,6 @@ def message_handler(message):
 
                 answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
 
-                # bot.send_message(chat_id, answer)
                 parse_send_message(chat_id, answer)
         else:
             bot.send_message(chat_id, "Please, send /start")
@@ -216,11 +214,8 @@ def message_handler(message):
                         day_name = lesson.day_name
                         answer += "\n" + tools.format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
 
-            # bot.send_message(chat_id, answer)
             parse_send_message(chat_id, answer)
 
-            # if lessons_str:
-            #     bot.send_message(chat_id, lessons_str)
         else:
             bot.send_message(chat_id, "Please, send /start")
 
@@ -238,6 +233,11 @@ def message_handler(message):
 
     else:
         parse_send_message(chat_id, constants.not_found_answer)
+
+    user = tools.get_user_info(message)
+    info = str(user.name_user + " - " + msg)
+    print(info)
+    bot.send_message(constants.admin_log, info)
 
 
 # callback functions

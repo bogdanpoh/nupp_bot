@@ -1,7 +1,7 @@
 import emoji
 
 # bot token
-token = "1006676969:AAG_wK9h7l9gBSG5_U1T9qlZRqIR0lkO34w"
+token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 
 # database names
 table_users = "users"
@@ -78,3 +78,4 @@ excel_file_type_a = "xls"
 
 # admin
 admin_chat_id = 330926012
+admin_log = -1001357315497
