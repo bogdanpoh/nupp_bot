@@ -5,7 +5,7 @@ from database.lesson import Lesson
 from database.teacher import Teacher
 import tools
 
-db = sqlite3.connect('db_bot.db', check_same_thread=False)
+db = sqlite3.connect("db_bot.db", check_same_thread=False)
 
 cursor = db.cursor()
 
@@ -55,6 +55,7 @@ def create_table_week():
     """.format(constants.table_week))
 
     db.commit()
+
 
 # user
 def add_user(user):
