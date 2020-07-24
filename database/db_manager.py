@@ -150,6 +150,16 @@ def get_group_list():
     return set(list)
 
 
+def is_group(group_id):
+    groups = get_group_list()
+
+    for group in groups:
+        if group == group_id:
+            return True
+
+    return False
+
+
 def get_lessons_by_day_name(day_name, group_id, week):
     query = "SELECT * FROM {0} WHERE `day_name`='{1}' AND `group_id`='{2}' AND `week`='{3}'".format(constants.table_lessons, day_name, week, group_id)
 

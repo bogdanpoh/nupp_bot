@@ -15,6 +15,9 @@ db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 
+command_list = ["0001", "start", "settings", "about", "get_users", "drop_users", "add_lessons", "drop_lessons", "current_week",
+              "change_week", "teacher", "drop_teachers"]
+
 
 def parse_send_message(chat_id, text, keyboard=None):
     message = None
@@ -27,15 +30,35 @@ def parse_send_message(chat_id, text, keyboard=None):
     return message
 
 
+def show_log(message, is_command):
+    user = tools.get_user_info(message)
+    info = str(user.name_user + " - " + message.text)
+    print(info)
+
+    if not is_command:
+        parse_send_message(message.chat.id, constants.not_found_answer + " - " + message.text)
+
+    bot.send_message(constants.admin_log, info)
+
+
 # commands handler
-@bot.message_handler(
-    commands=["start", "settings", "about", "get_users", "drop_users", "add_lessons", "drop_lessons", "current_week",
-              "change_week", "teacher", "drop_teachers"])
+@bot.message_handler(commands=command_list)
 def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
 
-    if msg == "/start":
+    is_command = True
+
+    if msg == "/0001":
+
+        commands = ""
+
+        for command in command_list:
+            commands += "/" + command + "\n"
+
+        bot.send_message(chat_id, commands)
+
+    elif msg == "/start":
         users = db_manager.get_users()
 
         for user in users:
@@ -47,10 +70,12 @@ def commands_handler(message):
 
         groups = db_manager.get_group_list()
 
-        list_groups = ""
+        list_groups = tools.array_to_one_line(groups)
 
-        for group in groups:
-            list_groups += str(group) + ", "
+        # list_groups = ""
+        #
+        # for group in groups:
+        #     list_groups += str(group) + ", "
 
         reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups)
 
@@ -63,7 +88,6 @@ def commands_handler(message):
         parse_send_message(chat_id, constants.about_anser)
 
     elif msg == "/get_users":
-
         users = db_manager.get_users()
 
         answer = ""
@@ -109,19 +133,22 @@ def commands_handler(message):
         bot.send_message(chat_id, current_week)
 
     elif msg == "/teacher":
-
         reply_message = bot.send_message(chat_id, "Please, enter Your name:")
 
         bot.register_next_step_handler(reply_message, process_register_teacher)
 
     elif msg == "/drop_teachers":
-
         db_manager.remove_teachers()
 
         teachers = db_manager.get_teachers()
 
         if not teachers:
             bot.send_message(chat_id, "Table {0} cleared".format(constants.table_teachers))
+
+    else:
+        is_command = False
+
+    show_log(message, is_command)
 
 
 # handler text massages
@@ -131,6 +158,7 @@ def message_handler(message):
     chat_id = message.chat.id
     current_week = db_manager.get_current_week()
     groups = db_manager.get_group_list()
+    is_command = True
 
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
@@ -148,17 +176,17 @@ def message_handler(message):
 
             if not day_name:
                 bot.send_message(chat_id, "Dont lessons current :)")
-                return
 
-            lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
+            else:
+                lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
-            lessons_str = tools.data_to_str(lessons, is_message=True)
+                lessons_str = tools.data_to_str(lessons, is_message=True)
 
-            if lessons_str:
+                if lessons_str:
 
-                answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
+                    answer = tools.format_name_day(day_name) + "\n\n" + lessons_str
 
-                parse_send_message(chat_id, answer)
+                    parse_send_message(chat_id, answer)
 
         else:
             bot.send_message(chat_id, "Please, send /start")
@@ -201,9 +229,9 @@ def message_handler(message):
 
     elif msg == "user":
 
-        group_id = db_manager.get_user_group_id(chat_id)
+        user = db_manager.get_user_by_chat_id(chat_id)
 
-        bot.send_message(chat_id, group_id)
+        bot.send_message(chat_id, user.format_print())
 
     elif msg == "groups":
 
@@ -214,23 +242,19 @@ def message_handler(message):
 
         bot.send_message(chat_id, answer)
 
+    else:
+        is_command = False
 
-    is_group = False
+        if groups:
+            for group in groups:
+                if group == msg:
+                    lessons = db_manager.get_lessons_by_week(group, current_week)
+                    answer = tools.format_lessons_week_for_message(lessons)
 
-    for group in groups:
-        if group == msg:
-            lessons = db_manager.get_lessons_by_week(group, current_week)
-            answer = tools.format_lessons_week_for_message(lessons)
+                    parse_send_message(chat_id, answer)
+                    is_command = True
 
-            parse_send_message(chat_id, answer)
-            is_group = True
-
-    if not is_group:
-        user = tools.get_user_info(message)
-        info = str(user.name_user + " - " + msg)
-        print(info)
-        parse_send_message(chat_id, constants.not_found_answer + " - " + msg)
-        bot.send_message(constants.admin_log, info)
+    show_log(message, is_command)
 
 
 # callback functions
@@ -257,28 +281,46 @@ def process_register_teacher(message):
 def process_group_step(message):
     group_id = str(message.text)
 
-    groups = db_manager.get_group_list()
+    is_group = db_manager.is_group(group_id)
 
-    not_registered = True
+    if is_group:
+        user = tools.get_user_info(message)
+        user.group_id = group_id
+        db_manager.add_user(user)
+        bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
 
-    for group in groups:
-        if group_id == group:
-            user = tools.get_user_info(message)
+    else:
 
-            not_registered = False
+        groups = db_manager.get_group_list()
 
-            user.group_id = group_id
-
-            db_manager.add_user(user)
-
-            bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
-
-    if not_registered:
-        list_groups = tools.data_to_str(groups)
+        list_groups = tools.array_to_one_line(groups)
 
         reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
 
         bot.register_next_step_handler(reply_message, process_group_step)
+
+    # groups = db_manager.get_group_list()
+    #
+    # not_registered = True
+    #
+    # for group in groups:
+    #     if group_id == group:
+    #         user = tools.get_user_info(message)
+    #
+    #         not_registered = False
+    #
+    #         user.group_id = group_id
+    #
+    #         db_manager.add_user(user)
+    #
+    #         bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
+    #
+    # if not_registered:
+    #     list_groups = tools.data_to_str(groups)
+    #
+    #     reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
+    #
+    #     bot.register_next_step_handler(reply_message, process_group_step)
 
 
 def process_download_file_step(message):

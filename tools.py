@@ -7,6 +7,15 @@ import datetime
 import telebot
 
 
+def array_to_one_line(data):
+    line = ""
+
+    for el in data:
+        line += str(el) + ", "
+
+    return line
+
+
 def search_teacher_in_str(lesson, teacher_name):
     end_index = len(str(lesson.info))
 

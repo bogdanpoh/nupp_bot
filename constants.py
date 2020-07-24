@@ -10,7 +10,7 @@ table_lessons = "lessons"
 table_week = "week"
 
 # commands answer
-start_answer = """Ласкаво просимо\U00002757
+start_answer = """Ласкаво просимо \U00002757
 
 \U0001F603 Введіть свою групу: 
 <b>(Наприклад 101ЕМ, де ЕМ - російськими або українськими літерами)</b>
@@ -39,12 +39,11 @@ about_anser = """
 """
 
 # other answers
-not_found_answer = "Команда не знайдена"
+not_found_answer = "\U0001F648 Команда не знайдена"
 pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
-you_is_register = "Ви вже зареєстровані\U00002757"
-thanks_for_a_registration = "Дякуємо за реєстрацію\U0001F60B"
-file_not_found = "Файл не знайдено"
-
+you_is_register = "Ви вже зареєстровані \U00002757"
+thanks_for_a_registration = "Дякуємо за реєстрацію \U0001F60B"
+file_not_found = "Файл не знайдено \U0001F614"
 # keyboard buttons
 keyboard_setting = "Налаштування"
 keyboard_current_lessons = "Заняття на сьогодні"
@@ -59,12 +58,12 @@ thursday = "Четвер"
 friday = "П'ятниця"
 
 # emoji numbers
-one_number = emoji.emojize(':keycap_digit_one:', use_aliases=True)
-two_number = emoji.emojize(':keycap_digit_two:', use_aliases=True)
-three_number = emoji.emojize(':keycap_digit_three:', use_aliases=True)
-four_number = emoji.emojize(':keycap_digit_four:', use_aliases=True)
-five_number = emoji.emojize(':keycap_digit_five:', use_aliases=True)
-six_number = emoji.emojize(':keycap_digit_six:', use_aliases=True)
+one_number = emoji.emojize(":keycap_digit_one:", use_aliases=True)
+two_number = emoji.emojize(":keycap_digit_two:", use_aliases=True)
+three_number = emoji.emojize(":keycap_digit_three:", use_aliases=True)
+four_number = emoji.emojize(":keycap_digit_four:", use_aliases=True)
+five_number = emoji.emojize(":keycap_digit_five:", use_aliases=True)
+six_number = emoji.emojize(":keycap_digit_six:", use_aliases=True)
 
 # weeks
 first_week = "first_week"
