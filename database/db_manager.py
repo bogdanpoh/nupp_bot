@@ -103,6 +103,13 @@ def get_user_group_id(chat_id):
         return None
 
 
+def update_user_group(chat_id, group_id):
+    query = "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'".format(constants.table_users, str(group_id), str(chat_id))
+
+    cursor.execute(query)
+    db.commit()
+
+
 def remove_users():
     query = "DELETE FROM {0}".format(constants.table_users)
 

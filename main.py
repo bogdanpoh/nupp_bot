@@ -15,7 +15,7 @@ db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 
-command_list = ["0001", "start", "settings", "about", "get_users", "drop_users", "add_lessons", "drop_lessons", "current_week",
+command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "add_lessons", "drop_lessons", "current_week",
               "change_week", "teacher", "drop_teachers"]
 
 
@@ -70,12 +70,7 @@ def commands_handler(message):
 
         groups = db_manager.get_group_list()
 
-        list_groups = tools.array_to_one_line(groups)
-
-        # list_groups = ""
-        #
-        # for group in groups:
-        #     list_groups += str(group) + ", "
+        list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
         reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups)
 
@@ -87,10 +82,20 @@ def commands_handler(message):
     elif msg == "/about":
         parse_send_message(chat_id, constants.about_anser)
 
+    elif msg == "/change_group":
+
+        groups = db_manager.get_group_list()
+
+        list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
+
+        reply_message = bot.send_message(chat_id, constants.pick_your_group + "\n\n" + list_groups)
+        bot.register_next_step_handler(reply_message, process_change_group_step)
+
     elif msg == "/get_users":
         users = db_manager.get_users()
 
         answer = ""
+
         count_users = len(users)
 
         if count_users == 0:
@@ -99,7 +104,7 @@ def commands_handler(message):
             answer = "Count users " + str(count_users) + "\n\n"
 
         for user in users:
-            answer += user.name_user + ", "
+            answer += user.name_user + " - " + user.group_id + ", "
 
         bot.send_message(chat_id, answer)
 
@@ -175,7 +180,8 @@ def message_handler(message):
             day_name = tools.get_current_day_name()
 
             if not day_name:
-                bot.send_message(chat_id, "Dont lessons current :)")
+                bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                return
 
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
@@ -198,7 +204,7 @@ def message_handler(message):
             day_name = tools.get_next_day_name()
 
             if not day_name:
-                bot.send_message(chat_id, "Dont lessons current :)")
+                bot.send_message(chat_id, constants.no_lessons_tomorrow)
                 return
 
             lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
@@ -231,14 +237,15 @@ def message_handler(message):
 
         user = db_manager.get_user_by_chat_id(chat_id)
 
+        tools.get_user_info(message)
+
         bot.send_message(chat_id, user.format_print())
 
     elif msg == "groups":
 
-        answer = ""
+        sorted_groups = tools.sorted_groups(groups)
 
-        for group in groups:
-            answer += str(group) + ", "
+        answer = tools.array_to_one_line(sorted_groups)
 
         bot.send_message(chat_id, answer)
 
@@ -278,6 +285,22 @@ def process_register_teacher(message):
         db_manager.add_teacher(Teacher(entered_name, message.chat.id))
 
 
+def process_change_group_step(message):
+
+    if db_manager.is_group(message.text):
+        db_manager.update_user_group(message.chat.id, message.text)
+        bot.send_message(message.chat.id, constants.change_group)
+
+    else:
+        groups = db_manager.get_group_list()
+
+        line_groups = tools.array_to_one_line(groups)
+
+        reply_message = bot.send_message(message.chat.id, constants.pick_your_group + "\n\n" + line_groups)
+
+        bot.register_next_step_handler(reply_message, process_change_group_step)
+
+
 def process_group_step(message):
     group_id = str(message.text)
 
@@ -288,39 +311,11 @@ def process_group_step(message):
         user.group_id = group_id
         db_manager.add_user(user)
         bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
-
     else:
-
         groups = db_manager.get_group_list()
-
         list_groups = tools.array_to_one_line(groups)
-
         reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
-
         bot.register_next_step_handler(reply_message, process_group_step)
-
-    # groups = db_manager.get_group_list()
-    #
-    # not_registered = True
-    #
-    # for group in groups:
-    #     if group_id == group:
-    #         user = tools.get_user_info(message)
-    #
-    #         not_registered = False
-    #
-    #         user.group_id = group_id
-    #
-    #         db_manager.add_user(user)
-    #
-    #         bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
-    #
-    # if not_registered:
-    #     list_groups = tools.data_to_str(groups)
-    #
-    #     reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
-    #
-    #     bot.register_next_step_handler(reply_message, process_group_step)
 
 
 def process_download_file_step(message):

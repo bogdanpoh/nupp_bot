@@ -7,6 +7,11 @@ import datetime
 import telebot
 
 
+def sorted_groups(groups):
+    answer = sorted(groups)
+    return answer
+
+
 def array_to_one_line(data):
     line = ""
 
@@ -141,7 +146,20 @@ def get_user_info(message):
     if username:
         name = username
     else:
-        name = "user_" + user_id
+
+        first_name = message.from_user.first_name
+        last_name = message.from_user.last_name
+
+        if first_name:
+            name += first_name + " "
+
+        if last_name:
+            name += last_name
+
+        if not name:
+            name = "user_" + str(user_id)
+        else:
+            name += "_" + str(user_id)
 
     return User(name_user=name, chat_id=user_id)
 

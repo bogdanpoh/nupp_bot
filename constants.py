@@ -42,8 +42,11 @@ about_anser = """
 not_found_answer = "\U0001F648 Команда не знайдена"
 pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
 you_is_register = "Ви вже зареєстровані \U00002757"
+no_lessons_tomorrow = "Завтра занять немає \U0001F601"
 thanks_for_a_registration = "Дякуємо за реєстрацію \U0001F60B"
 file_not_found = "Файл не знайдено \U0001F614"
+change_group = "Ваша група обновлена \U0001F970"
+
 # keyboard buttons
 keyboard_setting = "Налаштування"
 keyboard_current_lessons = "Заняття на сьогодні"
