@@ -246,7 +246,7 @@ def format_end_time(time):
     return time.split("-")[-1]
 
 
-def read_excel(path):
+def read_lessons(path):
     wb = xlrd.open_workbook(path)
     sheet = wb.sheet_by_index(0)
     sheet.cell_value(0, 0)

@@ -264,6 +264,59 @@ def message_handler(message):
     show_log(message, is_command)
 
 
+@bot.message_handler(content_types=["document"])
+def file_handler(message):
+    path = os.path.join(constants.documents_directory, constants.excel_file)
+
+    if not os.path.exists(constants.documents_directory):
+        os.mkdir(constants.documents_directory)
+
+    file_info = bot.get_file(message.document.file_id)
+    type_file = str(file_info.file_path).split(".")[-1]
+
+    if os.path.exists(path):
+        os.remove(path)
+
+    if type_file == 'xlsx' or type_file == "xls":
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        tools.download_file(path + "." + type_file, downloaded_file)
+
+        file_path = ""
+
+        if os.path.isfile(
+                os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)):
+            file_path = os.path.join(constants.documents_directory,
+                                     constants.excel_file + "." + constants.excel_file_type)
+        elif os.path.isfile(
+                os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type_a)):
+            file_path = os.path.join(constants.documents_directory,
+                                     constants.excel_file + "." + constants.excel_file_type_a)
+
+        lessons = tools.read_lessons(file_path)
+
+        if lessons:
+            group_id = lessons[0].group_id
+
+            group_list = db_manager.get_group_list()
+
+            for group in group_list:
+                if group_id == group:
+                    db_manager.remove_lessons_by_group_id(group_id)
+
+            for lesson in lessons:
+                try:
+                    db_manager.add_lesson(lesson)
+                except sqlite3.DatabaseError as error:
+                    bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
+
+            bot.send_message(message.chat.id, "Lessons add to database")
+        else:
+            bot.send_message(message.chat.id, "Lessons dont found")
+    else:
+        parse_send_message(message.chat.id, "File is not <b>xlsx</b> and <b>xls</b>")
+
+
 # callback functions
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
@@ -350,15 +403,16 @@ def process_download_file_step(message):
             file_path = os.path.join(constants.documents_directory,
                                      constants.excel_file + "." + constants.excel_file_type_a)
 
-        lessons = tools.read_excel(file_path)
+        lessons = tools.read_lessons(file_path)
 
-        for lesson in lessons:
-            try:
-                db_manager.add_lesson(lesson)
-            except sqlite3.DatabaseError as error:
-                bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
+        if lessons:
+            for lesson in lessons:
+                try:
+                    db_manager.add_lesson(lesson)
+                except sqlite3.DatabaseError as error:
+                    bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
-        bot.send_message(message.chat.id, "File read")
+            bot.send_message(message.chat.id, "File read")
 
 
 bot.polling(none_stop=True, interval=0)

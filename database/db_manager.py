@@ -134,6 +134,12 @@ def remove_lessons():
     db.commit()
 
 
+def remove_lessons_by_group_id(group_id):
+    query = "DELETE FROM {0} WHERE group_id='{1}'".format(constants.table_lessons, group_id)
+    cursor.execute(query)
+    db.commit()
+
+
 def get_lessons():
     query = "SELECT * FROM {0}".format(constants.table_lessons)
 
