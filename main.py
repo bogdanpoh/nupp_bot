@@ -15,7 +15,7 @@ db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 
-command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "add_lessons", "drop_lessons", "current_week",
+command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons", "current_week",
               "change_week", "teacher", "drop_teachers"]
 
 
@@ -113,10 +113,6 @@ def commands_handler(message):
 
         bot.send_message(chat_id, "Table {0} cleared".format(constants.table_users))
 
-    elif msg == "/add_lessons":
-        handle_message = bot.send_message(chat_id, "Enter file")
-        bot.register_next_step_handler(handle_message, process_download_file_step)
-
     elif msg == "/drop_lessons":
         db_manager.remove_lessons()
 
@@ -186,7 +182,13 @@ def message_handler(message):
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
-                lessons_str = tools.data_to_str(lessons, is_message=True)
+                if lessons:
+
+                    lessons_str = tools.data_to_str(lessons, is_message=True)
+
+                else:
+                    bot.send_message(chat_id, constants.no_lessons_today)
+                    return
 
                 if lessons_str:
 
@@ -209,7 +211,12 @@ def message_handler(message):
 
             lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
-            lessons_str = tools.data_to_str(lessons, is_message=True)
+            if lessons:
+                lessons_str = tools.data_to_str(lessons, is_message=True)
+
+            else:
+                bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                return
 
             if lessons_str:
 
@@ -249,6 +256,11 @@ def message_handler(message):
 
         bot.send_message(chat_id, answer)
 
+    elif msg == "count-lessons":
+        lessons = db_manager.get_lessons()
+
+        bot.send_message(chat_id, str(len(lessons)))
+
     else:
         is_command = False
 
@@ -271,11 +283,11 @@ def file_handler(message):
     if not os.path.exists(constants.documents_directory):
         os.mkdir(constants.documents_directory)
 
-    file_info = bot.get_file(message.document.file_id)
-    type_file = str(file_info.file_path).split(".")[-1]
-
     if os.path.exists(path):
         os.remove(path)
+
+    file_info = bot.get_file(message.document.file_id)
+    type_file = str(file_info.file_path).split(".")[-1]
 
     if type_file == 'xlsx' or type_file == "xls":
         downloaded_file = bot.download_file(file_info.file_path)
@@ -298,11 +310,8 @@ def file_handler(message):
         if lessons:
             group_id = lessons[0].group_id
 
-            group_list = db_manager.get_group_list()
-
-            for group in group_list:
-                if group_id == group:
-                    db_manager.remove_lessons_by_group_id(group_id)
+            if db_manager.is_group(group_id):
+                db_manager.remove_lessons_by_group_id(group_id)
 
             for lesson in lessons:
                 try:
@@ -363,56 +372,13 @@ def process_group_step(message):
         user = tools.get_user_info(message)
         user.group_id = group_id
         db_manager.add_user(user)
-        bot.send_message(message.chat.id, constants.thanks_for_a_registration, reply_markup=tools.get_required_keyboard())
+        bot.send_message(message.chat.id, constants.thanks_for_a_registration,
+                         reply_markup=tools.get_required_keyboard())
     else:
         groups = db_manager.get_group_list()
         list_groups = tools.array_to_one_line(groups)
         reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
         bot.register_next_step_handler(reply_message, process_group_step)
-
-
-def process_download_file_step(message):
-    path = os.path.join(constants.documents_directory, constants.excel_file)
-
-    if not os.path.exists(constants.documents_directory):
-        os.mkdir(constants.documents_directory)
-
-    if not message.content_type == "document":
-        bot.send_message(message.chat.id, constants.file_not_found)
-        return
-
-    file_info = bot.get_file(message.document.file_id)
-    type_file = str(file_info.file_path).split(".")[-1]
-
-    if os.path.exists(path):
-        os.remove(path)
-
-    if type_file == 'xlsx' or type_file == "xls":
-        downloaded_file = bot.download_file(file_info.file_path)
-
-        tools.download_file(path + "." + type_file, downloaded_file)
-
-        file_path = ""
-
-        if os.path.isfile(
-                os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)):
-            file_path = os.path.join(constants.documents_directory,
-                                     constants.excel_file + "." + constants.excel_file_type)
-        elif os.path.isfile(
-                os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type_a)):
-            file_path = os.path.join(constants.documents_directory,
-                                     constants.excel_file + "." + constants.excel_file_type_a)
-
-        lessons = tools.read_lessons(file_path)
-
-        if lessons:
-            for lesson in lessons:
-                try:
-                    db_manager.add_lesson(lesson)
-                except sqlite3.DatabaseError as error:
-                    bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
-
-            bot.send_message(message.chat.id, "File read")
 
 
 bot.polling(none_stop=True, interval=0)

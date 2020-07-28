@@ -246,6 +246,18 @@ def format_end_time(time):
     return time.split("-")[-1]
 
 
+def format_group_id(group_name):
+
+    group_id = (remove_repetition_in_str(group_name)).replace(" ", "")
+
+    if len(str(group_id).split("-")) > 1:
+        group = str(group_id).split("-")
+
+        group_id = group[0] + group[-1]
+
+    return group_id
+
+
 def read_lessons(path):
     wb = xlrd.open_workbook(path)
     sheet = wb.sheet_by_index(0)
@@ -268,13 +280,17 @@ def read_lessons(path):
 
     clear_data = []
 
+    group_id = ""
+
     for el in data:
         clear_data.append(remove_repetition(el))
 
-    group_id = clear_data[1][-1]
+    group_name = clear_data[1][-1]
 
-    if not group_id:
-        group_id = clear_data[1][-2]
+    if not group_name:
+        group_name = clear_data[1][-2]
+
+    group_id = format_group_id(group_name)
 
     lessons = []
 
