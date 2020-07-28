@@ -72,7 +72,7 @@ def commands_handler(message):
 
         list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
-        reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups)
+        reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
 
         bot.register_next_step_handler(reply_message, process_group_step)
 
@@ -88,7 +88,7 @@ def commands_handler(message):
 
         list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
-        reply_message = bot.send_message(chat_id, constants.pick_your_group + "\n\n" + list_groups)
+        reply_message = bot.send_message(chat_id, constants.pick_your_group + "\n\n" + list_groups, parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
     elif msg == "/get_users":
@@ -106,7 +106,7 @@ def commands_handler(message):
         for user in users:
             answer += user.name_user + " - " + user.group_id + ", "
 
-        bot.send_message(chat_id, answer)
+        bot.send_message(chat_id, answer[:-2])
 
     elif msg == "/drop_users":
         db_manager.remove_users()
@@ -254,12 +254,20 @@ def message_handler(message):
 
         answer = tools.array_to_one_line(sorted_groups)
 
-        bot.send_message(chat_id, answer)
+        bot.send_message(chat_id, answer[:-2])
 
     elif msg == "count-lessons":
         lessons = db_manager.get_lessons()
 
         bot.send_message(chat_id, str(len(lessons)))
+
+    elif msg == "remove-me":
+        is_remove = True
+
+        db_manager.remove_user_by_chat_id(chat_id)
+
+        if not db_manager.is_user(chat_id):
+            bot.send_message(chat_id, "You removed from DB")
 
     else:
         is_command = False
@@ -358,7 +366,7 @@ def process_change_group_step(message):
 
         line_groups = tools.array_to_one_line(groups)
 
-        reply_message = bot.send_message(message.chat.id, constants.pick_your_group + "\n\n" + line_groups)
+        reply_message = bot.send_message(message.chat.id, constants.pick_your_group + "\n\n" + line_groups, parse_mode="HTML")
 
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
@@ -374,10 +382,11 @@ def process_group_step(message):
         db_manager.add_user(user)
         bot.send_message(message.chat.id, constants.thanks_for_a_registration,
                          reply_markup=tools.get_required_keyboard())
+        bot.send_message(constants.admin_log, "New user - {0}".format(user.name_user))
     else:
-        groups = db_manager.get_group_list()
+        groups = tools.sorted_groups(db_manager.get_group_list())
         list_groups = tools.array_to_one_line(groups)
-        reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups)
+        reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_group_step)
 
 

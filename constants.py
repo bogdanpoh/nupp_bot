@@ -12,9 +12,6 @@ table_week = "week"
 # commands answer
 start_answer = """Ласкаво просимо \U00002757
 
-\U0001F603 Введіть свою групу: 
-<b>(Наприклад 101ЕМ, де ЕМ - російськими або українськими літерами)</b>
-
 \U00002699 Доступні групи:
 """
 
@@ -33,14 +30,15 @@ settings_answer = """
 
 about_anser = """
 Дизайнер аватара для бота - https://www.instagram.com/your_death_404/
-Програмний код - https://www.instagram.com/poh1dnya/
+Програмний код - https://www.instagram.com/bogdan.poh/
 
 <b>З питань підтримки, допомоги, пропозицій</b> –– @nupp_help
 """
 
 # other answers
 not_found_answer = "\U0001F648 Команда не знайдена"
-pick_your_group = "Будь ласка, надішліть свою групу \U0001F64F"
+pick_your_group = """Будь ласка, надішліть свою групу \U0001F64F 
+<b>(Наприклад 101ЕМ, де ЕМ - російськими або українськими літерами)</b>"""
 you_is_register = "Ви вже зареєстровані \U00002757"
 no_lessons_today = "Сьогодні занять немає \U0001F601"
 no_lessons_tomorrow = "Завтра занять немає \U0001F601"

@@ -110,8 +110,28 @@ def update_user_group(chat_id, group_id):
     db.commit()
 
 
+def is_user(chat_id):
+
+    is_registration = False
+
+    users = get_users()
+
+    for user in users:
+        if user.chat_id == chat_id:
+            is_registration = True
+
+    return is_registration
+
+
 def remove_users():
     query = "DELETE FROM {0}".format(constants.table_users)
+
+    cursor.execute(query)
+    db.commit()
+
+
+def remove_user_by_chat_id(chat_id):
+    query = "DELETE FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
     cursor.execute(query)
     db.commit()
