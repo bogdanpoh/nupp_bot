@@ -7,6 +7,14 @@ import datetime
 import telebot
 
 
+def get_current_time():
+    now = datetime.datetime.now()
+
+    current_time = now.strftime("%H:%M")
+
+    return current_time
+
+
 def sorted_groups(groups):
     answer = sorted(groups)
     return answer

@@ -15,8 +15,8 @@ db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 
-command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons", "current_week",
-              "change_week", "teacher", "drop_teachers"]
+command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons",
+                "current_week", "change_week", "teacher", "drop_teachers"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -269,6 +269,9 @@ def message_handler(message):
         if not db_manager.is_user(chat_id):
             bot.send_message(chat_id, "You removed from DB")
 
+    elif msg == "time":
+        bot.send_message(chat_id, tools.get_current_time())
+
     else:
         is_command = False
 
@@ -390,4 +393,4 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=0, timeout=0)
