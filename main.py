@@ -6,6 +6,7 @@ from database.teacher import Teacher
 from database import db_manager
 import tools
 import os
+import threading
 
 bot = telebot.TeleBot(constants.token)
 
@@ -393,4 +394,32 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
-bot.polling(none_stop=True, interval=0, timeout=0)
+def check_current_time():
+    is_send = False
+    while True:
+        time = tools.get_current_time()
+
+        if time == "11:38" and is_send is not True:
+            bot.send_message(constants.admin_chat_id, "You very cool :)")
+            is_send = True
+
+        print(time)
+        print(str(is_send))
+
+
+def main():
+    try:
+        bot.polling(none_stop=True, interval=0)
+    except Exception as ex:
+        print(str(ex))
+        bot.send_message(constants.admin_log, str(ex))
+
+# bot.polling(none_stop=True, interval=0)
+
+
+if __name__ == "__main__":
+    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    check_time_thread.start()
+
+    main()
+
