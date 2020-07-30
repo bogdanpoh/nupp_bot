@@ -3,6 +3,7 @@ import xlrd
 from itertools import groupby
 from database.lesson import Lesson
 from database.user import User
+from database.event import Event
 import datetime
 import telebot
 
@@ -102,6 +103,8 @@ def data_to_list_class(data, to_class):
             list_answer.append(User(data=el))
         elif to_class == "lesson":
             list_answer.append(Lesson(data=el))
+        elif to_class == "event":
+            list_answer.append(Event(data=el))
 
     return list_answer
 

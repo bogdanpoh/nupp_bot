@@ -3,6 +3,7 @@ import constants
 import sqlite3
 from database.user import User
 from database.teacher import Teacher
+from database.event import Event
 from database import db_manager
 import tools
 import os
@@ -15,9 +16,12 @@ db_manager.create_table_users()
 db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
+db_manager.create_table_events()
 
 command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons",
                 "current_week", "change_week", "teacher", "drop_teachers"]
+
+current_time = None
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -273,6 +277,23 @@ def message_handler(message):
     elif msg == "time":
         bot.send_message(chat_id, tools.get_current_time())
 
+    elif msg == "events":
+
+        # db_manager.add_event(Event(group_id="302ЕМ", chat_id=constants.admin_chat_id, current_week=current_week, send_time="13:10", is_send=0))
+
+        events = db_manager.get_events()
+
+        if len(events) == 0:
+            bot.send_message(chat_id, "DB Event is clear")
+
+        else:
+            answer = "Count: {0}\n\n".format(str(len(events)))
+
+            for event in events:
+                answer += event.format_print() + "\n"
+
+            bot.send_message(chat_id, answer)
+
     else:
         is_command = False
 
@@ -399,7 +420,7 @@ def check_current_time():
     while True:
         time = tools.get_current_time()
 
-        if time == "11:38" and is_send is not True:
+        if time == "12:22" and is_send is not True:
             bot.send_message(constants.admin_chat_id, "You very cool :)")
             is_send = True
 
@@ -418,8 +439,8 @@ def main():
 
 
 if __name__ == "__main__":
-    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    check_time_thread.start()
+    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    # check_time_thread.start()
 
     main()
 

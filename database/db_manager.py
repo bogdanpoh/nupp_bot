@@ -57,6 +57,13 @@ def create_table_week():
     db.commit()
 
 
+def create_table_events():
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS {0} (
+    id INTEGER PRIMARY KEY, group_id TEXT, current_week TEXT, chat_id TEXT, send_time TEXT, is_send INTEGER)
+    """.format(constants.table_events))
+
+
 # user
 def add_user(user):
     query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES (?, ?, ?)".format(constants.table_users)
@@ -294,3 +301,34 @@ def get_teacher_by_chat_id(chat_id):
 
 def get_teacher_lessons(day_name, week):
     pass
+
+
+# event
+def add_event(event):
+    # group_id TEXT, current_week TEXT, chat_id TEXT, send_time TEXT, is_send INTEGER
+    query = "INSERT INTO {0} (group_id, current_week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?)".format(constants.table_events)
+
+    val = (event.group_id, event.current_week, event.chat_id, event.send_time, event.is_send)
+
+    cursor.execute(query, val)
+    db.commit()
+
+
+def get_events():
+    query = "SELECT * FROM {0}".format(constants.table_events)
+    data = cursor.execute(query)
+
+    events = tools.data_to_list_class(data, "event")
+
+    return events
+
+
+def get_list_time_events():
+    pass
+
+
+def remove_events():
+    query = "DELETE FROM {0}".format(constants.table_events)
+
+    cursor.execute(query)
+    db.commit()

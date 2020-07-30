@@ -8,6 +8,7 @@ table_users = "users"
 table_teachers = "teachers"
 table_lessons = "lessons"
 table_week = "week"
+table_events = "events"
 
 # commands answer
 start_answer = """Ласкаво просимо \U00002757
