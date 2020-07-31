@@ -51,7 +51,9 @@ def create_table_lessons():
 
 def create_table_week():
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS {0} (id INTEGER PRIMARY KEY, current_week TEXT)
+    CREATE TABLE IF NOT EXISTS {0} (
+    id INTEGER PRIMARY KEY,
+    current_week TEXT)
     """.format(constants.table_week))
 
     db.commit()
@@ -60,7 +62,13 @@ def create_table_week():
 def create_table_events():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (
-    id INTEGER PRIMARY KEY, group_id TEXT, current_week TEXT, chat_id TEXT, send_time TEXT, is_send INTEGER)
+    id INTEGER PRIMARY KEY,
+    group_id TEXT,
+    day_name TEXT,
+    current_week TEXT,
+    chat_id TEXT,
+    send_time TEXT,
+    is_send INTEGER)
     """.format(constants.table_events))
 
 
@@ -111,7 +119,8 @@ def get_user_group_id(chat_id):
 
 
 def update_user_group(chat_id, group_id):
-    query = "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'".format(constants.table_users, str(group_id), str(chat_id))
+    query = "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'"\
+        .format(constants.table_users, str(group_id), str(chat_id))
 
     cursor.execute(query)
     db.commit()
@@ -146,7 +155,8 @@ def remove_user_by_chat_id(chat_id):
 
 # lesson
 def add_lesson(lesson):
-    query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (?, ?, ?, ?, ?, ?, ?)".format(constants.table_lessons)
+    query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (?, ?, ?, ?, ?, ?, ?)"\
+        .format(constants.table_lessons)
 
     val = (lesson.row, lesson.day_name, lesson.time_start, lesson.time_end, lesson.group_id, lesson.week, lesson.info)
 
@@ -305,10 +315,10 @@ def get_teacher_lessons(day_name, week):
 
 # event
 def add_event(event):
-    # group_id TEXT, current_week TEXT, chat_id TEXT, send_time TEXT, is_send INTEGER
-    query = "INSERT INTO {0} (group_id, current_week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?)".format(constants.table_events)
+    query = "INSERT INTO {0} (group_id, day_name, current_week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?, ?)"\
+        .format(constants.table_events)
 
-    val = (event.group_id, event.current_week, event.chat_id, event.send_time, event.is_send)
+    val = (event.group_id, event.day_name, event.current_week, event.chat_id, event.send_time, event.is_send)
 
     cursor.execute(query, val)
     db.commit()
@@ -329,6 +339,13 @@ def get_list_time_events():
 
 def remove_events():
     query = "DELETE FROM {0}".format(constants.table_events)
+
+    cursor.execute(query)
+    db.commit()
+
+
+def drop_table_events():
+    query = "DROP TABLE {0}".format(constants.table_events)
 
     cursor.execute(query)
     db.commit()

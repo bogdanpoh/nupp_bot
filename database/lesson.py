@@ -34,8 +34,14 @@ class Lesson(object):
             self.info = info
 
     def format_print(self):
-        return "{0}, {1}, {2} - {3}, {4}, {5}, {6}".format(self.row, self.day_name, self.time_start, self.time_end,
-                                                         self.group_id, self.info, self.week)
+        return "{0}, {1}, {2} - {3}, {4}, {5}, {6}".format(
+            self.row,
+            self.day_name,
+            self.time_start,
+            self.time_end,
+            self.group_id,
+            self.info,
+            self.week)
 
     def format_message(self):
 
@@ -54,4 +60,7 @@ class Lesson(object):
         elif self.row == "6":
             row = constants.six_number
 
-        return "{0} <b>{1}-{2}</b> – <i>{3}</i>".format(row, self.time_start, self.time_end, self.info)
+        return "{0} <b>{1}-{2}</b> – <i>{3}</i>".format(row,
+                                                        self.time_start,
+                                                        self.time_end,
+                                                        self.info)

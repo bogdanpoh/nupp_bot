@@ -281,6 +281,8 @@ def message_handler(message):
 
         # db_manager.add_event(Event(group_id="302ЕМ", chat_id=constants.admin_chat_id, current_week=current_week, send_time="13:10", is_send=0))
 
+        # db_manager.drop_table_events()
+
         events = db_manager.get_events()
 
         if len(events) == 0:
@@ -290,9 +292,15 @@ def message_handler(message):
             answer = "Count: {0}\n\n".format(str(len(events)))
 
             for event in events:
-                answer += event.format_print() + "\n"
+                answer += event.format_print() + "\n\n"
 
             bot.send_message(chat_id, answer)
+
+    elif msg == "clear-events":
+        db_manager.remove_events()
+
+        if len(db_manager.get_events()) == 0:
+            bot.send_message(chat_id, "DB Events is clear")
 
     else:
         is_command = False

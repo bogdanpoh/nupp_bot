@@ -18,4 +18,8 @@ class User(object):
             self.chat_id = chat_id
 
     def format_print(self):
-        return "id: {0}, name_user: {1}, group_id: {2}, chat_id: {3}".format(self.id, self.name_user, self.group_id, self.chat_id)
+        return "id: {0}, name_user: {1}, group_id: {2}, chat_id: {3}".format(
+            self.id,
+            self.name_user,
+            self.group_id,
+            self.chat_id)
