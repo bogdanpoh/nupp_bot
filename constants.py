@@ -58,7 +58,7 @@ monday = "Понеділок"
 tuesday = "Вівторок"
 wednesday = "Середа"
 thursday = "Четвер"
-friday = "П'ятниця"
+friday = "П\'ятниця"
 
 # emoji numbers
 one_number = emoji.emojize(":keycap_digit_one:", use_aliases=True)

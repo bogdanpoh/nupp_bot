@@ -65,7 +65,7 @@ def create_table_events():
     id INTEGER PRIMARY KEY,
     group_id TEXT,
     day_name TEXT,
-    current_week TEXT,
+    week TEXT,
     chat_id TEXT,
     send_time TEXT,
     is_send INTEGER)
@@ -315,10 +315,10 @@ def get_teacher_lessons(day_name, week):
 
 # event
 def add_event(event):
-    query = "INSERT INTO {0} (group_id, day_name, current_week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?, ?)"\
+    query = "INSERT INTO {0} (group_id, day_name, week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?, ?)"\
         .format(constants.table_events)
 
-    val = (event.group_id, event.day_name, event.current_week, event.chat_id, event.send_time, event.is_send)
+    val = (event.group_id, event.day_name, event.week, event.chat_id, event.send_time, event.is_send)
 
     cursor.execute(query, val)
     db.commit()
@@ -333,8 +333,30 @@ def get_events():
     return events
 
 
+def update_event(event):
+    # "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'"
+    query = "UPDATE {0} SET day_name = '{1}', send_time = '{2}', week = '{3}', is_send = '{4}' WHERE id = '{5}'".format(
+        constants.table_events,
+        event.day_name,
+        event.send_time,
+        event.week,
+        event.is_send,
+        event.id)
+    cursor.execute(query)
+    db.commit()
+
+
 def get_list_time_events():
-    pass
+    query = "SELECT send_time FROM {0}".format(constants.table_events)
+
+    result = cursor.execute(query)
+
+    list = []
+
+    for el in result:
+        list.append(el[0])
+
+    return list
 
 
 def remove_events():

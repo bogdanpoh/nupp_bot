@@ -8,6 +8,14 @@ import datetime
 import telebot
 
 
+def get_next_week(current_week):
+
+    if current_week == constants.first_week:
+        return constants.second_week
+    else:
+        return constants.first_week
+
+
 def get_current_time():
     now = datetime.datetime.now()
 

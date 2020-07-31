@@ -16,4 +16,7 @@ class Teacher(object):
             self.chat_id = chat_id
 
     def format_print(self):
-        return "id: {0}, name_teacher: {1}, chat_id: {2}".format(self.id, self.name_teacher,self.chat_id)
+        return "id: {0}, name_teacher: {1}, chat_id: {2}".format(
+            self.id,
+            self.name_teacher,
+            self.chat_id)

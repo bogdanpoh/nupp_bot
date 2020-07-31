@@ -18,10 +18,8 @@ db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
 
-command_list = ["0001", "start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons",
+command_list = ["start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons",
                 "current_week", "change_week", "teacher", "drop_teachers"]
-
-current_time = None
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -46,6 +44,17 @@ def show_log(message, is_command):
     bot.send_message(constants.admin_log, info)
 
 
+@bot.message_handler(regexp="0001")
+def regexp_handler(message):
+
+    commands = ""
+
+    for command in command_list:
+        commands += "/" + command + "\n"
+
+    bot.send_message(message.chat.id, commands)
+
+
 # commands handler
 @bot.message_handler(commands=command_list)
 def commands_handler(message):
@@ -54,16 +63,7 @@ def commands_handler(message):
 
     is_command = True
 
-    if msg == "/0001":
-
-        commands = ""
-
-        for command in command_list:
-            commands += "/" + command + "\n"
-
-        bot.send_message(chat_id, commands)
-
-    elif msg == "/start":
+    if msg == "/start":
         users = db_manager.get_users()
 
         for user in users:
@@ -278,12 +278,28 @@ def message_handler(message):
         bot.send_message(chat_id, tools.get_current_time())
 
     elif msg == "events":
-
-        # db_manager.add_event(Event(group_id="302ЕМ", chat_id=constants.admin_chat_id, current_week=current_week, send_time="13:10", is_send=0))
+        # db_manager.add_event(Event(group_id="302ЕМ", chat_id=constants.admin_chat_id, day_name="friday", week=current_week, send_time="13:10", is_send=0))
+        # time_events = db_manager.get_list_time_events()
 
         # db_manager.drop_table_events()
 
         events = db_manager.get_events()
+
+        event = events[0]
+
+        event.set_status_send(False)
+        event.set_send_time("13:10")
+        event.week = str(constants.first_week)
+        event.day_name = tools.format_name_day(constants.friday)
+
+        db_manager.update_event(event)
+
+        events = db_manager.get_events()
+
+        # events[0].set_status_send(not events[0].get_status_send())
+        #
+        # db_manager.update_send_status(events[0])
+        # print(not events[0].get_status_send())
 
         if len(events) == 0:
             bot.send_message(chat_id, "DB Event is clear")
