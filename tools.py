@@ -8,6 +8,16 @@ import datetime
 import telebot
 
 
+def format_lessons_day_for_message(lessons, day_name):
+
+    lessons_str = ""
+
+    for lesson in lessons:
+        lessons_str += lesson.format_message() + "\n"
+
+    return str(format_name_day(day_name) + "\n\n" + lessons_str)
+
+
 def get_next_week(current_week):
 
     if current_week == constants.first_week:

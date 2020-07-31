@@ -3,6 +3,7 @@ import constants
 from database.user import User
 from database.lesson import Lesson
 from database.teacher import Teacher
+from database.event import Event
 import tools
 
 db = sqlite3.connect("db_bot.db", check_same_thread=False)
@@ -318,10 +319,27 @@ def add_event(event):
     query = "INSERT INTO {0} (group_id, day_name, week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?, ?)"\
         .format(constants.table_events)
 
-    val = (event.group_id, event.day_name, event.week, event.chat_id, event.send_time, event.is_send)
+    val = (event.group_id, event.day_name, event.week, event.chat_id, str(event.send_time).replace(".", ":"), event.is_send)
 
     cursor.execute(query, val)
     db.commit()
+
+
+def get_event(day_name, week, time):
+    query = "SELECT * FROM {0} WHERE send_time = '{1}' AND day_name = '{2}' AND week = '{3}'".format(
+        constants.table_events,
+        week,
+        day_name,
+        time)
+
+    result = cursor.execute(query)
+
+    if result:
+        for el in result:
+            if el:
+                return Event(data=el)
+    else:
+        return None
 
 
 def get_events():
