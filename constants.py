@@ -3,6 +3,13 @@ import emoji
 # bot token
 token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 
+# database info
+db_name = "db_bot"
+user = "postgres"
+host = "127.0.0.1"
+password = "1234"
+port = "5432"
+
 # database names
 table_users = "users"
 table_teachers = "teachers"

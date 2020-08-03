@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg2
 import constants
 from database.user import User
 from database.lesson import Lesson
@@ -6,8 +6,29 @@ from database.teacher import Teacher
 from database.event import Event
 import tools
 
-db = sqlite3.connect("db_bot.db", check_same_thread=False)
+# cursor.execute("""
+# CREATE TABLE users (
+# id SERIAL PRIMARY KEY,
+# name TEXT NOT NULL,
+# age INT NOT NULL
+# )
+# """)
 
+# cursor.execute("""
+# INSERT INTO users (name, age) VALUES ('jeka', 6)
+# """)
+
+
+# db = sqlite3.connect("db_bot.db", check_same_thread=False)
+#
+# cursor = db.cursor()
+
+# db = psycopg2.connect(dbname="db_bot", user="postgres", password="1234", host="127.0.0.1", port="5432")
+db = psycopg2.connect(dbname=constants.db_name,
+                      user=constants.user,
+                      password=constants.password,
+                      host=constants.host,
+                      port=constants.port)
 cursor = db.cursor()
 
 
@@ -15,7 +36,7 @@ cursor = db.cursor()
 def create_table_users():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0}
-    (id INTEGER PRIMARY KEY,
+    (id SERIAL PRIMARY KEY,
     name_user TEXT,
     group_id TEXT,
     chat_id TEXT)
@@ -27,7 +48,7 @@ def create_table_users():
 def create_table_teachers():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0}
-    (id INTEGER PRIMARY KEY,
+    (id SERIAL PRIMARY KEY,
     name_teacher TEXT,
     chat_id TEXT)
     """.format(constants.table_teachers))
@@ -37,7 +58,7 @@ def create_table_teachers():
 
 def create_table_lessons():
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS {0} (id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS {0} (id SERIAL PRIMARY KEY,
     row TEXT,
     day_name TEXT,
     time_start TEXT,
@@ -53,7 +74,7 @@ def create_table_lessons():
 def create_table_week():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     current_week TEXT)
     """.format(constants.table_week))
 
@@ -63,7 +84,7 @@ def create_table_week():
 def create_table_events():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     group_id TEXT,
     day_name TEXT,
     week TEXT,
@@ -75,48 +96,53 @@ def create_table_events():
 
 # user
 def add_user(user):
-    query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES (?, ?, ?)".format(constants.table_users)
+    query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES ('{1}', '{2}', '{3}')".format(
+        constants.table_users,
+        user.name_user,
+        user.group_id,
+        user.chat_id)
 
-    val = (user.name_user, user.group_id, user.chat_id)
-
-    cursor.execute(query, val)
+    cursor.execute(query)
     db.commit()
 
 
 def get_users():
     query = "SELECT * FROM {0}".format(constants.table_users)
 
-    data = cursor.execute(query)
+    cursor.execute(query)
 
-    users = tools.data_to_list_class(data, "user")
+    data = cursor.fetchall()
 
-    return users
+    if data:
+        users = tools.data_to_list_class(data, "user")
+
+        return users
 
 
 def get_user_by_chat_id(chat_id):
-    query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
+    query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
-    answer = cursor.execute(query)
+    cursor.execute(query)
+
+    answer = cursor.fetchall()
 
     if answer:
         for data in answer:
             return User(data=data)
-    else:
-        return None
 
 
 def get_user_group_id(chat_id):
-    query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
+    query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
-    answer = cursor.execute(query)
+    cursor.execute(query)
+
+    answer = cursor.fetchall()
 
     if answer:
         for data in answer:
             user = User(data=data)
 
             return user.group_id
-    else:
-        return None
 
 
 def update_user_group(chat_id, group_id):
@@ -134,6 +160,7 @@ def is_user(chat_id):
     users = get_users()
 
     for user in users:
+        print(user)
         if user.chat_id == chat_id:
             is_registration = True
 
@@ -156,12 +183,18 @@ def remove_user_by_chat_id(chat_id):
 
 # lesson
 def add_lesson(lesson):
-    query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (?, ?, ?, ?, ?, ?, ?)"\
-        .format(constants.table_lessons)
+    query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (" \
+            "{1}, '{2}', {3}, {4}, '{5}', '{6}', \'{7}\')"\
+        .format(constants.table_lessons,
+                lesson.row,
+                lesson.day_name,
+                lesson.time_start,
+                lesson.time_end,
+                lesson.group_id,
+                lesson.week,
+                str(lesson.info).replace("'", "`"))
 
-    val = (lesson.row, lesson.day_name, lesson.time_start, lesson.time_end, lesson.group_id, lesson.week, lesson.info)
-
-    cursor.execute(query, val)
+    cursor.execute(query)
     db.commit()
 
 
@@ -191,30 +224,36 @@ def get_lessons():
 def get_group_list():
     query = "SELECT * FROM {0}".format(constants.table_lessons)
 
-    data = cursor.execute(query)
+    cursor.execute(query)
+
+    data = cursor.fetchall()
 
     list = []
 
-    for el in data:
-        list.append(Lesson(data=el).group_id)
+    if data:
+        for el in data:
+            list.append(Lesson(data=el).group_id)
 
-    return set(list)
+        return set(list)
 
 
 def is_group(group_id):
     groups = get_group_list()
 
-    for group in groups:
-        if group == group_id:
-            return True
+    if groups:
+        for group in groups:
+            if group == group_id:
+                return True
 
     return False
 
 
 def get_lessons_by_day_name(day_name, group_id, week):
-    query = "SELECT * FROM {0} WHERE `day_name`='{1}' AND `group_id`='{2}' AND `week`='{3}'".format(constants.table_lessons, day_name, week, group_id)
+    query = "SELECT * FROM {0} WHERE day_name = '{1}' AND group_id = '{2}' AND week = '{3}'".format(constants.table_lessons, day_name, week, group_id)
 
-    data = cursor.execute(query)
+    cursor.execute(query)
+
+    data = cursor.fetchall()
 
     lessons = tools.data_to_list_class(data, "lesson")
 
@@ -226,9 +265,11 @@ def get_lessons_by_day_name(day_name, group_id, week):
 
 def get_lessons_by_week(group_id, week):
 
-    query = "SELECT * FROM {0} WHERE `week`='{1}' AND `group_id`='{2}'".format(constants.table_lessons, week, group_id)
+    query = "SELECT * FROM {0} WHERE week = '{1}' AND  group_id = '{2}'".format(constants.table_lessons, week, group_id)
 
-    data = cursor.execute(query)
+    cursor.execute(query)
+
+    data = cursor.fetchall()
 
     lessons = tools.data_to_list_class(data, "lesson")
 
@@ -236,15 +277,26 @@ def get_lessons_by_week(group_id, week):
 
 
 # week
+def set_default_week():
+    query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, constants.first_week)
+
+    cursor.execute(query)
+    db.commit()
+
+
 def get_current_week():
 
     query = "SELECT * FROM {0}".format(constants.table_week)
 
-    current_week = cursor.execute(query)
+    cursor.execute(query)
+
+    current_week = cursor.fetchall()
 
     for el in current_week:
         if el:
             return el[-1]
+
+    return None
 
 
 def change_week():
@@ -266,40 +318,43 @@ def change_week():
 
 # teacher
 def add_teacher(teacher):
-    query = "INSERT INTO {0} (name_teacher, chat_id) VALUES (?, ?)".format(constants.table_teachers)
-
-    val = (teacher.name_teacher, teacher.chat_id)
-
-    cursor.execute(query, val)
-    db.commit()
+    pass
+    # query = "INSERT INTO {0} (name_teacher, chat_id) VALUES (?, ?)".format(constants.table_teachers)
+    #
+    # val = (teacher.name_teacher, teacher.chat_id)
+    #
+    # cursor.execute(query, val)
+    # db.commit()
 
 
 def remove_teachers():
-    query = "DELETE FROM {0}".format(constants.table_teachers)
-
-    cursor.execute(query)
-    db.commit()
+    pass
+    # query = "DELETE FROM {0}".format(constants.table_teachers)
+    #
+    # cursor.execute(query)
+    # db.commit()
 
 
 def get_teachers():
-    query = "SELECT * FROM {0}".format(constants.table_teachers)
-
-    list = []
-
-    result = cursor.execute(query)
-
-    if result:
-        for el in result:
-            list.append(Teacher(data=el))
-
-        return list
-
-    else:
-        return None
+    pass
+    # query = "SELECT * FROM {0}".format(constants.table_teachers)
+    #
+    # list = []
+    #
+    # result = cursor.execute(query)
+    #
+    # if result:
+    #     for el in result:
+    #         list.append(Teacher(data=el))
+    #
+    #     return list
+    #
+    # else:
+    #     return None
 
 
 def get_teacher_by_chat_id(chat_id):
-    query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_teachers, chat_id)
+    query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_teachers, chat_id)
 
     answer = cursor.execute(query)
 

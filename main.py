@@ -44,9 +44,17 @@ def show_log(message, is_command):
     bot.send_message(constants.admin_log, info)
 
 
+@bot.message_handler(regexp="set_default_week")
+def handel(message):
+    db_manager.set_default_week()
+
+
 @bot.message_handler(regexp="add_event")
 def handler(message):
     current_week = db_manager.get_current_week()
+
+    if not current_week:
+        db_manager.set_default_week()
 
     user = db_manager.get_user_by_chat_id(message.chat.id)
 
@@ -95,20 +103,22 @@ def commands_handler(message):
     if msg == "/start":
         users = db_manager.get_users()
 
-        for user in users:
-            if str(chat_id) == user.chat_id:
-                bot.send_message(chat_id, constants.you_is_register, reply_markup=tools.get_required_keyboard())
-                return
+        if users:
+            for user in users:
+                if str(chat_id) == user.chat_id:
+                    bot.send_message(chat_id, constants.you_is_register, reply_markup=tools.get_required_keyboard())
+                    return
 
         answer = parse_send_message(chat_id, constants.start_answer)
 
         groups = db_manager.get_group_list()
 
-        list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
+        if groups:
+            list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
-        reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
+            reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
 
-        bot.register_next_step_handler(reply_message, process_group_step)
+            bot.register_next_step_handler(reply_message, process_group_step)
 
     elif msg == "/settings":
         parse_send_message(chat_id, constants.settings_answer)
