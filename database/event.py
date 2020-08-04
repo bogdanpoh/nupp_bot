@@ -5,7 +5,7 @@ class Event(object):
     week = ""
     chat_id = ""
     send_time = ""
-    is_send = 0
+    is_send = False
 
     def __init__(self, group_id=None, week=None, day_name=None, chat_id=None, send_time=None, is_send=None, id=None, data=None):
         if data:
@@ -35,10 +35,10 @@ class Event(object):
         self.send_time = send_time
 
     def set_status_send(self, status):
-        self.is_send = int(status)
+        self.is_send = status
 
     def get_status_send(self):
-        return bool(self.is_send)
+        return self.is_send
 
     def format_print(self):
         return "id: {0}, group_id: {1}, day_name: {2}, week: {3}, chat_id: {4}, send_time: {5}, is_send: {6}".format(
@@ -48,4 +48,4 @@ class Event(object):
             self.week,
             self.chat_id,
             self.send_time,
-            str(bool(self.is_send)))
+            str(self.is_send))

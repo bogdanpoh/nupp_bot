@@ -6,24 +6,7 @@ from database.teacher import Teacher
 from database.event import Event
 import tools
 
-# cursor.execute("""
-# CREATE TABLE users (
-# id SERIAL PRIMARY KEY,
-# name TEXT NOT NULL,
-# age INT NOT NULL
-# )
-# """)
 
-# cursor.execute("""
-# INSERT INTO users (name, age) VALUES ('jeka', 6)
-# """)
-
-
-# db = sqlite3.connect("db_bot.db", check_same_thread=False)
-#
-# cursor = db.cursor()
-
-# db = psycopg2.connect(dbname="db_bot", user="postgres", password="1234", host="127.0.0.1", port="5432")
 db = psycopg2.connect(dbname=constants.db_name,
                       user=constants.user,
                       password=constants.password,
@@ -90,8 +73,10 @@ def create_table_events():
     week TEXT,
     chat_id TEXT,
     send_time TEXT,
-    is_send INTEGER)
+    is_send BOOLEAN)
     """.format(constants.table_events))
+
+    db.commit()
 
 
 # user
@@ -120,6 +105,7 @@ def get_users():
 
     else:
         return None
+
 
 def get_user_by_chat_id(chat_id):
     query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
@@ -162,7 +148,6 @@ def is_user(chat_id):
     users = get_users()
 
     for user in users:
-        print(user)
         if user.chat_id == chat_id:
             is_registration = True
 
@@ -250,8 +235,12 @@ def is_group(group_id):
     return False
 
 
-def get_lessons_by_day_name(day_name, group_id, week):
-    query = "SELECT * FROM {0} WHERE day_name = '{1}' AND group_id = '{2}' AND week = '{3}'".format(constants.table_lessons, day_name, week, group_id)
+def get_lessons_by_day_name(day_name, week, group_id):
+    query = str("SELECT * FROM {0} WHERE day_name = '{day_name}' AND week = '{week}' AND group_id = '{group}'")\
+        .format(constants.table_lessons,
+                day_name=day_name,
+                group=group_id,
+                week=week)
 
     cursor.execute(query)
 
@@ -356,15 +345,17 @@ def get_teachers():
 
 
 def get_teacher_by_chat_id(chat_id):
-    query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_teachers, chat_id)
+    # query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_teachers, chat_id)
+    #
+    # answer = cursor.execute(query)
+    #
+    # if answer:
+    #     for data in answer:
+    #         return Teacher(data=data)
+    # else:
+    #     return None
 
-    answer = cursor.execute(query)
-
-    if answer:
-        for data in answer:
-            return Teacher(data=data)
-    else:
-        return None
+    pass
 
 
 def get_teacher_lessons(day_name, week):
@@ -373,23 +364,29 @@ def get_teacher_lessons(day_name, week):
 
 # event
 def add_event(event):
-    query = "INSERT INTO {0} (group_id, day_name, week, chat_id, send_time, is_send) VALUES (?, ?, ?, ?, ?, ?)"\
-        .format(constants.table_events)
+    query = "INSERT INTO {0} (group_id, day_name, week, chat_id, send_time, is_send) " \
+            "VALUES ('{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(constants.table_events,
+                                                                       event.group_id,
+                                                                       event.day_name,
+                                                                       event.week,
+                                                                       event.chat_id,
+                                                                       str(event.send_time).replace(".", ":"),
+                                                                       event.is_send)
 
-    val = (event.group_id, event.day_name, event.week, event.chat_id, str(event.send_time).replace(".", ":"), event.is_send)
-
-    cursor.execute(query, val)
+    cursor.execute(query)
     db.commit()
 
 
 def get_event(day_name, week, time):
     query = "SELECT * FROM {0} WHERE send_time = '{1}' AND day_name = '{2}' AND week = '{3}'".format(
         constants.table_events,
-        week,
+        time,
         day_name,
-        time)
+        week)
 
-    result = cursor.execute(query)
+    cursor.execute(query)
+
+    result = cursor.fetchall()
 
     if result:
         for el in result:
@@ -401,7 +398,9 @@ def get_event(day_name, week, time):
 
 def get_events():
     query = "SELECT * FROM {0}".format(constants.table_events)
-    data = cursor.execute(query)
+    cursor.execute(query)
+
+    data = cursor.fetchall()
 
     events = tools.data_to_list_class(data, "event")
 
@@ -424,14 +423,19 @@ def update_event(event):
 def get_list_time_events():
     query = "SELECT send_time FROM {0}".format(constants.table_events)
 
-    result = cursor.execute(query)
+    cursor.execute(query)
 
-    list = []
+    result = cursor.fetchall()
 
-    for el in result:
-        list.append(el[0])
+    list_times = []
 
-    return list
+    if result:
+        for el in result:
+            list_times.append(el[0])
+
+        return list_times
+    else:
+        return None
 
 
 def remove_events():

@@ -18,12 +18,11 @@ db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
 
-command_list = ["start", "settings", "about", "change_group", "get_users", "drop_users", "drop_lessons",
-                "current_week", "change_week", "teacher", "drop_teachers"]
+command_list = ["start", "settings", "about", "change_group", "get_users", "drop_table_events", "drop_users",
+                "drop_lessons", "current_week", "change_week", "teacher", "drop_teachers"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
-    message = None
 
     if keyboard:
         message = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
@@ -36,12 +35,22 @@ def parse_send_message(chat_id, text, keyboard=None):
 def show_log(message, is_command):
     user = tools.get_user_info(message)
     info = str(user.name_user + " - " + message.text)
+
     print(info)
 
-    if not is_command:
-        parse_send_message(message.chat.id, constants.not_found_answer + " - " + message.text)
+    format_info = str("<b>" + user.name_user + "</b> - " + message.text)
 
-    bot.send_message(constants.admin_log, info)
+    if not is_command:
+        parse_send_message(message.chat.id, constants.not_found_answer + " - <b>" + message.text + "</b>")
+
+    parse_send_message(constants.admin_log, format_info)
+
+
+@bot.message_handler(regexp="get_lessons")
+def handler(message):
+    lessons = db_manager.get_lessons_by_day_name(tools.format_name_day(constants.tuesday), constants.first_week, "302ЕМ")
+
+    print(tools.format_lessons_day_for_message(lessons, tools.format_name_day(constants.tuesday)))
 
 
 @bot.message_handler(regexp="set_default_week")
@@ -53,12 +62,7 @@ def handler(message):
 def handler(message):
     current_week = db_manager.get_current_week()
 
-    if not current_week:
-        db_manager.set_default_week()
-
     user = db_manager.get_user_by_chat_id(message.chat.id)
-
-    day_name = ""
 
     if not tools.get_current_day_name():
         day_name = tools.format_name_day(constants.monday)
@@ -66,8 +70,6 @@ def handler(message):
         day_name = tools.get_current_day_name()
 
     lessons = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
-
-    lesson = None
 
     if lessons:
         lesson = lessons[0]
@@ -79,6 +81,8 @@ def handler(message):
                       send_time=lesson.time_start, is_send=False)
 
         db_manager.add_event(event)
+    else:
+        bot.send_message(constants.admin_chat_id, "dont lessons")
 
 
 @bot.message_handler(regexp="0001")
@@ -120,6 +124,9 @@ def commands_handler(message):
 
             bot.register_next_step_handler(reply_message, process_group_step)
 
+        else:
+            bot.send_message(chat_id, "Dont found groups in DB")
+
     elif msg == "/settings":
         parse_send_message(chat_id, constants.settings_answer)
 
@@ -137,8 +144,6 @@ def commands_handler(message):
 
     elif msg == "/get_users":
         users = db_manager.get_users()
-
-        answer = ""
 
         if users:
             count_users = len(users)
@@ -191,6 +196,10 @@ def commands_handler(message):
         if not teachers:
             bot.send_message(chat_id, "Table {0} cleared".format(constants.table_teachers))
 
+    elif msg == "/drop_table_events":
+        db_manager.drop_table_events()
+        bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
+
     else:
         is_command = False
 
@@ -205,6 +214,9 @@ def message_handler(message):
     current_week = db_manager.get_current_week()
     groups = db_manager.get_group_list()
     is_command = True
+
+    if not current_week:
+        db_manager.set_default_week()
 
     if msg == constants.keyboard_setting:
         parse_send_message(chat_id, constants.settings_answer)
@@ -386,7 +398,6 @@ def file_handler(message):
     else:
         parse_send_message(message.chat.id, "File is not <b>xlsx</b> and <b>xls</b>")
 
-
 # callback functions
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
@@ -435,7 +446,8 @@ def process_group_step(message):
         db_manager.add_user(user)
         bot.send_message(message.chat.id, constants.thanks_for_a_registration,
                          reply_markup=tools.get_required_keyboard())
-        bot.send_message(constants.admin_log, "New user - {0}".format(user.name_user))
+
+        parse_send_message(constants.admin_log, "<b>New user</b> - {0}".format(user.name_user))
     else:
         groups = tools.sorted_groups(db_manager.get_group_list())
         list_groups = tools.array_to_one_line(groups)
@@ -444,35 +456,27 @@ def process_group_step(message):
 
 
 def check_current_time():
-    # is_send = False
-    # while True:
-    #     time = tools.get_current_time()
-    #
-    #     if time == "11:37" and is_send is not True:
-    #         bot.send_message(constants.admin_chat_id, "You very cool :)")
-    #         is_send = True
-    #
-    #     print(time)
-    #     print(str(is_send))
+    week = db_manager.get_current_week()
+    day_name = tools.get_current_day_name()
+
+    time_events = db_manager.get_list_time_events()
 
     while True:
-        # time = tools.get_current_time()
-        time = "10:00"
-        week = db_manager.get_current_week()
-        day_name = tools.get_current_day_name()
+        current_time = tools.get_current_time()
 
-        time_events = db_manager.get_list_time_events()
+        print(current_time)
 
-        for time_event in time_events:
-            if time == time_event:
-                event = db_manager.get_event(day_name, time, week)
+        print(time_events)
 
-                lesson = db_manager.get_lessons_by_day_name(event.day_name, event.group_id, event.week)[0]
-
-                if not event.get_status_send():
-                    parse_send_message(event.chat_id, lesson.format_message())
-                    event.set_status_send(True)
-                    db_manager.update_event(event)
+        for time in time_events:
+            if time == current_time:
+                event = db_manager.get_event(day_name, week, time)
+                if event:
+                    if not event.is_send:
+                        lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
+                        parse_send_message(event.chat_id, tools.format_lessons_day_for_message(lessons, event.day_name))
+                        event.set_status_send(True)
+                        db_manager.update_event(event)
 
 
 def main():
@@ -480,6 +484,7 @@ def main():
         bot.polling(none_stop=True, interval=0)
     except Exception as ex:
         print(str(ex))
+        bot.send_message(constants.admin_chat_id, str(ex))
         bot.send_message(constants.admin_log, str(ex))
 
 # bot.polling(none_stop=True, interval=0)
