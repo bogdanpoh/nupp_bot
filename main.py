@@ -45,7 +45,7 @@ def show_log(message, is_command):
 
 
 @bot.message_handler(regexp="set_default_week")
-def handel(message):
+def handler(message):
     db_manager.set_default_week()
 
 
@@ -140,15 +140,16 @@ def commands_handler(message):
 
         answer = ""
 
-        count_users = len(users)
+        if users:
+            count_users = len(users)
 
-        if count_users == 0:
-            answer = "DB Users is empty"
-        else:
             answer = "Count users " + str(count_users) + "\n\n"
 
-        for user in users:
-            answer += user.name_user + " - " + user.group_id + ", "
+            for user in users:
+                answer += user.name_user + " - " + user.group_id + ", "
+
+        else:
+            answer = "DB Users is empty"
 
         bot.send_message(chat_id, answer[:-2])
 
@@ -288,12 +289,9 @@ def message_handler(message):
         bot.send_message(chat_id, str(len(lessons)))
 
     elif msg == "remove-me":
-        is_remove = True
-
         db_manager.remove_user_by_chat_id(chat_id)
 
-        if not db_manager.is_user(chat_id):
-            bot.send_message(chat_id, "You removed from DB")
+        bot.send_message(chat_id, "You removed from DB")
 
     elif msg == "time":
         bot.send_message(chat_id, tools.get_current_time())
@@ -381,7 +379,8 @@ def file_handler(message):
                 except sqlite3.DatabaseError as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
-            bot.send_message(message.chat.id, "Lessons add to database")
+            # bot.send_message(message.chat.id, "".format(group_id))
+            parse_send_message(message.chat.id, "Lessons {0} add to database".format(group_id))
         else:
             bot.send_message(message.chat.id, "Lessons dont found")
     else:

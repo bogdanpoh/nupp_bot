@@ -118,6 +118,8 @@ def get_users():
 
         return users
 
+    else:
+        return None
 
 def get_user_by_chat_id(chat_id):
     query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
