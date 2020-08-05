@@ -19,7 +19,7 @@ db_manager.create_table_week()
 db_manager.create_table_events()
 
 command_list = ["start", "settings", "about", "change_group", "get_users", "drop_table_events", "drop_users",
-                "drop_lessons", "current_week", "change_week", "teacher", "drop_teachers"]
+                "drop_lessons", "current_week", "change_week", "teacher", "drop_teachers", "enable_reminders"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -48,9 +48,10 @@ def show_log(message, is_command):
 
 @bot.message_handler(regexp="get_lessons")
 def handler(message):
-    lessons = db_manager.get_lessons_by_day_name(tools.format_name_day(constants.tuesday), constants.first_week, "302ЕМ")
+    lessons = db_manager.get_lessons()
 
-    print(tools.format_lessons_day_for_message(lessons, tools.format_name_day(constants.tuesday)))
+    for lesson in lessons:
+        print(lesson.format_print())
 
 
 @bot.message_handler(regexp="set_default_week")
@@ -199,6 +200,9 @@ def commands_handler(message):
     elif msg == "/drop_table_events":
         db_manager.drop_table_events()
         bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
+
+    elif msg == "/enable_reminders":
+        bot.send_message(chat_id, "enable reminders")
 
     else:
         is_command = False
@@ -398,6 +402,7 @@ def file_handler(message):
     else:
         parse_send_message(message.chat.id, "File is not <b>xlsx</b> and <b>xls</b>")
 
+
 # callback functions
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
@@ -470,13 +475,15 @@ def check_current_time():
 
         for time in time_events:
             if time == current_time:
-                event = db_manager.get_event(day_name, week, time)
-                if event:
-                    if not event.is_send:
-                        lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
-                        parse_send_message(event.chat_id, tools.format_lessons_day_for_message(lessons, event.day_name))
-                        event.set_status_send(True)
-                        db_manager.update_event(event)
+                events = db_manager.get_event(day_name, week, time)
+
+                if events:
+                    for event in events:
+                        if not event.is_send:
+                            lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
+                            parse_send_message(event.chat_id, tools.format_lessons_day_for_message(lessons, event.day_name))
+                            event.set_status_send(True)
+                            db_manager.update_event(event)
 
 
 def main():
@@ -491,8 +498,10 @@ def main():
 
 
 if __name__ == "__main__":
-    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    # check_time_thread.start()
+    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    check_time_thread.start()
 
+    bot.send_message(constants.admin_chat_id, "Bot is run")
+    bot.send_message(constants.admin_log, "Bot is run")
     main()
 

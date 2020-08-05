@@ -1,5 +1,7 @@
 import emoji
 
+# pip install pyopenssl ndg-httpsclient pyasn1
+
 # bot token
 token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 
@@ -27,6 +29,8 @@ settings_answer = """
 Будь ласка, виберіть дію:
 
 /change_group - змінити групу
+
+/enable_reminders - нагадувати про розклад занять на сьогодні за 20 хвилин до початку
 
 /about - детальніше про нас
 

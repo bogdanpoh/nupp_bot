@@ -7,16 +7,31 @@ from database.event import Event
 import tools
 
 
-db = psycopg2.connect(dbname=constants.db_name,
-                      user=constants.user,
-                      password=constants.password,
-                      host=constants.host,
-                      port=constants.port)
-cursor = db.cursor()
+# db = psycopg2.connect(dbname=constants.db_name,
+#                       user=constants.user,
+#                       password=constants.password,
+#                       host=constants.host,
+#                       port=constants.port)
+# cursor = db.cursor()
+
+
+def get_db_connect():
+    return psycopg2.connect(dbname=constants.db_name,
+                            user=constants.user,
+                            password=constants.password,
+                            host=constants.host,
+                            port=constants.port)
+
+
+def get_cursor(db):
+    return db.cursor()
 
 
 # create tables
 def create_table_users():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0}
     (id SERIAL PRIMARY KEY,
@@ -25,10 +40,16 @@ def create_table_users():
     chat_id TEXT)
     """.format(constants.table_users))
 
+    cursor.close()
     db.commit()
+    db.close()
 
 
 def create_table_teachers():
+    db = get_db_connect()
+
+    cursor = get_cursor(db)
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0}
     (id SERIAL PRIMARY KEY,
@@ -36,10 +57,15 @@ def create_table_teachers():
     chat_id TEXT)
     """.format(constants.table_teachers))
 
+    cursor.close()
     db.commit()
+    db.close()
 
 
 def create_table_lessons():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (id SERIAL PRIMARY KEY,
     row TEXT,
@@ -51,20 +77,30 @@ def create_table_lessons():
     info TEXT)
     """.format(constants.table_lessons))
 
+    cursor.close()
     db.commit()
+    db.close()
 
 
 def create_table_week():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (
     id SERIAL PRIMARY KEY,
     current_week TEXT)
     """.format(constants.table_week))
 
+    cursor.close()
     db.commit()
+    db.close()
 
 
 def create_table_events():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS {0} (
     id SERIAL PRIMARY KEY,
@@ -76,11 +112,16 @@ def create_table_events():
     is_send BOOLEAN)
     """.format(constants.table_events))
 
+    cursor.close()
     db.commit()
+    db.close()
 
 
 # user
 def add_user(user):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES ('{1}', '{2}', '{3}')".format(
         constants.table_users,
         user.name_user,
@@ -88,31 +129,44 @@ def add_user(user):
         user.chat_id)
 
     cursor.execute(query)
+
+    cursor.close()
     db.commit()
+    db.close()
 
 
 def get_users():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0}".format(constants.table_users)
 
     cursor.execute(query)
 
     data = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
     if data:
         users = tools.data_to_list_class(data, "user")
-
         return users
-
     else:
         return None
 
 
 def get_user_by_chat_id(chat_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
     cursor.execute(query)
 
     answer = cursor.fetchall()
+
+    cursor.close()
+    db.close()
 
     if answer:
         for data in answer:
@@ -120,6 +174,9 @@ def get_user_by_chat_id(chat_id):
 
 
 def get_user_group_id(chat_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
     cursor.execute(query)
@@ -132,13 +189,21 @@ def get_user_group_id(chat_id):
 
             return user.group_id
 
+    cursor.close()
+    db.close()
+
 
 def update_user_group(chat_id, group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'"\
         .format(constants.table_users, str(group_id), str(chat_id))
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 def is_user(chat_id):
@@ -155,21 +220,34 @@ def is_user(chat_id):
 
 
 def remove_users():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DELETE FROM {0}".format(constants.table_users)
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 def remove_user_by_chat_id(chat_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DELETE FROM {0} WHERE chat_id = '{1}'".format(constants.table_users, chat_id)
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 # lesson
 def add_lesson(lesson):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (" \
             "{1}, '{2}', {3}, {4}, '{5}', '{6}', \'{7}\')"\
         .format(constants.table_lessons,
@@ -183,32 +261,56 @@ def add_lesson(lesson):
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 def remove_lessons():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DELETE FROM {0}".format(constants.table_lessons)
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 def remove_lessons_by_group_id(group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DELETE FROM {0} WHERE group_id='{1}'".format(constants.table_lessons, group_id)
     cursor.execute(query)
     db.commit()
 
+    cursor.close()
+    db.close()
+
 
 def get_lessons():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0}".format(constants.table_lessons)
 
-    data = cursor.execute(query)
+    cursor.execute(query)
+
+    data = cursor.fetchall()
 
     lessons = tools.data_to_list_class(data, "lesson")
+
+    cursor.close()
+    db.close()
 
     return lessons
 
 
 def get_group_list():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0}".format(constants.table_lessons)
 
     cursor.execute(query)
@@ -216,6 +318,9 @@ def get_group_list():
     data = cursor.fetchall()
 
     list = []
+
+    cursor.close()
+    db.close()
 
     if data:
         for el in data:
@@ -236,6 +341,9 @@ def is_group(group_id):
 
 
 def get_lessons_by_day_name(day_name, week, group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = str("SELECT * FROM {0} WHERE day_name = '{day_name}' AND week = '{week}' AND group_id = '{group}'")\
         .format(constants.table_lessons,
                 day_name=day_name,
@@ -246,6 +354,9 @@ def get_lessons_by_day_name(day_name, week, group_id):
 
     data = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
     lessons = tools.data_to_list_class(data, "lesson")
 
     if lessons:
@@ -255,6 +366,8 @@ def get_lessons_by_day_name(day_name, week, group_id):
 
 
 def get_lessons_by_week(group_id, week):
+    db = get_db_connect()
+    cursor = get_cursor(db)
 
     query = "SELECT * FROM {0} WHERE week = '{1}' AND  group_id = '{2}'".format(constants.table_lessons, week, group_id)
 
@@ -264,24 +377,37 @@ def get_lessons_by_week(group_id, week):
 
     lessons = tools.data_to_list_class(data, "lesson")
 
+    cursor.close()
+    db.close()
+
     return lessons
 
 
 # week
 def set_default_week():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, constants.first_week)
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 def get_current_week():
+    db = get_db_connect()
+    cursor = get_cursor(db)
 
     query = "SELECT * FROM {0}".format(constants.table_week)
 
     cursor.execute(query)
 
     current_week = cursor.fetchall()
+
+    cursor.close()
+    db.close()
 
     for el in current_week:
         if el:
@@ -291,6 +417,8 @@ def get_current_week():
 
 
 def change_week():
+    db = get_db_connect()
+    cursor = get_cursor(db)
 
     current_week = get_current_week()
 
@@ -305,6 +433,8 @@ def change_week():
 
     cursor.execute(query)
     db.commit()
+    cursor.close()
+    db.close()
 
 
 # teacher
@@ -364,6 +494,9 @@ def get_teacher_lessons(day_name, week):
 
 # event
 def add_event(event):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "INSERT INTO {0} (group_id, day_name, week, chat_id, send_time, is_send) " \
             "VALUES ('{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(constants.table_events,
                                                                        event.group_id,
@@ -376,8 +509,14 @@ def add_event(event):
     cursor.execute(query)
     db.commit()
 
+    cursor.close()
+    db.close()
+
 
 def get_event(day_name, week, time):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0} WHERE send_time = '{1}' AND day_name = '{2}' AND week = '{3}'".format(
         constants.table_events,
         time,
@@ -388,15 +527,25 @@ def get_event(day_name, week, time):
 
     result = cursor.fetchall()
 
+    cursor.close()
+    db.close()
+
+    answer = []
+
     if result:
         for el in result:
             if el:
-                return Event(data=el)
+                answer.append(Event(data=el))
+
+        return answer
     else:
         return None
 
 
 def get_events():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT * FROM {0}".format(constants.table_events)
     cursor.execute(query)
 
@@ -404,10 +553,16 @@ def get_events():
 
     events = tools.data_to_list_class(data, "event")
 
+    cursor.close()
+    db.close()
+
     return events
 
 
 def update_event(event):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     # "UPDATE {0} SET group_id = '{1}' WHERE chat_id = '{2}'"
     query = "UPDATE {0} SET day_name = '{1}', send_time = '{2}', week = '{3}', is_send = '{4}' WHERE id = '{5}'".format(
         constants.table_events,
@@ -419,8 +574,14 @@ def update_event(event):
     cursor.execute(query)
     db.commit()
 
+    cursor.close()
+    db.close()
+
 
 def get_list_time_events():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "SELECT send_time FROM {0}".format(constants.table_events)
 
     cursor.execute(query)
@@ -428,6 +589,9 @@ def get_list_time_events():
     result = cursor.fetchall()
 
     list_times = []
+
+    cursor.close()
+    db.close()
 
     if result:
         for el in result:
@@ -439,14 +603,26 @@ def get_list_time_events():
 
 
 def remove_events():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DELETE FROM {0}".format(constants.table_events)
 
     cursor.execute(query)
     db.commit()
 
+    cursor.close()
+    db.close()
+
 
 def drop_table_events():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
     query = "DROP TABLE {0}".format(constants.table_events)
 
     cursor.execute(query)
     db.commit()
+
+    cursor.close()
+    db.close()
