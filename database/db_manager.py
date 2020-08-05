@@ -542,6 +542,27 @@ def get_event(day_name, week, time):
         return None
 
 
+def is_registration_event(chat_id, week):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "SELECT * FROM {0} WHERE chat_id = '{1}' AND week = '{2}'".format(constants.table_events,
+                                                                              chat_id,
+                                                                              week)
+
+    cursor.execute(query)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    if len(data) > 0:
+        return True
+    else:
+        return False
+
+
 def get_events():
     db = get_db_connect()
     cursor = get_cursor(db)

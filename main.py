@@ -47,22 +47,18 @@ def show_log(message, is_command):
     parse_send_message(constants.admin_log, format_info)
 
 
-@bot.message_handler(regexp="get_lessons")
+@bot.message_handler(regexp="my_event")
 def handler(message):
-    lessons = db_manager.get_lessons()
+    current_week = db_manager.get_current_week()
 
-    for lesson in lessons:
-        print(lesson.format_print())
+    count_my_events = db_manager.is_registration_event(message.chat.id, current_week)
+
+    bot.send_message(message.chat.id, str(count_my_events))
 
 
 @bot.message_handler(regexp="set_default_week")
 def handler(message):
     db_manager.set_default_week()
-
-
-@bot.message_handler(regexp="add_event")
-def handler(message):
-    pass
 
 
 @bot.message_handler(regexp="0001")
@@ -192,6 +188,10 @@ def commands_handler(message):
         user = db_manager.get_user_by_chat_id(message.chat.id)
 
         current_day = tools.get_current_day_name()
+
+        if db_manager.is_registration_event(chat_id, current_week):
+            bot.send_message(chat_id, "You event is register")
+            return
 
         if not current_day:
             day_name = tools.format_name_day(constants.monday)
