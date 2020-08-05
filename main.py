@@ -19,7 +19,8 @@ db_manager.create_table_week()
 db_manager.create_table_events()
 
 command_list = ["start", "settings", "about", "change_group", "get_users", "drop_table_events", "drop_users",
-                "drop_lessons", "current_week", "change_week", "teacher", "drop_teachers", "enable_reminders"]
+                "drop_lessons", "remove_events", "current_week", "change_week", "teacher", "drop_teachers",
+                "enable_reminders"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -61,29 +62,7 @@ def handler(message):
 
 @bot.message_handler(regexp="add_event")
 def handler(message):
-    current_week = db_manager.get_current_week()
-
-    user = db_manager.get_user_by_chat_id(message.chat.id)
-
-    if not tools.get_current_day_name():
-        day_name = tools.format_name_day(constants.monday)
-    else:
-        day_name = tools.get_current_day_name()
-
-    lessons = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
-
-    if lessons:
-        lesson = lessons[0]
-
-        event = Event(group_id=user.group_id,
-                      week=lesson.week,
-                      day_name=lesson.day_name,
-                      chat_id=user.chat_id,
-                      send_time=lesson.time_start, is_send=False)
-
-        db_manager.add_event(event)
-    else:
-        bot.send_message(constants.admin_chat_id, "dont lessons")
+    pass
 
 
 @bot.message_handler(regexp="0001")
@@ -201,8 +180,38 @@ def commands_handler(message):
         db_manager.drop_table_events()
         bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
 
+    elif msg == "/remove_events":
+        db_manager.remove_events()
+
+        if len(db_manager.get_events()) == 0:
+            bot.send_message(chat_id, "DB Events is clear")
+
     elif msg == "/enable_reminders":
-        bot.send_message(chat_id, "enable reminders")
+        current_week = db_manager.get_current_week()
+
+        user = db_manager.get_user_by_chat_id(message.chat.id)
+
+        current_day = tools.get_current_day_name()
+
+        if not current_day:
+            day_name = tools.format_name_day(constants.monday)
+        else:
+            day_name = current_day
+
+        lessons = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
+
+        if lessons:
+            lesson = lessons[0]
+
+            event = Event(group_id=user.group_id,
+                          week=lesson.week,
+                          day_name=lesson.day_name,
+                          chat_id=user.chat_id,
+                          send_time=lesson.time_start, is_send=False)
+
+            db_manager.add_event(event)
+        else:
+            bot.send_message(constants.admin_chat_id, "dont lessons")
 
     else:
         is_command = False
@@ -330,12 +339,6 @@ def message_handler(message):
                 answer += event.format_print() + "\n\n"
 
             bot.send_message(chat_id, answer)
-
-    elif msg == "clear-events":
-        db_manager.remove_events()
-
-        if len(db_manager.get_events()) == 0:
-            bot.send_message(chat_id, "DB Events is clear")
 
     else:
         is_command = False
