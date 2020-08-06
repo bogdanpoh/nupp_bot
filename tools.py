@@ -35,8 +35,7 @@ def get_current_time():
 
 
 def sorted_groups(groups):
-    answer = sorted(groups)
-    return answer
+    return sorted(groups)
 
 
 def array_to_one_line(data):

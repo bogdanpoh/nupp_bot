@@ -185,7 +185,7 @@ def commands_handler(message):
     elif msg == "/enable_reminders":
         current_week = db_manager.get_current_week()
 
-        user = db_manager.get_user_by_chat_id(message.chat.id)
+        user = db_manager.get_user_by_chat_id(chat_id)
 
         current_day = tools.get_current_day_name()
 
@@ -322,11 +322,6 @@ def message_handler(message):
         bot.send_message(chat_id, tools.get_current_time())
 
     elif msg == "events":
-        # db_manager.add_event(Event(group_id="302ЕМ", chat_id=constants.admin_chat_id, day_name="friday", week=current_week, send_time="13:10", is_send=0))
-        # time_events = db_manager.get_list_time_events()
-
-        # db_manager.drop_table_events()
-
         events = db_manager.get_events()
 
         if len(events) == 0:
@@ -467,14 +462,12 @@ def check_current_time():
     week = db_manager.get_current_week()
     day_name = tools.get_current_day_name()
 
-    time_events = db_manager.get_list_time_events()
-
     while True:
         current_time = tools.get_current_time()
 
         print(current_time)
 
-        print(time_events)
+        time_events = db_manager.get_list_time_events()
 
         for time in time_events:
             if time == current_time:
@@ -482,9 +475,11 @@ def check_current_time():
 
                 if events:
                     for event in events:
-                        if not event.is_send:
+                        if not event.is_send and day_name == event.day_name and week == event.week:
                             lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
-                            parse_send_message(event.chat_id, tools.format_lessons_day_for_message(lessons, event.day_name))
+                            parse_send_message(event.chat_id,
+                                               tools.format_lessons_day_for_message(lessons, event.day_name))
+                            # update event
                             event.set_status_send(True)
                             db_manager.update_event(event)
 
@@ -504,7 +499,7 @@ if __name__ == "__main__":
     check_time_thread = threading.Thread(target=check_current_time, daemon=True)
     check_time_thread.start()
 
-    bot.send_message(constants.admin_chat_id, "Bot is run")
-    bot.send_message(constants.admin_log, "Bot is run")
+    # bot.send_message(constants.admin_chat_id, "Bot is run")
+    # bot.send_message(constants.admin_log, "Bot is run")
     main()
 
