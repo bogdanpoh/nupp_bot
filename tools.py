@@ -5,7 +5,32 @@ from database.lesson import Lesson
 from database.user import User
 from database.event import Event
 import datetime
+from datetime import timedelta
 import telebot
+
+
+def format_time_for_start_event(time):
+    format_time = "%H:%M"
+    time_delta = timedelta(minutes=20)
+
+    start_time = datetime.datetime.strptime(time, format_time) - time_delta
+
+    start_time_str = str(start_time).split(" ")[-1]
+
+    full_start_time_str = start_time_str.split(":")
+
+    return full_start_time_str[0] + ":" + full_start_time_str[1]
+
+
+def format_time_for_event(time):
+    time_str = str(time).replace(".", ":")
+
+    print(time_str)
+
+    if len(time_str.split(".")[0]) == 1:
+        return "0" + time_str
+    else:
+        return time_str
 
 
 def format_lessons_day_for_message(lessons, day_name):

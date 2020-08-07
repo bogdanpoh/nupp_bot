@@ -459,10 +459,10 @@ def process_group_step(message):
 
 
 def check_current_time():
-    week = db_manager.get_current_week()
-    day_name = tools.get_current_day_name()
 
     while True:
+        week = db_manager.get_current_week()
+        day_name = tools.get_current_day_name()
         current_time = tools.get_current_time()
 
         print(current_time)
@@ -479,8 +479,22 @@ def check_current_time():
                             lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
                             parse_send_message(event.chat_id,
                                                tools.format_lessons_day_for_message(lessons, event.day_name))
-                            # update event
-                            event.set_status_send(True)
+
+                            next_day_name = tools.get_next_day_name()
+
+                            next_week = week
+
+                            if not next_day_name:
+                                next_day_name = tools.format_name_day(constants.monday)
+                                next_week = tools.get_next_week(week)
+
+                            next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week, event.group_id)
+
+                            lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
+                            event.set_send_time(tools.format_time_for_start_event(lesson_time_start))
+                            event.set_week(next_week)
+                            event.set_day_name(next_day_name)
+
                             db_manager.update_event(event)
 
 
