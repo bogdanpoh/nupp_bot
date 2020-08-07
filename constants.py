@@ -19,6 +19,9 @@ table_lessons = "lessons"
 table_week = "week"
 table_events = "events"
 
+# for operation with time
+format_time = "%H:%M"
+
 # commands answer
 start_answer = """Ласкаво просимо \U00002757
 

@@ -636,6 +636,18 @@ def remove_events():
     db.close()
 
 
+def remove_event_by_chat_id(chat_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "DELETE FROM {0} WHERE chat_id = '{1}'".format(constants.table_events, chat_id)
+    cursor.execute(query)
+
+    db.commit()
+    cursor.close()
+    db.close()
+
+
 def drop_table_events():
     db = get_db_connect()
     cursor = get_cursor(db)

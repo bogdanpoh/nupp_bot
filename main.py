@@ -187,29 +187,40 @@ def commands_handler(message):
 
         user = db_manager.get_user_by_chat_id(chat_id)
 
-        current_day = tools.get_current_day_name()
+        day = tools.get_current_day_name()
 
         if db_manager.is_registration_event(chat_id, current_week):
             bot.send_message(chat_id, "You event is register")
             return
 
-        if not current_day:
+        if not day:
             day_name = tools.format_name_day(constants.monday)
         else:
-            day_name = current_day
+            day_name = day
 
         lessons = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
 
         if lessons:
             lesson = lessons[0]
 
+            if not tools.is_today_register_time_for_event(tools.get_current_time(), tools.format_time_for_event(lesson.time_start)):
+                day_name = tools.get_next_day_name()
+
+                if not day_name:
+                    day_name = tools.format_name_day(constants.monday)
+                    week = tools.get_next_week(current_week)
+
+                    lesson = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)[0]
+
             event = Event(group_id=user.group_id,
                           week=lesson.week,
                           day_name=lesson.day_name,
                           chat_id=user.chat_id,
-                          send_time=lesson.time_start, is_send=False)
+                          send_time=tools.format_time_for_start_event(tools.format_time_for_event(lesson.time_start)),
+                          is_send=False)
 
             db_manager.add_event(event)
+            bot.send_message(chat_id, "Reminder is on")
         else:
             bot.send_message(constants.admin_chat_id, "dont lessons")
 
@@ -465,7 +476,7 @@ def check_current_time():
         day_name = tools.get_current_day_name()
         current_time = tools.get_current_time()
 
-        print(current_time)
+        # print(current_time)
 
         time_events = db_manager.get_list_time_events()
 

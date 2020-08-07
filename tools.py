@@ -8,12 +8,24 @@ import datetime
 from datetime import timedelta
 import telebot
 
+time_delta = timedelta(minutes=20)
+
+
+def is_today_register_time_for_event(time, lesson_time):
+    current_time = datetime.datetime.strptime(time, constants.format_time)
+    lesson_start_time = datetime.datetime.strptime(lesson_time, constants.format_time)
+
+    result = str(lesson_start_time - current_time)
+
+    if len(result.split(",")) > 1:
+        return False
+    else:
+        return True
+
 
 def format_time_for_start_event(time):
-    format_time = "%H:%M"
-    time_delta = timedelta(minutes=20)
 
-    start_time = datetime.datetime.strptime(time, format_time) - time_delta
+    start_time = datetime.datetime.strptime(time, constants.format_time) - time_delta
 
     start_time_str = str(start_time).split(" ")[-1]
 
@@ -25,9 +37,7 @@ def format_time_for_start_event(time):
 def format_time_for_event(time):
     time_str = str(time).replace(".", ":")
 
-    print(time_str)
-
-    if len(time_str.split(".")[0]) == 1:
+    if len(time_str.split(":")[0]) < 2:
         return "0" + time_str
     else:
         return time_str
