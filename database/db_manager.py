@@ -7,14 +7,6 @@ from database.event import Event
 import tools
 
 
-# db = psycopg2.connect(dbname=constants.db_name,
-#                       user=constants.user,
-#                       password=constants.password,
-#                       host=constants.host,
-#                       port=constants.port)
-# cursor = db.cursor()
-
-
 def get_db_connect():
     return psycopg2.connect(dbname=constants.db_name,
                             user=constants.user,
@@ -241,7 +233,7 @@ def add_lesson(lesson):
     cursor = get_cursor(db)
 
     query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (" \
-            "{1}, '{2}', {3}, {4}, '{5}', '{6}', \'{7}\')"\
+            "{1}, '{2}', '{3}', '{4}', '{5}', '{6}', \'{7}\')"\
         .format(constants.table_lessons,
                 lesson.row,
                 lesson.day_name,

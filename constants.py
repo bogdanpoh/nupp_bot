@@ -33,9 +33,9 @@ settings_answer = """
 
 /change_group - змінити групу
 
-/enable_reminders - ввімкнути нагадування про розклад занять на сьогодні за 20 хвилин до початку
+/enable_reminders - ввімкнути нагадування про розклад занять за 20 хвилин до початку
 
-/disable_reminders - вимкнути нагадування про розклад занять на сьогодні за 20 хвилин до початку 
+/disable_reminders - вимкнути нагадування про розклад занять за 20 хвилин до початку 
 
 /about - детальніше про нас
 
@@ -87,6 +87,7 @@ six_number = emoji.emojize(":keycap_digit_six:", use_aliases=True)
 # weeks
 first_week = "first_week"
 second_week = "second_week"
+change_week_time = "07:00"
 
 # paths
 documents_directory = "documents"

@@ -1,6 +1,6 @@
 import telebot
 import constants
-import sqlite3
+import psycopg2
 from database.user import User
 from database.teacher import Teacher
 from database.event import Event
@@ -18,8 +18,10 @@ db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
 
-command_list = ["start", "settings", "about", "change_group", "get_users", "drop_table_events", "drop_users",
-                "drop_lessons", "remove_events", "current_week", "change_week", "teacher", "drop_teachers",
+command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table_events", "remove_events",
+                "start", "settings", "about",
+                "change_group", "change_week",
+                "current_week", "get_users", "teacher",
                 "enable_reminders", "disable_reminders"]
 
 
@@ -47,18 +49,16 @@ def show_log(message, is_command):
     parse_send_message(constants.admin_log, format_info)
 
 
-@bot.message_handler(regexp="my_event")
+@bot.message_handler(regexp="pass")
 def handler(message):
-    current_week = db_manager.get_current_week()
-
-    count_my_events = db_manager.is_registration_event(message.chat.id, current_week)
-
-    bot.send_message(message.chat.id, str(count_my_events))
+    pass
 
 
-@bot.message_handler(regexp="set_default_week")
+@bot.message_handler(regexp="def_week")
 def handler(message):
     db_manager.set_default_week()
+    current_week = db_manager.get_current_week()
+    bot.send_message(message.chat.id, current_week)
 
 
 @bot.message_handler(regexp="0001")
@@ -130,26 +130,30 @@ def commands_handler(message):
             for user in users:
                 answer += user.name_user + " - " + user.group_id + ", "
 
+            answer = answer[:-2]
+
         else:
             answer = "DB Users is empty"
 
-        bot.send_message(chat_id, answer[:-2])
+        bot.send_message(chat_id, answer)
 
-    elif msg == "/drop_users":
+    elif msg == "/remove_users":
         db_manager.remove_users()
 
-        bot.send_message(chat_id, "Table {0} cleared".format(constants.table_users))
+        users = db_manager.get_users()
 
-    elif msg == "/drop_lessons":
+        if len(users) == 0:
+            bot.send_message(chat_id, "Table {0} cleared".format(constants.table_users))
+
+    elif msg == "/remove_lessons":
         db_manager.remove_lessons()
 
         lessons = db_manager.get_lessons()
 
-        if len(lessons) == 0:
+        if not lessons:
             bot.send_message(chat_id, "Table {0} is cleared".format(constants.table_lessons))
 
     elif msg == "/current_week":
-
         bot.send_message(chat_id, current_week)
 
     elif msg == "/change_week":
@@ -164,7 +168,7 @@ def commands_handler(message):
 
         bot.register_next_step_handler(reply_message, process_register_teacher)
 
-    elif msg == "/drop_teachers":
+    elif msg == "/remove_teachers":
         db_manager.remove_teachers()
 
         teachers = db_manager.get_teachers()
@@ -174,13 +178,16 @@ def commands_handler(message):
 
     elif msg == "/drop_table_events":
         db_manager.drop_table_events()
+
         bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
 
     elif msg == "/remove_events":
         db_manager.remove_events()
 
-        if len(db_manager.get_events()) == 0:
-            bot.send_message(chat_id, "DB Events is clear")
+        events = db_manager.get_events()
+
+        if not events:
+            bot.send_message(chat_id, "Table {} is cleared".format(constants.table_events))
 
     elif msg == "/disable_reminders":
         if db_manager.is_registration_event(chat_id, current_week):
@@ -189,7 +196,7 @@ def commands_handler(message):
 
     elif msg == "/enable_reminders":
         user = db_manager.get_user_by_chat_id(chat_id)
-
+        week = current_week
         day = tools.get_current_day_name()
 
         if db_manager.is_registration_event(chat_id, current_week):
@@ -198,6 +205,7 @@ def commands_handler(message):
 
         if not day:
             day_name = tools.format_name_day(constants.monday)
+            week = tools.get_next_week(current_week)
         else:
             day_name = day
 
@@ -206,9 +214,6 @@ def commands_handler(message):
         if lesson:
             if tools.is_today_register_time_for_event(tools.get_current_time(), tools.format_time_for_event(lesson.time_start)):
                 day_name = tools.get_next_day_name()
-
-                week = current_week
-
                 print(day_name)
 
                 if not day_name:
@@ -318,11 +323,17 @@ def message_handler(message):
 
     elif msg == "groups":
 
-        sorted_groups = tools.sorted_groups(groups)
+        if groups:
+            sorted_groups = tools.sorted_groups(groups)
 
-        answer = tools.array_to_one_line(sorted_groups)
+            answer = tools.array_to_one_line(sorted_groups)
 
-        bot.send_message(chat_id, answer[:-2])
+            bot.send_message(chat_id, answer[:-2])
+        else:
+            bot.send_message(chat_id, "DB Lessons is clear")
+
+    elif msg == "count-groups":
+        bot.send_message(chat_id, str(len(groups)))
 
     elif msg == "count-lessons":
         lessons = db_manager.get_lessons()
@@ -340,7 +351,7 @@ def message_handler(message):
     elif msg == "events":
         events = db_manager.get_events()
 
-        if len(events) == 0:
+        if not events:
             bot.send_message(chat_id, "DB Event is clear")
 
         else:
@@ -406,7 +417,7 @@ def file_handler(message):
             for lesson in lessons:
                 try:
                     db_manager.add_lesson(lesson)
-                except sqlite3.DatabaseError as error:
+                except psycopg2.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
             # bot.send_message(message.chat.id, "".format(group_id))
@@ -474,8 +485,11 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
-def check_current_week():
-    pass
+def check_current_week(current_time):
+    if current_time == constants.change_week_time:
+        db_manager.change_week()
+        current_week = db_manager.get_current_week()
+        bot.send_message(constants.admin_log, "week is change, current week - {}".format(current_week))
 
 
 def check_current_time():
@@ -488,6 +502,7 @@ def check_current_time():
         current_time = tools.get_current_time()
 
         if next_time != current_time:
+            check_current_week(current_time)
             next_time = current_time
             print(current_time)
             bot.send_message(constants.admin_log, str(current_time))
@@ -517,7 +532,8 @@ def check_current_time():
                                 next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week, event.group_id)
 
                                 lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
-                                event.set_send_time(tools.format_time_for_start_event(lesson_time_start))
+                                lesson_time_start_with_delta = tools.format_time_for_start_event(lesson_time_start)
+                                event.set_send_time(lesson_time_start_with_delta)
                                 event.set_week(next_week)
                                 event.set_day_name(next_day_name)
 
