@@ -27,6 +27,11 @@ def get_cursor(db):
     return db.cursor()
 
 
+def close_connection(cursor, connection):
+    cursor.close()
+    connection.close()
+
+
 # create tables
 def create_table_users():
     db = get_db_connect()
@@ -40,14 +45,12 @@ def create_table_users():
     chat_id TEXT)
     """.format(constants.table_users))
 
-    cursor.close()
     db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 def create_table_teachers():
     db = get_db_connect()
-
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -58,8 +61,7 @@ def create_table_teachers():
     """.format(constants.table_teachers))
 
     cursor.close()
-    db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 def create_table_lessons():
@@ -77,9 +79,8 @@ def create_table_lessons():
     info TEXT)
     """.format(constants.table_lessons))
 
-    cursor.close()
     db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 def create_table_week():
@@ -92,9 +93,8 @@ def create_table_week():
     current_week TEXT)
     """.format(constants.table_week))
 
-    cursor.close()
     db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 def create_table_events():
@@ -112,9 +112,8 @@ def create_table_events():
     is_send BOOLEAN)
     """.format(constants.table_events))
 
-    cursor.close()
     db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 # user
@@ -130,9 +129,8 @@ def add_user(user):
 
     cursor.execute(query)
 
-    cursor.close()
     db.commit()
-    db.close()
+    close_connection(cursor, db)
 
 
 def get_users():
@@ -145,8 +143,7 @@ def get_users():
 
     data = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     if data:
         users = tools.data_to_list_class(data, "user")
@@ -165,8 +162,7 @@ def get_user_by_chat_id(chat_id):
 
     answer = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     if answer:
         for data in answer:
@@ -189,8 +185,7 @@ def get_user_group_id(chat_id):
 
             return user.group_id
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def update_user_group(chat_id, group_id):
@@ -202,8 +197,7 @@ def update_user_group(chat_id, group_id):
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def is_user(chat_id):
@@ -227,8 +221,7 @@ def remove_users():
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def remove_user_by_chat_id(chat_id):
@@ -239,8 +232,7 @@ def remove_user_by_chat_id(chat_id):
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 # lesson
@@ -261,8 +253,7 @@ def add_lesson(lesson):
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def remove_lessons():
@@ -273,8 +264,7 @@ def remove_lessons():
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def remove_lessons_by_group_id(group_id):
@@ -285,8 +275,7 @@ def remove_lessons_by_group_id(group_id):
     cursor.execute(query)
     db.commit()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def get_lessons():
@@ -301,8 +290,7 @@ def get_lessons():
 
     lessons = tools.data_to_list_class(data, "lesson")
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     return lessons
 
@@ -319,8 +307,7 @@ def get_group_list():
 
     list = []
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     if data:
         for el in data:
@@ -354,8 +341,7 @@ def get_lessons_by_day_name(day_name, week, group_id):
 
     data = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     lessons = tools.data_to_list_class(data, "lesson")
 
@@ -377,8 +363,7 @@ def get_lessons_by_week(group_id, week):
 
     lessons = tools.data_to_list_class(data, "lesson")
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     return lessons
 
@@ -392,8 +377,7 @@ def set_default_week():
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def get_current_week():
@@ -406,8 +390,7 @@ def get_current_week():
 
     current_week = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     for el in current_week:
         if el:
@@ -433,8 +416,7 @@ def change_week():
 
     cursor.execute(query)
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 # teacher
@@ -509,8 +491,7 @@ def add_event(event):
     cursor.execute(query)
     db.commit()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def get_event(day_name, week, time):
@@ -527,8 +508,7 @@ def get_event(day_name, week, time):
 
     result = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     answer = []
 
@@ -554,8 +534,7 @@ def is_registration_event(chat_id, week):
 
     data = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     if len(data) > 0:
         return True
@@ -574,8 +553,7 @@ def get_events():
 
     events = tools.data_to_list_class(data, "event")
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     return events
 
@@ -595,8 +573,7 @@ def update_event(event):
     cursor.execute(query)
     db.commit()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def get_list_time_events():
@@ -611,8 +588,7 @@ def get_list_time_events():
 
     list_times = []
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
     if result:
         for el in result:
@@ -632,8 +608,7 @@ def remove_events():
     cursor.execute(query)
     db.commit()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def remove_event_by_chat_id(chat_id):
@@ -644,8 +619,7 @@ def remove_event_by_chat_id(chat_id):
     cursor.execute(query)
 
     db.commit()
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)
 
 
 def drop_table_events():
@@ -657,5 +631,4 @@ def drop_table_events():
     cursor.execute(query)
     db.commit()
 
-    cursor.close()
-    db.close()
+    close_connection(cursor, db)

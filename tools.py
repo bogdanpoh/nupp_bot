@@ -17,10 +17,13 @@ def is_today_register_time_for_event(time, lesson_time):
 
     result = str(lesson_start_time - current_time)
 
+    print(result)
+
     if len(result.split(",")) > 1:
-        return False
-    else:
+        print(len(result.split(",")))
         return True
+    else:
+        return False
 
 
 def format_time_for_start_event(time):

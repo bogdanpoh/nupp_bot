@@ -20,7 +20,7 @@ db_manager.create_table_events()
 
 command_list = ["start", "settings", "about", "change_group", "get_users", "drop_table_events", "drop_users",
                 "drop_lessons", "remove_events", "current_week", "change_week", "teacher", "drop_teachers",
-                "enable_reminders"]
+                "enable_reminders", "disable_reminders"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -77,6 +77,7 @@ def regexp_handler(message):
 def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
+    current_week = db_manager.get_current_week()
 
     is_command = True
 
@@ -148,7 +149,6 @@ def commands_handler(message):
             bot.send_message(chat_id, "Table {0} is cleared".format(constants.table_lessons))
 
     elif msg == "/current_week":
-        current_week = db_manager.get_current_week()
 
         bot.send_message(chat_id, current_week)
 
@@ -182,9 +182,12 @@ def commands_handler(message):
         if len(db_manager.get_events()) == 0:
             bot.send_message(chat_id, "DB Events is clear")
 
-    elif msg == "/enable_reminders":
-        current_week = db_manager.get_current_week()
+    elif msg == "/disable_reminders":
+        if db_manager.is_registration_event(chat_id, current_week):
+            db_manager.remove_event_by_chat_id(chat_id)
+            bot.send_message(chat_id, "Reminders disabled")
 
+    elif msg == "/enable_reminders":
         user = db_manager.get_user_by_chat_id(chat_id)
 
         day = tools.get_current_day_name()
@@ -198,19 +201,21 @@ def commands_handler(message):
         else:
             day_name = day
 
-        lessons = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
+        lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)[0]
 
-        if lessons:
-            lesson = lessons[0]
-
-            if not tools.is_today_register_time_for_event(tools.get_current_time(), tools.format_time_for_event(lesson.time_start)):
+        if lesson:
+            if tools.is_today_register_time_for_event(tools.get_current_time(), tools.format_time_for_event(lesson.time_start)):
                 day_name = tools.get_next_day_name()
+
+                week = current_week
+
+                print(day_name)
 
                 if not day_name:
                     day_name = tools.format_name_day(constants.monday)
                     week = tools.get_next_week(current_week)
 
-                    lesson = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)[0]
+                lesson = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)[0]
 
             event = Event(group_id=user.group_id,
                           week=lesson.week,
@@ -220,7 +225,7 @@ def commands_handler(message):
                           is_send=False)
 
             db_manager.add_event(event)
-            bot.send_message(chat_id, "Reminder is on")
+            bot.send_message(chat_id, "Reminders enabled")
         else:
             bot.send_message(constants.admin_chat_id, "dont lessons")
 
@@ -469,44 +474,54 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
+def check_current_week():
+    pass
+
+
 def check_current_time():
+
+    next_time = tools.get_current_time()
 
     while True:
         week = db_manager.get_current_week()
         day_name = tools.get_current_day_name()
         current_time = tools.get_current_time()
 
-        # print(current_time)
+        if next_time != current_time:
+            next_time = current_time
+            print(current_time)
+            bot.send_message(constants.admin_log, str(current_time))
 
         time_events = db_manager.get_list_time_events()
 
-        for time in time_events:
-            if time == current_time:
-                events = db_manager.get_event(day_name, week, time)
+        if time_events:
+            for time in time_events:
+                if time == current_time:
+                    events = db_manager.get_event(day_name, week, time)
 
-                if events:
-                    for event in events:
-                        if not event.is_send and day_name == event.day_name and week == event.week:
-                            lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
-                            parse_send_message(event.chat_id,
-                                               tools.format_lessons_day_for_message(lessons, event.day_name))
+                    if events:
+                        for event in events:
+                            if not event.is_send and day_name == event.day_name and week == event.week:
+                                lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week, event.group_id)
+                                parse_send_message(event.chat_id,
+                                                   tools.format_lessons_day_for_message(lessons, event.day_name))
 
-                            next_day_name = tools.get_next_day_name()
+                                next_day_name = tools.get_next_day_name()
 
-                            next_week = week
+                                next_week = week
 
-                            if not next_day_name:
-                                next_day_name = tools.format_name_day(constants.monday)
-                                next_week = tools.get_next_week(week)
+                                if not next_day_name:
+                                    next_day_name = tools.format_name_day(constants.monday)
+                                    next_week = tools.get_next_week(week)
 
-                            next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week, event.group_id)
+                                next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week, event.group_id)
 
-                            lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
-                            event.set_send_time(tools.format_time_for_start_event(lesson_time_start))
-                            event.set_week(next_week)
-                            event.set_day_name(next_day_name)
+                                lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
+                                event.set_send_time(tools.format_time_for_start_event(lesson_time_start))
+                                event.set_week(next_week)
+                                event.set_day_name(next_day_name)
 
-                            db_manager.update_event(event)
+                                db_manager.update_event(event)
 
 
 def main():
