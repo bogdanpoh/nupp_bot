@@ -89,6 +89,11 @@ first_week = "first_week"
 second_week = "second_week"
 change_week_time = "07:00"
 
+# remindes
+reminders_enable = "Нагадування ввімкнено \U00002705"
+reminders_disable = "Нагадування вимкнено \U0000274C"
+reminders_is_enable = "Нагадування уже ввімкнено \U0001F609"
+
 # paths
 documents_directory = "documents"
 excel_file = "excel_file"

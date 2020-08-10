@@ -192,15 +192,16 @@ def commands_handler(message):
     elif msg == "/disable_reminders":
         if db_manager.is_registration_event(chat_id, current_week):
             db_manager.remove_event_by_chat_id(chat_id)
-            bot.send_message(chat_id, "Reminders disabled")
+            bot.send_message(chat_id, constants.reminders_disable)
 
     elif msg == "/enable_reminders":
         user = db_manager.get_user_by_chat_id(chat_id)
         week = current_week
         day = tools.get_current_day_name()
+        current_time = tools.get_current_time()
 
         if db_manager.is_registration_event(chat_id, current_week):
-            bot.send_message(chat_id, "You event is register")
+            bot.send_message(chat_id, constants.reminders_is_enable)
             return
 
         if not day:
@@ -212,9 +213,8 @@ def commands_handler(message):
         lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)[0]
 
         if lesson:
-            if tools.is_today_register_time_for_event(tools.get_current_time(), tools.format_time_for_event(lesson.time_start)):
+            if tools.is_today_register_time_for_event(current_time, tools.format_time_for_event(lesson.time_start)):
                 day_name = tools.get_next_day_name()
-                print(day_name)
 
                 if not day_name:
                     day_name = tools.format_name_day(constants.monday)
@@ -230,9 +230,9 @@ def commands_handler(message):
                           is_send=False)
 
             db_manager.add_event(event)
-            bot.send_message(chat_id, "Reminders enabled")
+            bot.send_message(chat_id, constants.reminders_enable)
         else:
-            bot.send_message(constants.admin_chat_id, "dont lessons")
+            bot.send_message(constants.admin_chat_id, "Dont lessons for enable reminders")
 
     else:
         is_command = False
