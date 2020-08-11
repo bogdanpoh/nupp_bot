@@ -11,6 +11,10 @@ import telebot
 time_delta = timedelta(minutes=20)
 
 
+def to_bold(string):
+    return "<b>" + str(string) + "</b>"
+
+
 def is_today_register_time_for_event(time, lesson_time):
     current_time = datetime.datetime.strptime(time, constants.format_time)
     lesson_start_time = datetime.datetime.strptime(lesson_time, constants.format_time)

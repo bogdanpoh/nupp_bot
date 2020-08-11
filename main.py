@@ -41,10 +41,10 @@ def show_log(message, is_command):
 
     print(info)
 
-    format_info = str("<b>" + user.name_user + "</b> - " + message.text)
+    format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
 
     if not is_command:
-        parse_send_message(message.chat.id, constants.not_found_answer + " - <b>" + message.text + "</b>")
+        parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
 
     parse_send_message(constants.admin_log, format_info)
 
@@ -317,9 +317,10 @@ def message_handler(message):
 
         user = db_manager.get_user_by_chat_id(chat_id)
 
-        tools.get_user_info(message)
+        if user:
+            tools.get_user_info(message)
 
-        bot.send_message(chat_id, user.format_print())
+            bot.send_message(chat_id, user.format_print())
 
     elif msg == "groups":
 
@@ -425,7 +426,7 @@ def file_handler(message):
         else:
             bot.send_message(message.chat.id, "Lessons dont found")
     else:
-        parse_send_message(message.chat.id, "File is not <b>xlsx</b> and <b>xls</b>")
+        parse_send_message(message.chat.id, "File is not" + tools.to_bold("xlsx") + " and " + tools.to_bold("xls"))
 
 
 # callback functions
@@ -443,10 +444,9 @@ def process_register_teacher(message):
 
         if result:
             list.append(result)
-            print(result.format_print())
 
     if len(list) > 1:
-        db_manager.add_teacher(Teacher(entered_name, message.chat.id))
+        db_manager.add_teacher(Teacher(name_teacher=entered_name, chat_id=message.chat.id))
 
 
 def process_change_group_step(message):
@@ -466,18 +466,25 @@ def process_change_group_step(message):
 
 
 def process_group_step(message):
+    chat_id = message.chat.id
     group_id = str(message.text)
+
+    if group_id == "/teacher":
+        bot.send_message(chat_id, "ok")
+        return
 
     is_group = db_manager.is_group(group_id)
 
     if is_group:
         user = tools.get_user_info(message)
-        user.group_id = group_id
-        db_manager.add_user(user)
-        bot.send_message(message.chat.id, constants.thanks_for_a_registration,
-                         reply_markup=tools.get_required_keyboard())
 
-        parse_send_message(constants.admin_log, "<b>New user</b> - {0}".format(user.name_user))
+        if user:
+            user.group_id = group_id
+            db_manager.add_user(user)
+            bot.send_message(chat_id, constants.thanks_for_a_registration,
+                             reply_markup=tools.get_required_keyboard())
+
+            parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0}".format(user.name_user))
     else:
         groups = tools.sorted_groups(db_manager.get_group_list())
         list_groups = tools.array_to_one_line(groups)
@@ -490,6 +497,7 @@ def check_current_week(current_time):
         db_manager.change_week()
         current_week = db_manager.get_current_week()
         bot.send_message(constants.admin_log, "week is change, current week - {}".format(current_week))
+        print("week is change, current week - {}".format(current_week))
 
 
 def check_current_time():

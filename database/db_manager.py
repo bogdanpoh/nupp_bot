@@ -413,13 +413,15 @@ def change_week():
 
 # teacher
 def add_teacher(teacher):
-    pass
-    # query = "INSERT INTO {0} (name_teacher, chat_id) VALUES (?, ?)".format(constants.table_teachers)
-    #
-    # val = (teacher.name_teacher, teacher.chat_id)
-    #
-    # cursor.execute(query, val)
-    # db.commit()
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "INSERT INTO {0} (name_teacher, chat_id) VALUES ('{1}', '{2}')".format(constants.table_teachers, teacher.name_teacher, teacher.chat_id)
+
+    cursor.execute(query)
+    db.commit()
+
+    close_connection(cursor, db)
 
 
 def remove_teachers():
