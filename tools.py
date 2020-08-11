@@ -4,6 +4,7 @@ from itertools import groupby
 from database.lesson import Lesson
 from database.user import User
 from database.event import Event
+from database.teacher import Teacher
 import datetime
 from datetime import timedelta
 import telebot
@@ -71,6 +72,16 @@ def get_current_time():
     current_time = now.strftime("%H:%M")
 
     return current_time
+
+
+def get_lessons_row(lesson):
+    return lesson.row
+
+
+def sorted_lessons(lessons):
+    lessons.sort(key=get_lessons_row)
+
+    return lessons
 
 
 def sorted_groups(groups):
@@ -159,6 +170,8 @@ def data_to_list_class(data, to_class):
             list_answer.append(User(data=el))
         elif to_class == "lesson":
             list_answer.append(Lesson(data=el))
+        elif to_class == "teacher":
+            list_answer.append(Teacher(data=el))
         elif to_class == "event":
             list_answer.append(Event(data=el))
 

@@ -433,35 +433,43 @@ def remove_teachers():
 
 
 def get_teachers():
-    pass
-    # query = "SELECT * FROM {0}".format(constants.table_teachers)
-    #
-    # list = []
-    #
-    # result = cursor.execute(query)
-    #
-    # if result:
-    #     for el in result:
-    #         list.append(Teacher(data=el))
-    #
-    #     return list
-    #
-    # else:
-    #     return None
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "SELECT * FROM {0}".format(constants.table_teachers)
+
+    cursor.execute(query)
+    teachers = cursor.fetchall()
+
+    close_connection(cursor, db)
+
+    list = []
+
+    if teachers:
+        for teacher in teachers:
+            list.append(Teacher(data=teacher))
+
+        return list
+    else:
+        return None
 
 
 def get_teacher_by_chat_id(chat_id):
-    # query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_teachers, chat_id)
-    #
-    # answer = cursor.execute(query)
-    #
-    # if answer:
-    #     for data in answer:
-    #         return Teacher(data=data)
-    # else:
-    #     return None
+    db = get_db_connect()
+    cursor = get_cursor(db)
+    query = "SELECT * FROM {0} WHERE chat_id = '{1}'".format(constants.table_teachers, chat_id)
 
-    pass
+    cursor.execute(query)
+
+    teachers = cursor.fetchall()
+
+    close_connection(cursor, db)
+
+    if teachers:
+        for teacher in teachers:
+            return Teacher(data=teacher)
+    else:
+        return None
 
 
 def get_teacher_lessons(day_name, week):

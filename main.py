@@ -21,7 +21,7 @@ db_manager.create_table_events()
 command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table_events", "remove_events",
                 "start", "settings", "about",
                 "change_group", "change_week",
-                "current_week", "get_users", "teacher",
+                "current_week", "get_users", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders"]
 
 
@@ -168,6 +168,16 @@ def commands_handler(message):
 
         bot.register_next_step_handler(reply_message, process_register_teacher)
 
+    elif msg == "/get_teachers":
+        teachers = db_manager.get_teachers()
+
+        teachers_str = "Count: " + str(len(teachers)) + "\n\n" + tools.data_to_str(data=teachers, is_class=True)
+
+        if teachers_str:
+            bot.send_message(chat_id, teachers_str)
+        else:
+            bot.send_message(chat_id, "DB {0} is clear".format(constants.table_teachers))
+
     elif msg == "/remove_teachers":
         db_manager.remove_teachers()
 
@@ -257,15 +267,36 @@ def message_handler(message):
 
     elif msg == constants.keyboard_current_lessons:
         group_id = db_manager.get_user_group_id(chat_id)
-
+        day_name = tools.get_current_day_name()
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
 
         if teacher:
-            print(teacher.format_print())
+            lessons = db_manager.get_lessons()
+
+            lessons_teacher = []
+
+            for lesson in lessons:
+                result = tools.search_teacher_in_str(lesson, teacher.name_teacher)
+
+                if result:
+                    lessons_teacher.append(result)
+
+            if lessons_teacher:
+                lessons_current_day = []
+
+                for lesson in lessons_teacher:
+                    if lesson.day_name == day_name and current_week == lesson.week:
+                        lessons_current_day.append(lesson)
+
+                tools.sorted_lessons(lessons_current_day)
+
+                lessons_str = tools.format_lessons_day_for_message(lessons_current_day, day_name)
+                parse_send_message(chat_id, lessons_str)
+                # lessons_str = tools.data_to_str(data=list, is_message=True)
+                #
+            return
 
         elif group_id:
-            day_name = tools.get_current_day_name()
-
             if not day_name:
                 bot.send_message(chat_id, constants.no_lessons_today)
                 return
@@ -438,8 +469,6 @@ def process_register_teacher(message):
     entered_name = str(message.text)
 
     for lesson in lessons:
-        info = str(lesson.info)
-
         result = tools.search_teacher_in_str(lesson, entered_name)
 
         if result:
@@ -447,6 +476,7 @@ def process_register_teacher(message):
 
     if len(list) > 1:
         db_manager.add_teacher(Teacher(name_teacher=entered_name, chat_id=message.chat.id))
+        parse_send_message(message.chat.id, constants.thanks_for_a_registration)
 
 
 def process_change_group_step(message):
@@ -470,7 +500,8 @@ def process_group_step(message):
     group_id = str(message.text)
 
     if group_id == "/teacher":
-        bot.send_message(chat_id, "ok")
+        reply_message = bot.send_message(chat_id, "Enter you name: ")
+        bot.register_next_step_handler(reply_message, process_register_teacher)
         return
 
     is_group = db_manager.is_group(group_id)
