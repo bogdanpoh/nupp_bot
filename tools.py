@@ -48,12 +48,16 @@ def format_time_for_event(time):
         return time_str
 
 
-def format_lessons_day_for_message(lessons, day_name):
+def format_lessons_day_for_message(lessons, day_name, is_teacher_format=False):
 
     lessons_str = ""
 
-    for lesson in lessons:
-        lessons_str += lesson.format_message() + "\n"
+    if is_teacher_format:
+        for lesson in lessons:
+            lessons_str += lesson.format_message(is_teacher_format=True) + "\n"
+    else:
+        for lesson in lessons:
+            lessons_str += lesson.format_message() + "\n"
 
     return str(format_name_day(day_name) + "\n\n" + lessons_str)
 
@@ -123,22 +127,43 @@ def search_teacher_in_str(lesson, teacher_name):
         return lesson
 
 
-def format_lessons_week_for_message(lessons):
+def get_lessons_days(lessons):
+
+    day_names = []
+
+    for lesson in lessons:
+        day_names.append(lesson.day_name)
+
+    return set(day_names)
+
+
+def format_lessons_week_for_message(lessons, is_format_teacher=False):
     answer = ""
     day_name = ""
 
-    for lesson in lessons:
-        if not day_name:
-            day_name = lesson.day_name
-            answer += format_name_day(day_name) + "\n"
+    if is_format_teacher:
 
-        if day_name:
-            if day_name == lesson.day_name:
-                answer += lesson.format_message() + "\n"
+        days = get_lessons_days(lessons)
+        sorted_days = sorted(days, key=constants.const_sorted_days.index)
 
-            else:
+        for day in sorted_days:
+            for lesson in lessons:
+                if day == lesson.day_name:
+                    answer += format_name_day(day) + "\n" + lesson.format_message(is_teacher_format=True) + "\n\n"
+
+    else:
+        for lesson in lessons:
+            if not day_name:
                 day_name = lesson.day_name
-                answer += "\n" + format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
+                answer += format_name_day(day_name) + "\n"
+
+            if day_name:
+                if day_name == lesson.day_name:
+                    answer += lesson.format_message() + "\n"
+
+                else:
+                    day_name = lesson.day_name
+                    answer += "\n" + format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
 
     return answer
 

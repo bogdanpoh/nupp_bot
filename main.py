@@ -271,32 +271,16 @@ def message_handler(message):
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
 
         if teacher:
-            lessons = db_manager.get_lessons()
+            lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
 
-            lessons_teacher = []
+            if lessons:
+                tools.sorted_lessons(lessons)
 
-            for lesson in lessons:
-                result = tools.search_teacher_in_str(lesson, teacher.name_teacher)
-
-                if result:
-                    lessons_teacher.append(result)
-
-            if lessons_teacher:
-                lessons_current_day = []
-
-                for lesson in lessons_teacher:
-                    if lesson.day_name == day_name and current_week == lesson.week:
-                        lessons_current_day.append(lesson)
-
-                tools.sorted_lessons(lessons_current_day)
-
-                lessons_str = tools.format_lessons_day_for_message(lessons_current_day, day_name)
+                lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
-                # lessons_str = tools.data_to_str(data=list, is_message=True)
-                #
             return
 
-        elif group_id:
+        if group_id:
             if not day_name:
                 bot.send_message(chat_id, constants.no_lessons_today)
                 return
@@ -312,11 +296,21 @@ def message_handler(message):
             bot.send_message(chat_id, "Please, send /start")
 
     elif msg == constants.keyboard_tomorrow_lessons:
+        teacher = db_manager.get_teacher_by_chat_id(chat_id)
+        day_name = tools.get_next_day_name()
         group_id = db_manager.get_user_group_id(chat_id)
 
-        if group_id:
-            day_name = tools.get_next_day_name()
+        if teacher:
+            lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
 
+            if lessons:
+                tools.sorted_lessons(lessons)
+
+                lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
+                parse_send_message(chat_id, lessons_str)
+            return
+
+        if group_id:
             if not day_name:
                 bot.send_message(chat_id, constants.no_lessons_tomorrow)
                 return
@@ -331,15 +325,30 @@ def message_handler(message):
             bot.send_message(chat_id, "Please, send /start")
 
     elif msg == constants.keyboard_week_lessons:
+        teacher = db_manager.get_teacher_by_chat_id(chat_id)
         group_id = db_manager.get_user_group_id(chat_id)
+
+        if teacher:
+            lessons = db_manager.get_teacher_lessons_by_week(teacher.name_teacher, current_week)
+
+            # for lesson in lessons:
+            #     print(lesson.format_print())
+
+            if lessons:
+                tools.sorted_lessons(lessons)
+
+                lessons_str = tools.format_lessons_week_for_message(lessons, is_format_teacher=True)
+
+                parse_send_message(chat_id, lessons_str)
+                return
 
         if group_id:
 
             lessons = db_manager.get_lessons_by_week(group_id, current_week)
 
-            answer = tools.format_lessons_week_for_message(lessons)
+            lessons_week_str = tools.format_lessons_week_for_message(lessons)
 
-            parse_send_message(chat_id, answer)
+            parse_send_message(chat_id, lessons_week_str)
 
         else:
             bot.send_message(chat_id, "Please, send /start")

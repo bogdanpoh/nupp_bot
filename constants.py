@@ -6,11 +6,18 @@ import emoji
 token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 
 # database info
-db_name = "db_bot"
-user = "postgres"
-host = "127.0.0.1"
-password = "1234"
+# db_name = "db_bot"
+# user = "postgres"
+# host = "127.0.0.1"
+# password = "1234"
+# port = "5432"
+
+db_name = "bogdanpoh"
+user = "bogdanpoh"
+host = "localhost"
+password = "none"
 port = "5432"
+
 
 # database names
 table_users = "users"
@@ -75,6 +82,8 @@ tuesday = "Вівторок"
 wednesday = "Середа"
 thursday = "Четвер"
 friday = "П\'ятниця"
+
+const_sorted_days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
 
 # emoji numbers
 one_number = emoji.emojize(":keycap_digit_one:", use_aliases=True)

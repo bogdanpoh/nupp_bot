@@ -52,7 +52,7 @@ def create_table_teachers():
     chat_id TEXT)
     """.format(constants.table_teachers))
 
-    cursor.close()
+    db.commit()
     close_connection(cursor, db)
 
 
@@ -472,8 +472,70 @@ def get_teacher_by_chat_id(chat_id):
         return None
 
 
-def get_teacher_lessons(day_name, week):
-    pass
+def get_teacher_lessons(teacher_name):
+    lessons = get_lessons()
+
+    lessons_teacher = []
+
+    for lesson in lessons:
+        result = tools.search_teacher_in_str(lesson, teacher_name)
+
+        if result:
+            lessons_teacher.append(result)
+
+    if lessons_teacher:
+        return lessons_teacher
+    else:
+        return None
+
+
+def get_teacher_lessons_by_day_name(teacher_name, day_name):
+    lessons = get_teacher_lessons(teacher_name)
+
+    lessons_by_day_name = []
+
+    if lessons:
+        for lesson in lessons:
+            if lesson.day_name == day_name:
+                lessons_by_day_name.append(lesson)
+
+    if lessons_by_day_name:
+        return lessons_by_day_name
+    else:
+        return None
+
+
+def get_teacher_lessons_by_week(teacher_name, week):
+    lessons = get_teacher_lessons(teacher_name)
+
+    lessons_by_week = []
+
+    if lessons:
+        for lesson in lessons:
+            if lesson.week == week:
+                lessons_by_week.append(lesson)
+
+    if lessons_by_week:
+        return lessons_by_week
+    else:
+        return None
+
+
+def get_teacher_lessons_by_week_and_day_name(teacher_name, day_name, week):
+
+    lessons = get_teacher_lessons(teacher_name)
+
+    lessons_by_week_and_day_name = []
+
+    if lessons:
+        for lesson in lessons:
+            if lesson.day_name == day_name and lesson.week == week:
+                lessons_by_week_and_day_name.append(lesson)
+
+    if lessons_by_week_and_day_name:
+        return lessons_by_week_and_day_name
+    else:
+        return None
 
 
 # event
