@@ -417,6 +417,18 @@ def remove_teachers():
     close_connection(cursor, db)
 
 
+def remove_teacher_by_chat_id(chat_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "DELETE FROM {0} WHERE `chat_id` = {1}".format(constants.table_teachers, chat_id)
+
+    cursor.execute(query)
+    db.commit()
+
+    close_connection(cursor, db)
+
+
 def get_teachers():
     db = get_db_connect()
     cursor = get_cursor(db)
@@ -576,12 +588,24 @@ def is_registration_event(chat_id, week):
                                                                                   week)
     data = cursor.execute(query)
 
-    if len(data) > 0:
-        close_connection(cursor, db)
-        return True
-    else:
-        close_connection(cursor, db)
-        return False
+    events = []
+
+    if data:
+        for el in data:
+            events.append(el)
+
+        if len(events) > 0:
+            close_connection(cursor, db)
+            return True
+        else:
+            close_connection(cursor, db)
+            return False
+
+
+    # if data:
+
+    # else:
+
 
 
 def get_events():

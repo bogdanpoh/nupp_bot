@@ -389,6 +389,7 @@ def message_handler(message):
 
     elif msg == "remove-me":
         db_manager.remove_user_by_chat_id(chat_id)
+        db_manager.remove_teacher_by_chat_id(chat_id)
 
         bot.send_message(chat_id, "You removed from DB")
 
@@ -606,8 +607,8 @@ def main():
 
 
 if __name__ == "__main__":
-    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    # check_time_thread.start()
+    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    check_time_thread.start()
 
     # bot.send_message(constants.admin_chat_id, "Bot is run")
     # bot.send_message(constants.admin_log, "Bot is run")
