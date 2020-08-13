@@ -49,16 +49,20 @@ def show_log(message, is_command):
     parse_send_message(constants.admin_log, format_info)
 
 
-@bot.message_handler(regexp="pass")
+@bot.message_handler(regexp="clear_week")
 def handler(message):
     pass
 
 
 @bot.message_handler(regexp="def_week")
 def handler(message):
+    db = db_manager.get_db_connect()
+    cursor = db_manager.get_cursor(db)
+
     db_manager.set_default_week()
-    current_week = db_manager.get_current_week()
-    bot.send_message(message.chat.id, current_week)
+
+    db.commit()
+    db_manager.close_connection(cursor, db)
 
 
 @bot.message_handler(regexp="0001")
@@ -308,6 +312,8 @@ def message_handler(message):
 
                 lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
+            else:
+                bot.send_message(chat_id, constants.no_lessons_tomorrow)
             return
 
         if group_id:
@@ -485,7 +491,7 @@ def process_register_teacher(message):
 
     if len(list) > 1:
         db_manager.add_teacher(Teacher(name_teacher=entered_name, chat_id=message.chat.id))
-        parse_send_message(message.chat.id, constants.thanks_for_a_registration)
+        parse_send_message(message.chat.id, constants.thanks_for_a_registration, keyboard=tools.get_required_keyboard())
 
 
 def process_change_group_step(message):
@@ -600,8 +606,8 @@ def main():
 
 
 if __name__ == "__main__":
-    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    check_time_thread.start()
+    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    # check_time_thread.start()
 
     # bot.send_message(constants.admin_chat_id, "Bot is run")
     # bot.send_message(constants.admin_log, "Bot is run")

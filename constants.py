@@ -1,22 +1,16 @@
 import emoji
 
-# pip install pyopenssl ndg-httpsclient pyasn1
-
 # bot token
 token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 
 # database info
-# db_name = "db_bot"
-# user = "postgres"
-# host = "127.0.0.1"
-# password = "1234"
-# port = "5432"
+db_name = "telegram_bot.db"
 
-db_name = "bogdanpoh"
-user = "bogdanpoh"
-host = "localhost"
-password = "none"
-port = "5432"
+# host = "localhost"
+# db_name = "bogdanpoh"
+# user = "bogdanpoh"
+# password = "none"
+# port = "5432"
 
 
 # database names
