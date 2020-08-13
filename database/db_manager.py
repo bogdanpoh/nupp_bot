@@ -602,12 +602,6 @@ def is_registration_event(chat_id, week):
             return False
 
 
-    # if data:
-
-    # else:
-
-
-
 def get_events():
     db = get_db_connect()
     cursor = get_cursor(db)

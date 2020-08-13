@@ -149,7 +149,13 @@ def format_lessons_week_for_message(lessons, is_format_teacher=False):
         for day in sorted_days:
             for lesson in lessons:
                 if day == lesson.day_name:
-                    answer += format_name_day(day) + "\n" + lesson.format_message(is_teacher_format=True) + "\n\n"
+                    if not day_name:
+                        answer += format_name_day(day) + "\n" + lesson.format_message(is_teacher_format=True) + "\n"
+                        day_name = day
+                    else:
+                        answer += lesson.format_message(is_teacher_format=True) + "\n"
+            answer += "\n"
+            day_name = ""
 
     else:
         for lesson in lessons:

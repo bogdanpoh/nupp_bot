@@ -282,6 +282,8 @@ def message_handler(message):
 
                 lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
+            else:
+                bot.send_message(chat_id, constants.no_lessons_today)
             return
 
         if group_id:
@@ -336,9 +338,6 @@ def message_handler(message):
 
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week(teacher.name_teacher, current_week)
-
-            # for lesson in lessons:
-            #     print(lesson.format_print())
 
             if lessons:
                 tools.sorted_lessons(lessons)
