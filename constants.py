@@ -6,13 +6,6 @@ token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
 # database info
 db_name = "telegram_bot.db"
 
-# host = "localhost"
-# db_name = "bogdanpoh"
-# user = "bogdanpoh"
-# password = "none"
-# port = "5432"
-
-
 # database names
 table_users = "users"
 table_teachers = "teachers"
