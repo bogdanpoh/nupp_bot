@@ -71,7 +71,7 @@ def get_next_week(current_week):
 
 
 def get_current_time():
-    now = datetime.datetime.now()
+    now = datetime.datetime.now() - datetime.timedelta(minutes=7)
 
     current_time = now.strftime("%H:%M")
 
@@ -207,6 +207,14 @@ def data_to_list_class(data, to_class):
             list_answer.append(Event(data=el))
 
     return list_answer
+
+
+def get_current_day_and_month():
+    return datetime.datetime.now().strftime("%d.%m")
+
+
+def get_current_date():
+    return datetime.datetime.now().strftime("%d.%m.%Y")
 
 
 def get_current_day_name():

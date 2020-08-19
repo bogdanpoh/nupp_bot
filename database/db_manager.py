@@ -1,4 +1,3 @@
-# import psycopg2
 import sqlite3
 import constants
 from database.user import User
@@ -9,7 +8,7 @@ import tools
 
 
 def get_db_connect():
-    return sqlite3.connect(constants.db_name, check_same_thread=False)
+    return sqlite3.connect(constants.db_name, check_same_thread=True)
 
 
 def get_cursor(db):
@@ -344,9 +343,9 @@ def set_default_week():
     db = get_db_connect()
     cursor = get_cursor(db)
 
-    query = "INSERT INTO {0} (current_week) VALUES (?)".format(constants.table_week)
+    query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, constants.first_week)
 
-    cursor.execute(query, [constants.first_week])
+    cursor.execute(query)
     db.commit()
 
     close_connection(cursor, db)
@@ -386,6 +385,17 @@ def change_week():
     query = "UPDATE {0} SET `current_week` ='{1}'".format(constants.table_week, week)
 
     cursor.execute(query)
+    db.commit()
+    close_connection(cursor, db)
+
+
+def remove_weeks():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "DELETE FROM {0}".format(constants.table_week)
+    cursor.execute(query)
+
     db.commit()
     close_connection(cursor, db)
 

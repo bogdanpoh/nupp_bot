@@ -1,6 +1,6 @@
 import telebot
 import constants
-import psycopg2
+import sqlite3
 from database.user import User
 from database.teacher import Teacher
 from database.event import Event
@@ -19,6 +19,7 @@ db_manager.create_table_week()
 db_manager.create_table_events()
 
 command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table_events", "remove_events",
+                "remove_weeks",
                 "start", "settings", "about",
                 "change_group", "change_week",
                 "current_week", "get_users", "teacher", "get_teachers",
@@ -49,20 +50,32 @@ def show_log(message, is_command):
     parse_send_message(constants.admin_log, format_info)
 
 
-@bot.message_handler(regexp="clear_week")
+@bot.message_handler(regexp="date")
 def handler(message):
-    pass
+    current_week = db_manager.get_current_week()
+
+    day_name = tools.get_current_day_name()
+    day_and_month = tools.get_current_day_and_month()
+
+    date = tools.get_current_date()
+
+    print("Current week: {}, day_name: {}, day_month: {}, date: {}".format(current_week, day_name, day_and_month,date))
 
 
 @bot.message_handler(regexp="def_week")
 def handler(message):
-    db = db_manager.get_db_connect()
-    cursor = db_manager.get_cursor(db)
-
     db_manager.set_default_week()
 
-    db.commit()
-    db_manager.close_connection(cursor, db)
+    current_week = db_manager.get_current_week()
+
+    bot.send_message(message.chat.id, current_week)
+    # db = db_manager.get_db_connect()
+    # cursor = db_manager.get_cursor(db)
+    #
+    # db_manager.set_default_week()
+    #
+    # db.commit()
+    # db_manager.close_connection(cursor, db)
 
 
 @bot.message_handler(regexp="0001")
@@ -166,6 +179,9 @@ def commands_handler(message):
         current_week = db_manager.get_current_week()
 
         bot.send_message(chat_id, current_week)
+
+    elif msg == "/remove_weeks":
+        db_manager.remove_weeks()
 
     elif msg == "/teacher":
         reply_message = bot.send_message(chat_id, "Please, enter Your name:")
@@ -464,7 +480,7 @@ def file_handler(message):
             for lesson in lessons:
                 try:
                     db_manager.add_lesson(lesson)
-                except psycopg2.Error as error:
+                except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
             # bot.send_message(message.chat.id, "".format(group_id))
@@ -540,10 +556,13 @@ def process_group_step(message):
 
 def check_current_week(current_time):
     if current_time == constants.change_week_time:
-        db_manager.change_week()
-        current_week = db_manager.get_current_week()
-        bot.send_message(constants.admin_log, "week is change, current week - {}".format(current_week))
-        print("week is change, current week - {}".format(current_week))
+        if tools.get_current_day_name() == tools.format_name_day(constants.monday):
+            db_manager.change_week()
+            current_week = db_manager.get_current_week()
+            bot.send_message(constants.admin_log, "week is change, current week - {}".format(current_week))
+            print("week is change, current week - {}".format(current_week))
+        else:
+            bot.send_message(constants.admin_log, "Current day: {}".format(tools.get_current_day_name()))
 
 
 def check_current_time():
