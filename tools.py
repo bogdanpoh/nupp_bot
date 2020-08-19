@@ -399,6 +399,7 @@ def read_lessons(path):
 
     clear_data = []
 
+    #group id
     group_id = ""
 
     for el in data:
