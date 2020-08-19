@@ -357,15 +357,19 @@ def get_current_week():
 
     query = "SELECT * FROM {0}".format(constants.table_week)
 
-    current_week = cursor.execute(query)
+    try:
+        current_week = cursor.execute(query)
 
-    for el in current_week:
-        if el:
-            close_connection(cursor, db)
-            return el[-1]
+        for el in current_week:
+            if el:
+                close_connection(cursor, db)
+                return el[-1]
+    except sqlite3.Error as error:
+        str_error = str(error)
+        print(str_error)
+        return str_error
 
     close_connection(cursor, db)
-
     return None
 
 
