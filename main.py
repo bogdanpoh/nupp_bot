@@ -617,7 +617,9 @@ def check_current_time():
 
                                     db_manager.update_event(event)
         except sqlite3.OperationalError as error:
-            pass
+            print(str(error))
+            bot.send_message(constants.admin_chat_id, str(error))
+            bot.send_message(constants.admin_log, str(error))
 
 
 def main():
