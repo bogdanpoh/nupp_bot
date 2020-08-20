@@ -1,5 +1,6 @@
 import telebot
 import constants
+import config
 import sqlite3
 from database.user import User
 from database.teacher import Teacher
@@ -9,7 +10,7 @@ import tools
 import os
 import threading
 
-bot = telebot.TeleBot(constants.token)
+bot = telebot.TeleBot(config.token)
 
 # if not exists tables, create it
 db_manager.create_table_users()

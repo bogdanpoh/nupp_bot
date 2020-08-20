@@ -1,8 +1,5 @@
 import emoji
 
-# bot token
-token = "1006676969:AAG_FJZoRIO65lqBNfKOs8MCjSQzNjBaJeU"
-
 # database info
 db_name = "telegram_bot.db"
 
