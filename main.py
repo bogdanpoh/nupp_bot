@@ -581,45 +581,46 @@ def check_current_time():
             print(current_time)
             bot.send_message(constants.admin_log, str(current_time))
 
+            try:
+                time_events = db_manager.get_list_time_events()
 
-        try:
-            time_events = db_manager.get_list_time_events()
+                if time_events:
+                    for time in time_events:
+                        if time == current_time:
+                            events = db_manager.get_event(day_name, week, time)
 
-            if time_events:
-                for time in time_events:
-                    if time == current_time:
-                        events = db_manager.get_event(day_name, week, time)
+                            if events:
+                                for event in events:
+                                    if not event.is_send and day_name == event.day_name and week == event.week:
+                                        lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week,
+                                                                                     event.group_id)
+                                        parse_send_message(event.chat_id,
+                                                           tools.format_lessons_day_for_message(lessons,
+                                                                                                event.day_name))
 
-                        if events:
-                            for event in events:
-                                if not event.is_send and day_name == event.day_name and week == event.week:
-                                    lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week,
-                                                                                 event.group_id)
-                                    parse_send_message(event.chat_id,
-                                                       tools.format_lessons_day_for_message(lessons, event.day_name))
+                                        next_day_name = tools.get_next_day_name()
 
-                                    next_day_name = tools.get_next_day_name()
+                                        next_week = week
 
-                                    next_week = week
+                                        if not next_day_name:
+                                            next_day_name = tools.format_name_day(constants.monday)
+                                            next_week = tools.get_next_week(week)
 
-                                    if not next_day_name:
-                                        next_day_name = tools.format_name_day(constants.monday)
-                                        next_week = tools.get_next_week(week)
+                                        next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week,
+                                                                                          event.group_id)
 
-                                    next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week,
-                                                                                      event.group_id)
+                                        lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
+                                        lesson_time_start_with_delta = tools.format_time_for_start_event(
+                                            lesson_time_start)
+                                        event.set_send_time(lesson_time_start_with_delta)
+                                        event.set_week(next_week)
+                                        event.set_day_name(next_day_name)
 
-                                    lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
-                                    lesson_time_start_with_delta = tools.format_time_for_start_event(lesson_time_start)
-                                    event.set_send_time(lesson_time_start_with_delta)
-                                    event.set_week(next_week)
-                                    event.set_day_name(next_day_name)
-
-                                    db_manager.update_event(event)
-        except sqlite3.OperationalError as error:
-            print(str(error))
-            bot.send_message(constants.admin_chat_id, str(error))
-            bot.send_message(constants.admin_log, str(error))
+                                        db_manager.update_event(event)
+            except sqlite3.OperationalError as error:
+                print(str(error))
+                bot.send_message(constants.admin_chat_id, str(error))
+                bot.send_message(constants.admin_log, str(error))
 
 
 def main():
