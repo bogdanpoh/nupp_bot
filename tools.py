@@ -439,7 +439,7 @@ def read_lessons(path):
 
                 # print(day_name)
 
-            if count_last_element > 9 and count_last_element > 11:
+            if count_last_element > 9 and count_last_element > 11 or count_last_element == 8:
 
                 if len(clear_element) > 2:
                     time = clear_element[-2]
