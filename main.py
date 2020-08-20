@@ -635,8 +635,8 @@ def main():
 
 
 if __name__ == "__main__":
-    check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    check_time_thread.start()
+    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
+    # check_time_thread.start()
 
     # bot.send_message(constants.admin_chat_id, "Bot is run")
     # bot.send_message(constants.admin_log, "Bot is run")
