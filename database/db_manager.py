@@ -8,7 +8,7 @@ import tools
 
 
 def get_db_connect():
-    return sqlite3.connect(constants.db_name, check_same_thread=True)
+    return sqlite3.connect(constants.db_name, check_same_thread=False)
 
 
 def get_cursor(db):
