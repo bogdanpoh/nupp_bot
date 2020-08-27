@@ -10,7 +10,7 @@ import tools
 import os
 import threading
 
-bot = telebot.TeleBot(config.test_token)
+bot = telebot.TeleBot(config.token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
