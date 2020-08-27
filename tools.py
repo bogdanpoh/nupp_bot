@@ -451,8 +451,13 @@ def read_lessons(path):
                 time_end = format_end_time(str(time))
 
                 row = format_index_lesson(time_start)
+
+                if week is None:
+                    week = constants.first_week
+
                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
-                # print(lesson.format_print())
-                lessons.append(lesson)
+
+                if row is not None and day_name is not None:
+                    lessons.append(lesson)
 
     return lessons
