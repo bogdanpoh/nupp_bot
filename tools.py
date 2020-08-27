@@ -455,6 +455,8 @@ def read_lessons(path):
                 if week is None:
                     week = constants.first_week
 
+                group_id = group_id.replace(".", "")
+
                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
 
                 if row is not None and day_name is not None:

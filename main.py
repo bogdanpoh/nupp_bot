@@ -10,7 +10,7 @@ import tools
 import os
 import threading
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(config.test_token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
@@ -346,6 +346,8 @@ def message_handler(message):
                 if lessons:
                     lessons_str = tools.format_lessons_day_for_message(lessons, day_name)
                     parse_send_message(chat_id, lessons_str)
+                else:
+                    bot.send_message(chat_id, constants.no_lessons_tomorrow)
         else:
             bot.send_message(chat_id, "Please, send /start")
 
@@ -363,6 +365,8 @@ def message_handler(message):
 
                 parse_send_message(chat_id, lessons_str)
                 return
+            else:
+                bot.send_message(chat_id, "Weeks not found")
 
         if group_id:
 
