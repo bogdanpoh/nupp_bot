@@ -242,9 +242,10 @@ def commands_handler(message):
         else:
             day_name = day
 
-        lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)[0]
+        lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
 
         if lesson:
+            lesson = lesson[0]
             if tools.is_today_register_time_for_event(current_time, tools.format_time_for_event(lesson.time_start)):
                 day_name = tools.get_next_day_name()
 
@@ -265,7 +266,7 @@ def commands_handler(message):
             bot.send_message(chat_id, constants.reminders_enable)
 
         else:
-            bot.send_message(constants.admin_chat_id, "Dont lessons for enable reminders")
+            bot.send_message(constants.admin_chat_id, "Dont lessons tomorrow for enable reminders")
 
     elif msg == "/get_db_bot":
         db_file = open("telegram_bot.db", "rb")
@@ -320,6 +321,8 @@ def message_handler(message):
                 if lessons:
                     lessons_str = tools.format_lessons_day_for_message(lessons, day_name)
                     parse_send_message(chat_id, lessons_str)
+                else:
+                    parse_send_message(chat_id, constants.no_lessons_today)
 
         else:
             bot.send_message(chat_id, "Please, send /start")
