@@ -10,7 +10,7 @@ import tools
 import os
 import threading
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(config.test_token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
@@ -25,7 +25,7 @@ command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table
                 "change_group", "change_week",
                 "current_week", "get_users", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
-                "get_db_bot"]
+                "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -71,13 +71,6 @@ def handler(message):
     current_week = db_manager.get_current_week()
 
     bot.send_message(message.chat.id, current_week)
-    # db = db_manager.get_db_connect()
-    # cursor = db_manager.get_cursor(db)
-    #
-    # db_manager.set_default_week()
-    #
-    # db.commit()
-    # db_manager.close_connection(cursor, db)
 
 
 @bot.message_handler(regexp="0001")
@@ -272,6 +265,61 @@ def commands_handler(message):
         db_file = open("telegram_bot.db", "rb")
         bot.send_document(chat_id, db_file)
 
+    elif msg == "/groups":
+
+        groups = db_manager.get_group_list()
+
+        if groups:
+            sorted_groups = tools.sorted_groups(groups)
+
+            answer = tools.array_to_one_line(sorted_groups)
+
+            bot.send_message(chat_id, answer[:-2])
+        else:
+            bot.send_message(chat_id, "DB Lessons is clear")
+
+    elif msg == "/events":
+        events = db_manager.get_events()
+
+        if not events:
+            bot.send_message(chat_id, "DB Event is clear")
+
+        else:
+            answer = "Count: {0}\n\n".format(str(len(events)))
+
+            for event in events:
+                answer += event.format_print() + "\n\n"
+
+            bot.send_message(chat_id, answer)
+
+    elif msg == "/time":
+        bot.send_message(chat_id, tools.get_current_time())
+
+    elif msg == "/user":
+
+        user = db_manager.get_user_by_chat_id(chat_id)
+
+        if user:
+            tools.get_user_info(message)
+
+            bot.send_message(chat_id, user.format_print())
+
+    elif msg == "/count_groups":
+        groups = db_manager.get_group_list()
+
+        bot.send_message(chat_id, str(len(groups)))
+
+    elif msg == "/count_lessons":
+        lessons = db_manager.get_lessons()
+
+        bot.send_message(chat_id, str(len(lessons)))
+
+    elif msg == "/remove_me":
+        db_manager.remove_user_by_chat_id(chat_id)
+        db_manager.remove_teacher_by_chat_id(chat_id)
+
+        bot.send_message(chat_id, "You removed from DB")
+
     else:
         is_command = False
 
@@ -325,7 +373,8 @@ def message_handler(message):
                     parse_send_message(chat_id, constants.no_lessons_today)
 
         else:
-            bot.send_message(chat_id, "Please, send /start")
+            # bot.send_message(chat_id, "Please, send /start")
+            bot.send_message(chat_id, constants.not_register)
 
     elif msg == constants.keyboard_tomorrow_lessons:
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
@@ -358,7 +407,8 @@ def message_handler(message):
                 else:
                     bot.send_message(chat_id, constants.no_lessons_tomorrow)
         else:
-            bot.send_message(chat_id, "Please, send /start")
+            # bot.send_message(chat_id, "Please, send /start")
+            bot.send_message(chat_id, constants.not_register)
 
     elif msg == constants.keyboard_week_lessons:
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
@@ -386,58 +436,8 @@ def message_handler(message):
             parse_send_message(chat_id, lessons_week_str)
 
         else:
-            bot.send_message(chat_id, "Please, send /start")
-
-    elif msg == "user":
-
-        user = db_manager.get_user_by_chat_id(chat_id)
-
-        if user:
-            tools.get_user_info(message)
-
-            bot.send_message(chat_id, user.format_print())
-
-    elif msg == "groups":
-
-        if groups:
-            sorted_groups = tools.sorted_groups(groups)
-
-            answer = tools.array_to_one_line(sorted_groups)
-
-            bot.send_message(chat_id, answer[:-2])
-        else:
-            bot.send_message(chat_id, "DB Lessons is clear")
-
-    elif msg == "count-groups":
-        bot.send_message(chat_id, str(len(groups)))
-
-    elif msg == "count-lessons":
-        lessons = db_manager.get_lessons()
-
-        bot.send_message(chat_id, str(len(lessons)))
-
-    elif msg == "remove-me":
-        db_manager.remove_user_by_chat_id(chat_id)
-        db_manager.remove_teacher_by_chat_id(chat_id)
-
-        bot.send_message(chat_id, "You removed from DB")
-
-    elif msg == "time":
-        bot.send_message(chat_id, tools.get_current_time())
-
-    elif msg == "events":
-        events = db_manager.get_events()
-
-        if not events:
-            bot.send_message(chat_id, "DB Event is clear")
-
-        else:
-            answer = "Count: {0}\n\n".format(str(len(events)))
-
-            for event in events:
-                answer += event.format_print() + "\n\n"
-
-            bot.send_message(chat_id, answer)
+            # bot.send_message(chat_id, "Please, send /start")
+            bot.send_message(chat_id, constants.not_register)
 
     else:
         is_command = False
@@ -497,7 +497,6 @@ def file_handler(message):
                 except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
-            # bot.send_message(message.chat.id, "".format(group_id))
             parse_send_message(message.chat.id, "Lessons {0} add to database".format(group_id))
         else:
             bot.send_message(message.chat.id, "Lessons dont found")

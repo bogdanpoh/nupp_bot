@@ -284,7 +284,6 @@ def get_group_list():
             list.append(Lesson(data=el).group_id)
 
         close_connection(cursor, db)
-
         return set(list)
 
     close_connection(cursor, db)
