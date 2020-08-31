@@ -422,7 +422,7 @@ def format_end_time(time):
 
 def format_group_id(group_name):
 
-    group_id = (remove_repetition_in_str(group_name)).replace(" ", "")
+    group_id = (remove_repetition_in_str(group_name)).replace(" ", "").replace(".", "")
 
     if len(str(group_id).split("-")) > 1:
         group = str(group_id).split("-")
