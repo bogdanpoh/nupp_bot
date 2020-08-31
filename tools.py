@@ -433,8 +433,6 @@ def format_group_id(group_name):
 
 
 def read_lessons(path):
-    print(path)
-
     wb = xlrd.open_workbook(path)
     sheet = wb.sheet_by_index(0)
     sheet.cell_value(0, 0)

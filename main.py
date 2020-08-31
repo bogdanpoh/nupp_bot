@@ -24,7 +24,8 @@ command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table
                 "start", "settings", "about",
                 "change_group", "change_week",
                 "current_week", "get_users", "teacher", "get_teachers",
-                "enable_reminders", "disable_reminders"]
+                "enable_reminders", "disable_reminders",
+                "get_db_bot"]
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -262,6 +263,11 @@ def commands_handler(message):
 
             db_manager.add_event(event)
             bot.send_message(chat_id, constants.reminders_enable)
+
+        elif msg == "/get_db_bot":
+            db_file = open("telegram_bot.db", "rb")
+            bot.send_document(chat_id, db_file)
+
         else:
             bot.send_message(constants.admin_chat_id, "Dont lessons for enable reminders")
 
