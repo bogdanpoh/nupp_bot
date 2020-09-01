@@ -93,6 +93,7 @@ documents_directory = "documents"
 excel_file = "excel_file"
 excel_file_type = "xlsx"
 excel_file_type_a = "xls"
+txt_file = "info.txt"
 
 # admin
 admin_chat_id = 330926012

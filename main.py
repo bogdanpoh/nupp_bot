@@ -10,7 +10,9 @@ import tools
 import os
 import threading
 
-bot = telebot.TeleBot(config.token)
+
+current_token = config.test_token
+bot = telebot.TeleBot(current_token)
 
 # if not exists tables, create it
 db_manager.create_table_users()
@@ -23,7 +25,7 @@ command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table
                 "remove_weeks",
                 "start", "settings", "about",
                 "change_group", "change_week",
-                "current_week", "get_users", "teacher", "get_teachers",
+                "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
                 "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
 
@@ -73,6 +75,7 @@ def handler(message):
     bot.send_message(message.chat.id, current_week)
 
 
+# commands admin
 @bot.message_handler(regexp="0001")
 def regexp_handler(message):
 
@@ -82,6 +85,14 @@ def regexp_handler(message):
         commands += "/" + command + "\n"
 
     bot.send_message(message.chat.id, commands)
+
+
+@bot.message_handler(regexp="statistics_info")
+def statistic_commands_handler(message):
+
+    answer = """/count_groups - Загальна кількість груп, чий розклад в боті\n/groups - Список груп, які є в боті\n/get_users - отримати загальну кількість користувачів\n"""
+
+    parse_send_message(message.chat.id, answer)
 
 
 # commands handler
@@ -137,17 +148,28 @@ def commands_handler(message):
         if users:
             count_users = len(users)
 
-            answer = "Count users " + str(count_users) + "\n\n"
+            answer = "Кількість користувачів: " + str(count_users) + "\n\n"
+
+            bot.send_message(chat_id, answer)
 
             for user in users:
-                answer += user.name_user + " - " + user.group_id + ", "
+                answer += "Нікнейм: " + user.name_user + ", група - " + user.group_id + "\n"
 
-            answer = answer[:-2]
+            path = os.path.join(constants.documents_directory, constants.txt_file)
+
+            if os.path.isfile(path):
+                os.remove(path)
+
+            tools.write_to_file(path, answer)
+
+            if os.path.isfile(path):
+                info = open(path, "rb")
+
+                bot.send_document(chat_id, info)
 
         else:
-            answer = "DB Users is empty"
-
-        bot.send_message(chat_id, answer)
+            answer = "Таблиця користувачів <b>порожня</b>"
+            parse_send_message(chat_id, answer)
 
     elif msg == "/remove_users":
         db_manager.remove_users()
@@ -307,7 +329,7 @@ def commands_handler(message):
     elif msg == "/count_groups":
         groups = db_manager.get_group_list()
 
-        bot.send_message(chat_id, str(len(groups)))
+        parse_send_message(chat_id, "Кількість користувачів: <i>{}</i>".format(str(len(groups))))
 
     elif msg == "/count_lessons":
         lessons = db_manager.get_lessons()
@@ -319,6 +341,19 @@ def commands_handler(message):
         db_manager.remove_teacher_by_chat_id(chat_id)
 
         bot.send_message(chat_id, "You removed from DB")
+
+    elif msg == "/get_users_count":
+        users = db_manager.get_users()
+
+        if users:
+            count_users = str(len(users))
+            parse_send_message(chat_id, "Всього користувачів: <i>{}</i>".format(count_users))
+
+        else:
+            parse_send_message(chat_id, "Таблиця користувачів <b>порожня</b>")
+
+    elif msg == "/send_all_message":
+        bot.send_message(chat_id, "is test func")
 
     else:
         is_command = False
@@ -467,7 +502,7 @@ def file_handler(message):
     file_info = bot.get_file(message.document.file_id)
     type_file = str(file_info.file_path).split(".")[-1]
 
-    if type_file == 'xlsx' or type_file == "xls":
+    if type_file == constants.excel_file_type or type_file == constants.excel_file_type_a:
         downloaded_file = bot.download_file(file_info.file_path)
 
         tools.download_file(path + "." + type_file, downloaded_file)
@@ -567,6 +602,10 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
+def process_send_messages(message):
+    pass
+
+
 def check_current_week(current_time):
     if current_time == constants.change_week_time:
         if tools.get_current_day_name() == tools.format_name_day(constants.monday):
@@ -590,8 +629,10 @@ def check_current_time():
         if next_time != current_time:
             check_current_week(current_time)
             next_time = current_time
-            print(current_time)
-            bot.send_message(constants.admin_log, str(current_time))
+
+            if current_token is not config.test_token:
+                print(current_time)
+                bot.send_message(constants.admin_log, str(current_time))
 
             try:
                 time_events = db_manager.get_list_time_events()

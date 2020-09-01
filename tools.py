@@ -245,6 +245,11 @@ def download_file(path, file):
         new_file.write(file)
 
 
+def write_to_file(path, text):
+    with open(path, "w") as file:
+        file.write(text)
+
+
 def get_required_keyboard():
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -379,38 +384,6 @@ def format_index_lesson(time, markup=False, is_covid=False):
             else:
                 return 6
 
-# def format_index_lesson(time, markup=False):
-#     if time == '8.30':
-#         if markup:
-#             return "\U00000031"
-#         else:
-#             return 1
-#     elif time == '10.00':
-#         if markup:
-#             return "\U00000032"
-#         else:
-#             return 2
-#     elif time == '11.50':
-#         if markup:
-#             return "\U00000033"
-#         else:
-#             return 3
-#     elif time == '13.20':
-#         if markup:
-#             return "\U00000034"
-#         else:
-#             return 4
-#     elif time == '14.50':
-#         if markup:
-#             return "\U00000035"
-#         else:
-#             return 5
-#     elif time == '16.20':
-#         if markup:
-#             return "\U00000036"
-#         else:
-#             return 6
-
 
 def format_start_time(time):
     return time.split("-")[0]
@@ -521,91 +494,3 @@ def read_lessons(path):
                     lessons.append(lesson)
 
     return lessons
-
-
-# def read_lessons(path):
-#     wb = xlrd.open_workbook(path)
-#     sheet = wb.sheet_by_index(0)
-#     sheet.cell_value(0, 0)
-#
-#     data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
-#
-#     row = None
-#     day_name = None
-#     time_start = None
-#     time_end = None
-#     group_id = None
-#     week = None
-#     info = None
-#
-#     first_week = "І ТИЖДЕНЬ"
-#     second_week = "І I ТИЖДЕНЬ"
-#     second_week_a = "ІI ТИЖДЕНЬ"
-#     second_week_a_a = "ІІ ТИЖДЕНЬ"
-#
-#     clear_data = []
-#
-#     #group id
-#     group_id = ""
-#
-#     for el in data:
-#         clear_data.append(remove_repetition(el))
-#
-#     group_name = clear_data[1][-1]
-#
-#     if not group_name:
-#         group_name = clear_data[1][-2]
-#
-#     group_id = format_group_id(group_name)
-#
-#     lessons = []
-#
-#     for data in clear_data:
-#
-#         clear_element = remove_empty_element(data)
-#
-#         # print(clear_element)
-#
-#         if clear_element:
-#             first_element = clear_element[0]
-#             last_element = clear_element[-1]
-#             count_last_element = len(last_element)
-#
-#             if first_element == first_week:
-#                 week = constants.first_week
-#                 # print(week)
-#
-#             elif first_element == second_week or first_element == second_week_a or first_element == second_week_a_a:
-#                 week = constants.second_week
-#                 # print(week)
-#
-#             if first_element == constants.monday or first_element == constants.tuesday \
-#                     or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
-#                 day_name = format_name_day(first_element)
-#
-#                 # print(day_name)
-#
-#             if count_last_element > 9 and count_last_element > 11 or count_last_element == 8:
-#
-#                 if len(clear_element) > 2:
-#                     time = clear_element[-2]
-#
-#                 # info = last_element
-#                 info = remove_repetition_in_str(last_element)
-#
-#                 time_start = format_start_time(str(time))
-#                 time_end = format_end_time(str(time))
-#
-#                 row = format_index_lesson(time_start)
-#
-#                 if week is None:
-#                     week = constants.first_week
-#
-#                 group_id = group_id.replace(".", "")
-#
-#                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
-#
-#                 if row is not None and day_name is not None:
-#                     lessons.append(lesson)
-#
-#     return lessons

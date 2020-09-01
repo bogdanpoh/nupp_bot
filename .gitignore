@@ -2,3 +2,6 @@
 /database/__pycache__/*
 *.db
 config.py
+*.txt
+*.xlsx
+*.xls
