@@ -43,14 +43,12 @@ def parse_send_message(chat_id, text, keyboard=None):
 def show_log(message, is_command):
     user = tools.get_user_info(message)
 
-    if current_token is not config.test_token:
+    format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
 
-        format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
+    if not is_command:
+        parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
 
-        if not is_command:
-            parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
-
-        parse_send_message(constants.admin_log, format_info)
+    parse_send_message(constants.admin_log, format_info)
 
     info = str(user.name_user + " - " + message.text)
 
@@ -633,9 +631,8 @@ def check_current_time():
             check_current_week(current_time)
             next_time = current_time
 
-            if current_token is not config.test_token:
-                print(current_time)
-                bot.send_message(constants.admin_log, str(current_time))
+            print(current_time)
+            bot.send_message(constants.admin_log, str(current_time))
 
             try:
                 time_events = db_manager.get_list_time_events()
