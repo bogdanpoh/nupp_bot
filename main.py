@@ -42,16 +42,19 @@ def parse_send_message(chat_id, text, keyboard=None):
 
 def show_log(message, is_command):
     user = tools.get_user_info(message)
+
+    if current_token is not config.test_token:
+
+        format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
+
+        if not is_command:
+            parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
+
+        parse_send_message(constants.admin_log, format_info)
+
     info = str(user.name_user + " - " + message.text)
 
     print(info)
-
-    format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
-
-    if not is_command:
-        parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
-
-    parse_send_message(constants.admin_log, format_info)
 
 
 @bot.message_handler(regexp="date")
