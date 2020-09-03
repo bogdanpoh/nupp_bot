@@ -269,7 +269,10 @@ def commands_handler(message):
                     day_name = tools.format_name_day(constants.monday)
                     week = tools.get_next_week(current_week)
 
-                lesson = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)[0]
+                lesson_by_day_name = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)
+
+                if len(lesson_by_day_name) > 2:
+                    lesson = lesson_by_day_name[0]
 
             event = Event(group_id=user.group_id,
                           week=lesson.week,
