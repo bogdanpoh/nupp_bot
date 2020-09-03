@@ -238,7 +238,7 @@ def commands_handler(message):
             bot.send_message(chat_id, "Table {} is cleared".format(constants.table_events))
 
     elif msg == "/disable_reminders":
-        bot.send_message(chat_id, "Мы работаем над этой функцией")
+        bot.send_message(chat_id, "Функція запрацює з появою постійного розкладу")
         # if db_manager.is_registration_event(chat_id, current_week):
         #     db_manager.remove_event_by_chat_id(chat_id)
         #     bot.send_message(chat_id, constants.reminders_disable)
@@ -287,7 +287,7 @@ def commands_handler(message):
         #     bot.send_message(chat_id, constants.reminders_enable)
         #
         # else:
-        bot.send_message(chat_id, "Мы работаем над этой функцией")
+        bot.send_message(chat_id, "Функція запрацює з появою постійного розкладу")
 
     elif msg == "/get_db_bot":
         db_file = open("telegram_bot.db", "rb")
