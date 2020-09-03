@@ -238,54 +238,56 @@ def commands_handler(message):
             bot.send_message(chat_id, "Table {} is cleared".format(constants.table_events))
 
     elif msg == "/disable_reminders":
-        if db_manager.is_registration_event(chat_id, current_week):
-            db_manager.remove_event_by_chat_id(chat_id)
-            bot.send_message(chat_id, constants.reminders_disable)
+        bot.send_message(chat_id, "Мы работаем над этой функцией")
+        # if db_manager.is_registration_event(chat_id, current_week):
+        #     db_manager.remove_event_by_chat_id(chat_id)
+        #     bot.send_message(chat_id, constants.reminders_disable)
 
     elif msg == "/enable_reminders":
-        user = db_manager.get_user_by_chat_id(chat_id)
-        week = current_week
-        day = tools.get_current_day_name()
-        current_time = tools.get_current_time()
-
-        if db_manager.is_registration_event(chat_id, current_week):
-            bot.send_message(chat_id, constants.reminders_is_enable)
-            return
-
-        if not day:
-            day_name = tools.format_name_day(constants.monday)
-            week = tools.get_next_week(current_week)
-        else:
-            day_name = day
-
-        lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
-
-        if lesson:
-            lesson = lesson[0]
-            if tools.is_today_register_time_for_event(current_time, tools.format_time_for_event(lesson.time_start)):
-                day_name = tools.get_next_day_name()
-
-                if not day_name:
-                    day_name = tools.format_name_day(constants.monday)
-                    week = tools.get_next_week(current_week)
-
-                lesson_by_day_name = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)
-
-                if len(lesson_by_day_name) > 2:
-                    lesson = lesson_by_day_name[0]
-
-            event = Event(group_id=user.group_id,
-                          week=lesson.week,
-                          day_name=lesson.day_name,
-                          chat_id=user.chat_id,
-                          send_time=tools.format_time_for_start_event(tools.format_time_for_event(lesson.time_start)),
-                          is_send=False)
-
-            db_manager.add_event(event)
-            bot.send_message(chat_id, constants.reminders_enable)
-
-        else:
-            bot.send_message(constants.admin_chat_id, "Dont lessons tomorrow for enable reminders")
+        # user = db_manager.get_user_by_chat_id(chat_id)
+        # week = current_week
+        # day = tools.get_current_day_name()
+        # current_time = tools.get_current_time()
+        #
+        # if db_manager.is_registration_event(chat_id, current_week):
+        #     bot.send_message(chat_id, constants.reminders_is_enable)
+        #     return
+        #
+        # if not day:
+        #     day_name = tools.format_name_day(constants.monday)
+        #     week = tools.get_next_week(current_week)
+        # else:
+        #     day_name = day
+        #
+        # lesson = db_manager.get_lessons_by_day_name(day_name=day_name, group_id=user.group_id, week=current_week)
+        #
+        # if lesson:
+        #     lesson = lesson[0]
+        #     if tools.is_today_register_time_for_event(current_time, tools.format_time_for_event(lesson.time_start)):
+        #         day_name = tools.get_next_day_name()
+        #
+        #         if not day_name:
+        #             day_name = tools.format_name_day(constants.monday)
+        #             week = tools.get_next_week(current_week)
+        #
+        #         lesson_by_day_name = db_manager.get_lessons_by_day_name(day_name, week, user.group_id)
+        #
+        #         if len(lesson_by_day_name) > 2:
+        #             lesson = lesson_by_day_name[0]
+        #
+        #
+        #     event = Event(group_id=user.group_id,
+        #                   week=lesson.week,
+        #                   day_name=lesson.day_name,
+        #                   chat_id=user.chat_id,
+        #                   send_time=tools.format_time_for_start_event(tools.format_time_for_event(lesson.time_start)),
+        #                   is_send=False)
+        #
+        #     db_manager.add_event(event)
+        #     bot.send_message(chat_id, constants.reminders_enable)
+        #
+        # else:
+        bot.send_message(chat_id, "Мы работаем над этой функцией")
 
     elif msg == "/get_db_bot":
         db_file = open("telegram_bot.db", "rb")
