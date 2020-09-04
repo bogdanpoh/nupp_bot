@@ -335,7 +335,7 @@ def commands_handler(message):
     elif msg == "/count_groups":
         groups = db_manager.get_group_list()
 
-        parse_send_message(chat_id, "Кількість користувачів: <i>{}</i>".format(str(len(groups))))
+        parse_send_message(chat_id, "Кількість груп: <i>{}</i>".format(str(len(groups))))
 
     elif msg == "/count_lessons":
         lessons = db_manager.get_lessons()

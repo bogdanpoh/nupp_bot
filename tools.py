@@ -404,6 +404,50 @@ def format_group_id(group_name):
 
     return group_id
 
+def format_enter_help(lessons):
+
+    edit_lessons = []
+
+    word = "Використовуйте".lower()
+
+    lection = "Л".lower()
+    practical = "пр."
+    lab = "лаб"
+
+    enter_help = None
+    enter_help_day_name = None
+
+    for lesson in lessons:
+        # lection_index = lesson.info.lower().find(lection)
+        #
+        # if lection_index >= 0 and lesson.info[lection_index + 1] != "а":
+        #
+        #     new_info = lesson.info[2: -1]
+        #     lesson.info = "<b>Лекція</b> " + new_info
+        #
+        # elif lesson.info.find(practical) >= 0:
+        #     new_info = lesson.info[4: -1]
+        #     lesson.info = "<b>Практика</b> " + new_info
+        #
+        # elif lesson.info.find(lab) >= 0:
+        #     new_info = lesson.info[4: -1]
+        #     lesson.info = "<b>Лабораторна робота</b> " + new_info
+
+        if lesson.info.lower().find(word) >= 0:
+            enter_help = lesson.info.split(",")[-1]
+            enter_help_day_name = lesson.day_name
+
+        if enter_help_day_name:
+            if lesson.day_name == enter_help_day_name and lesson.info.lower().find(word) < 0:
+                lesson.info += ", " + enter_help
+
+            if lesson.day_name != enter_help_day_name:
+                enter_help = None
+
+        edit_lessons.append(lesson)
+
+    return edit_lessons
+
 
 def read_lessons(path):
     wb = xlrd.open_workbook(path)
@@ -426,6 +470,8 @@ def read_lessons(path):
     second_week_a_a = "ІІ ТИЖДЕНЬ"
 
     clear_data = []
+
+    enter_help = None
 
     # group id
     group_id = ""
@@ -470,10 +516,12 @@ def read_lessons(path):
                     or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
                 day_name = format_name_day(first_element)
 
-                # print(day_name)
+            if last_element.lower().find("Використовуйте".lower()) >= 0:
+                enter_help = last_element
 
-            if count_last_element > 9 and count_last_element > 11:
-                time = clear_element[1]
+            if count_last_element > 9 and count_last_element > 11 and len(clear_element) > 2:
+
+                time = str(clear_element[1])
                 # print(last_element)
 
                 for element in clear_element:
@@ -500,8 +548,9 @@ def read_lessons(path):
                     time = "".join(time_list)
 
                 if time:
-                    time_start = format_start_time(str(time))
-                    time_end = format_end_time(str(time))
+                    time_start = format_start_time(str(time)).replace(" ", "")
+                    time_end = format_end_time(str(time)).replace(" ", "")
+
                 else:
                     time_start = "00.00"
                     time_end = "00.00"
@@ -514,11 +563,16 @@ def read_lessons(path):
                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
 
                 if row is not None and day_name is not None:
+                    if enter_help:
+                        lesson.info += ", {}".format(remove_repetition_in_str(enter_help))
+
                     lessons.append(lesson)
+                    enter_help = ""
+
                 # else:
                 #     print(lesson.format_print())
 
-    return lessons
+    return format_enter_help(lessons)
 
     # wb = xlrd.open_workbook(path)
     # sheet = wb.sheet_by_index(0)
