@@ -30,7 +30,8 @@ def create_table_users():
     (id INTEGER PRIMARY KEY,
     name_user TEXT,
     group_id TEXT,
-    chat_id TEXT)
+    chat_id TEXT,
+    language TEXT)
     """.format(constants.table_users))
 
     db.commit()
@@ -109,9 +110,9 @@ def add_user(user):
     db = get_db_connect()
     cursor = get_cursor(db)
 
-    query = "INSERT INTO {0} (name_user, group_id, chat_id) VALUES (?, ?, ?)".format(constants.table_users)
+    query = "INSERT INTO {0} (name_user, group_id, chat_id, language) VALUES (?, ?, ?, ?)".format(constants.table_users)
 
-    val = (user.name_user, user.group_id, user.chat_id)
+    val = (user.name_user, user.group_id, user.chat_id, user.language)
 
     cursor.execute(query, val)
 
@@ -689,11 +690,11 @@ def remove_event_by_chat_id(chat_id):
     close_connection(cursor, db)
 
 
-def drop_table_events():
+def drop_table(table_name):
     db = get_db_connect()
     cursor = get_cursor(db)
 
-    query = "DROP TABLE {0}".format(constants.table_events)
+    query = "DROP TABLE {0}".format(table_name)
 
     cursor.execute(query)
     db.commit()

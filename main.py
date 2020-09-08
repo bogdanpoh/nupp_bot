@@ -13,6 +13,7 @@ import threading
 
 current_token = config.token
 bot = telebot.TeleBot(current_token)
+lang = ""
 
 # if not exists tables, create it
 db_manager.create_table_users()
@@ -21,9 +22,10 @@ db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
 
-command_list = ["remove_lessons", "remove_teachers", "remove_users", "drop_table_events", "remove_events",
+command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events",
+                "drop_table_events", "drop_table_users",
                 "remove_weeks",
-                "start", "settings", "about",
+                "start", "settings", "about", "en",
                 "change_group", "change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
@@ -43,12 +45,13 @@ def parse_send_message(chat_id, text, keyboard=None):
 def show_log(message, is_command):
     user = tools.get_user_info(message)
 
-    format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
+    if current_token == config.token:
+        format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
 
-    if not is_command:
-        parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
+        if not is_command:
+            parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
 
-    parse_send_message(constants.admin_log, format_info)
+        parse_send_message(constants.admin_log, format_info)
 
     info = str(user.name_user + " - " + message.text)
 
@@ -91,7 +94,10 @@ def regexp_handler(message):
 @bot.message_handler(regexp="statistics_info")
 def statistic_commands_handler(message):
 
-    answer = """/count_groups - Загальна кількість груп, чий розклад в боті\n/groups - Список груп, які є в боті\n/get_users - отримати загальну кількість користувачів\n"""
+    answer = """/count_groups - Загальна кількість груп, чий розклад в боті
+/groups - Список груп, які є в боті
+/get_users - отримати загальну кількість користувачів та список
+/get_users_count - отримати загальну кількість користувачів"""
 
     parse_send_message(message.chat.id, answer)
 
@@ -105,8 +111,15 @@ def commands_handler(message):
 
     is_command = True
 
-    if msg == "/start":
+    if msg == "/start" or msg == "/en":
         users = db_manager.get_users()
+
+        global lang
+
+        if msg == "/en":
+            lang = "en"
+        else:
+            lang = "ua"
 
         if users:
             for user in users:
@@ -114,14 +127,24 @@ def commands_handler(message):
                     bot.send_message(chat_id, constants.you_is_register, reply_markup=tools.get_required_keyboard())
                     return
 
-        answer = parse_send_message(chat_id, constants.start_answer)
+        select_answer = constants.start_answer
+
+        if lang == "en":
+            select_answer = constants.start_answer_en
+
+        answer = parse_send_message(chat_id, select_answer)
 
         groups = db_manager.get_group_list()
 
         if groups:
             list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
-            reply_message = bot.reply_to(answer, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
+            select_answer_pick_group = constants.pick_your_group
+
+            if lang == "en":
+                select_answer_pick_group = constants.pick_your_group_en
+
+            reply_message = bot.reply_to(answer, select_answer_pick_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
 
             bot.register_next_step_handler(reply_message, process_group_step)
 
@@ -224,10 +247,6 @@ def commands_handler(message):
         if not teachers:
             bot.send_message(chat_id, "Table {0} cleared".format(constants.table_teachers))
 
-    elif msg == "/drop_table_events":
-        db_manager.drop_table_events()
-
-        bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
 
     elif msg == "/remove_events":
         db_manager.remove_events()
@@ -358,6 +377,15 @@ def commands_handler(message):
         else:
             parse_send_message(chat_id, "Таблиця користувачів <b>порожня</b>")
 
+    elif msg == "/drop_table_events":
+        db_manager.drop_table(constants.table_events)
+
+        bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
+
+    elif msg == "/drop_table_users":
+        db_manager.drop_table(constants.table_users)
+        bot.send_message(chat_id, "Table {} is drop".format(constants.table_users))
+
     elif msg == "/send_all_message":
         bot.send_message(chat_id, "is test func")
 
@@ -375,6 +403,9 @@ def message_handler(message):
     current_week = db_manager.get_current_week()
     groups = db_manager.get_group_list()
     is_command = True
+
+    if msg == "lang":
+        bot.send_message(chat_id, lang)
 
     if not current_week:
         db_manager.set_default_week()
@@ -596,11 +627,19 @@ def process_group_step(message):
 
         if user:
             user.group_id = group_id
+            user.language = lang
             db_manager.add_user(user)
-            bot.send_message(chat_id, constants.thanks_for_a_registration,
+
+            select_answer = constants.thanks_for_a_registration
+
+            if lang == "en":
+                select_answer = constants.thanks_for_a_registration_en
+
+            bot.send_message(chat_id, select_answer,
                              reply_markup=tools.get_required_keyboard())
 
-            parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0}".format(user.name_user))
+            parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0} , {1}: {2}"
+                               .format(user.name_user, tools.to_bold("group"), user.group_id))
     else:
         groups = tools.sorted_groups(db_manager.get_group_list())
         list_groups = tools.array_to_one_line(groups)
@@ -609,7 +648,13 @@ def process_group_step(message):
 
 
 def process_send_messages(message):
-    pass
+    users = db_manager.get_users()
+
+    msg = message.text
+
+    for user in users:
+        parse_send_message(user.chat_id, msg)
+        show_log(message, False)
 
 
 def check_current_week(current_time):

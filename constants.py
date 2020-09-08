@@ -19,6 +19,12 @@ start_answer = """Ласкаво просимо \U00002757
 \U00002699 Доступні групи:
 """
 
+start_answer_en = """
+Welcome \U00002757
+
+\U00002699 Available groups:
+"""
+
 settings_answer = """
 Будь ласка, виберіть дію:
 
@@ -33,10 +39,28 @@ settings_answer = """
 Для отримання розкладу іншої групи, просто відправ її номер
 <b>(Наприклад 101ЕМ, де ЕМ - українськими літерами)</b>
 
-Ознайомитися детально:
-https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31
+<a href="https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31">Ознайомитися детально:</a>
 
 З питань підтримки, допомоги, пропозицій писати - @nupp_help
+"""
+
+settings_answer_en = """
+Please select an action:
+
+/change_group - change the group
+
+/enable_reminders - enable class reminders 20 minutes before the start
+
+/disable_reminders - Disable class schedule reminders 20 minutes before the start
+
+/about - more about us
+
+To get another group's schedule, just send her number
+<b> (For example, 101EM, where EM is in Ukrainian letters) </b>
+
+<a href="https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31">Help:</a>
+
+For support, help, suggestions write - @nupp_help
 """
 
 about_anser = """
@@ -51,10 +75,15 @@ not_register = "Будь ласка, відправте команду /start"
 not_found_answer = "\U0001F648 Команда не знайдена"
 pick_your_group = """Будь ласка, надішліть свою групу \U0001F64F 
 <b>(Наприклад 101ЕМ, де ЕМ - українськими літерами)</b>"""
+
+pick_your_group_en = """Please send your group \U0001F64F
+<b>(For example 101EM, where EM - in Ukrainian letters)</b>"""
+
 you_is_register = "Ви вже зареєстровані \U00002757"
 no_lessons_today = "Сьогодні занять немає \U0001F601"
 no_lessons_tomorrow = "Завтра занять немає \U0001F601"
 thanks_for_a_registration = "Дякуємо за реєстрацію \U0001F60B"
+thanks_for_a_registration_en = "Thank you for registering \U0001F60B"
 file_not_found = "Файл не знайдено \U0001F614"
 change_group = "Ваша група обновлена \U0001F970"
 
