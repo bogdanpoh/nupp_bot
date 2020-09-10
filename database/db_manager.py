@@ -7,8 +7,12 @@ from database.event import Event
 import tools
 
 
-def get_db_connect():
-    return sqlite3.connect(constants.db_name, check_same_thread=False)
+def get_db_connect(name_db=None):
+
+    if name_db:
+        return sqlite3.connect(name_db, check_same_thread=False)
+    else:
+        return sqlite3.connect(constants.db_name, check_same_thread=False)
 
 
 def get_cursor(db):
@@ -21,8 +25,13 @@ def close_connection(cursor, connection):
 
 
 # create tables
-def create_table_users():
-    db = get_db_connect()
+def create_table_users(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -38,8 +47,13 @@ def create_table_users():
     close_connection(cursor, db)
 
 
-def create_table_teachers():
-    db = get_db_connect()
+def create_table_teachers(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -53,8 +67,13 @@ def create_table_teachers():
     close_connection(cursor, db)
 
 
-def create_table_lessons():
-    db = get_db_connect()
+def create_table_lessons(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -72,8 +91,13 @@ def create_table_lessons():
     close_connection(cursor, db)
 
 
-def create_table_week():
-    db = get_db_connect()
+def create_table_week(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -86,8 +110,13 @@ def create_table_week():
     close_connection(cursor, db)
 
 
-def create_table_events():
-    db = get_db_connect()
+def create_table_events(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     cursor.execute("""
@@ -106,8 +135,12 @@ def create_table_events():
 
 
 # user
-def add_user(user):
-    db = get_db_connect()
+def add_user(user, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "INSERT INTO {0} (name_user, group_id, chat_id, language) VALUES (?, ?, ?, ?)".format(constants.table_users)
@@ -120,8 +153,13 @@ def add_user(user):
     close_connection(cursor, db)
 
 
-def get_users():
-    db = get_db_connect()
+def get_users(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "SELECT * FROM {0}".format(constants.table_users)
@@ -177,6 +215,17 @@ def update_user_group(chat_id, group_id):
     close_connection(cursor, db)
 
 
+def update_user_lang(chat_id, lang):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "UPDATE {0} SET `language` = '{1}' WHERE `chat_id` = '{2}'".format(constants.table_users, str(lang), str(chat_id))
+
+    cursor.execute(query)
+    db.commit()
+    close_connection(cursor, db)
+
+
 def is_user(chat_id):
 
     is_registration = False
@@ -184,7 +233,7 @@ def is_user(chat_id):
     users = get_users()
 
     for user in users:
-        if user.chat_id == chat_id:
+        if str(user.chat_id) == str(chat_id):
             is_registration = True
 
     return is_registration
@@ -213,8 +262,12 @@ def remove_user_by_chat_id(chat_id):
 
 
 # lesson
-def add_lesson(lesson):
-    db = get_db_connect()
+def add_lesson(lesson, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "INSERT INTO {0} (row, day_name, time_start, time_end, group_id, week, info) VALUES (" \
@@ -255,7 +308,7 @@ def remove_lessons_by_group_id(group_id):
     close_connection(cursor, db)
 
 
-def get_lessons():
+def get_lessons(db_name=None):
     db = get_db_connect()
     cursor = get_cursor(db)
 
@@ -339,8 +392,13 @@ def get_lessons_by_week(group_id, week):
 
 
 # week
-def set_default_week():
-    db = get_db_connect()
+def set_default_week(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, constants.first_week)

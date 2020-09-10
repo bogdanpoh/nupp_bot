@@ -48,7 +48,9 @@ def format_time_for_event(time):
         return time_str
 
 
-def format_lessons_day_for_message(lessons, day_name, is_teacher_format=False):
+def format_lessons_day_for_message(lessons, day_name, is_teacher_format=False, lang=constants.lang_ua):
+
+    print(lang)
 
     lessons_str = ""
 
@@ -58,6 +60,9 @@ def format_lessons_day_for_message(lessons, day_name, is_teacher_format=False):
     else:
         for lesson in lessons:
             lessons_str += lesson.format_message() + "\n"
+
+    if lang == constants.lang_en:
+        return str(day_name).capitalize() + "\n\n" + lessons_str
 
     return str(format_name_day(day_name) + "\n\n" + lessons_str)
 
@@ -137,7 +142,8 @@ def get_lessons_days(lessons):
     return set(day_names)
 
 
-def format_lessons_week_for_message(lessons, is_format_teacher=False):
+def format_lessons_week_for_message(lessons, is_format_teacher=False, lang=constants.lang_ua):
+
     answer = ""
     day_name = ""
 
@@ -161,7 +167,11 @@ def format_lessons_week_for_message(lessons, is_format_teacher=False):
         for lesson in lessons:
             if not day_name:
                 day_name = lesson.day_name
-                answer += format_name_day(day_name) + "\n"
+
+                if lang == constants.lang_en:
+                    answer += str(day_name).capitalize() + "\n"
+                else:
+                    answer += format_name_day(day_name) + "\n"
 
             if day_name:
                 if day_name == lesson.day_name:
@@ -169,7 +179,11 @@ def format_lessons_week_for_message(lessons, is_format_teacher=False):
 
                 else:
                     day_name = lesson.day_name
-                    answer += "\n" + format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
+
+                    if lang == constants.lang_en:
+                        answer += "\n" + str(day_name).capitalize() + "\n" + lesson.format_message() + "\n"
+                    else:
+                        answer += "\n" + format_name_day(day_name) + "\n" + lesson.format_message() + "\n"
 
     return answer
 
@@ -250,12 +264,17 @@ def write_to_file(path, text):
         file.write(text)
 
 
-def get_required_keyboard():
+def get_required_keyboard(lang=None):
     markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
 
-    markup.add(constants.keyboard_setting)
-    markup.add(constants.keyboard_current_lessons, constants.keyboard_tomorrow_lessons)
-    markup.add(constants.keyboard_week_lessons)
+    if lang == constants.lang_en:
+        markup.add(constants.keyboard_setting_en)
+        markup.add(constants.keyboard_current_lessons_en, constants.keyboard_tomorrow_lessons_en)
+        markup.add(constants.keyboard_week_lessons_en)
+    else:
+        markup.add(constants.keyboard_setting)
+        markup.add(constants.keyboard_current_lessons, constants.keyboard_tomorrow_lessons)
+        markup.add(constants.keyboard_week_lessons)
 
     return markup
 

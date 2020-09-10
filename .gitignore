@@ -5,3 +5,6 @@ config.py
 *.txt
 *.xlsx
 *.xls
+test_db.py
+telegram_bot.db
+/documents/*

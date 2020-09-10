@@ -11,9 +11,9 @@ import os
 import threading
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
-lang = ""
+lang = constants.lang_ua
 
 # if not exists tables, create it
 db_manager.create_table_users()
@@ -26,7 +26,7 @@ command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_eve
                 "drop_table_events", "drop_table_users",
                 "remove_weeks",
                 "start", "settings", "about", "en",
-                "change_group", "change_week",
+                "change_group", "change_lang","change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
                 "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
@@ -49,7 +49,14 @@ def show_log(message, is_command):
         format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
 
         if not is_command:
-            parse_send_message(message.chat.id, constants.not_found_answer + " - " + tools.to_bold(message.text))
+
+            answer = constants.not_found_answer
+
+            if db_manager.is_user(user.chat_id):
+                if db_manager.get_user_by_chat_id(user.chat_id).language == constants.lang_en:
+                    answer = constants.not_found_answer_en
+
+            parse_send_message(message.chat.id, answer + " - " + tools.to_bold(message.text))
 
         parse_send_message(constants.admin_log, format_info)
 
@@ -111,15 +118,8 @@ def commands_handler(message):
 
     is_command = True
 
-    if msg == "/start" or msg == "/en":
+    if msg == "/start":
         users = db_manager.get_users()
-
-        global lang
-
-        if msg == "/en":
-            lang = "en"
-        else:
-            lang = "ua"
 
         if users:
             for user in users:
@@ -129,7 +129,7 @@ def commands_handler(message):
 
         select_answer = constants.start_answer
 
-        if lang == "en":
+        if lang == constants.lang_en:
             select_answer = constants.start_answer_en
 
         answer = parse_send_message(chat_id, select_answer)
@@ -141,7 +141,7 @@ def commands_handler(message):
 
             select_answer_pick_group = constants.pick_your_group
 
-            if lang == "en":
+            if lang == constants.lang_en:
                 select_answer_pick_group = constants.pick_your_group_en
 
             reply_message = bot.reply_to(answer, select_answer_pick_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
@@ -155,7 +155,14 @@ def commands_handler(message):
         parse_send_message(chat_id, constants.settings_answer)
 
     elif msg == "/about":
-        parse_send_message(chat_id, constants.about_anser)
+
+        answer = constants.about_answer
+
+        if db_manager.is_user(chat_id):
+            if db_manager.get_user_by_chat_id(chat_id).language == constants.lang_en:
+                answer = constants.about_answer_en
+
+        parse_send_message(chat_id, answer)
 
     elif msg == "/change_group":
 
@@ -163,8 +170,34 @@ def commands_handler(message):
 
         list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
-        reply_message = bot.send_message(chat_id, constants.pick_your_group + "\n\n" + list_groups, parse_mode="HTML")
+        if db_manager.is_user(chat_id):
+            if db_manager.get_user_by_chat_id(chat_id).language == constants.lang_en:
+                answer = constants.pick_your_group_en.split("\n")[0]
+            else:
+                answer = constants.pick_your_group.split("\n")[0]
+
+        reply_message = bot.send_message(chat_id, answer + "\n\n" + list_groups, parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_change_group_step)
+
+    elif msg == "/change_lang":
+        if db_manager.is_user(chat_id):
+
+            current_lang = db_manager.get_user_by_chat_id(chat_id).language
+
+            new_lang = constants.lang_ua
+
+            if current_lang == constants.lang_ua:
+                new_lang = constants.lang_en
+                answer = "Language"
+            else:
+                new_lang = constants.lang_ua
+                answer = "Мова"
+
+            db_manager.update_user_lang(chat_id, new_lang)
+
+            bot.send_message(chat_id, "{} - {}".format(answer, new_lang), reply_markup=tools.get_required_keyboard(new_lang))
+
+
 
     elif msg == "/get_users":
         users = db_manager.get_users()
@@ -387,7 +420,9 @@ def commands_handler(message):
         bot.send_message(chat_id, "Table {} is drop".format(constants.table_users))
 
     elif msg == "/send_all_message":
-        bot.send_message(chat_id, "is test func")
+        reply_message = bot.send_message(chat_id, "Enter message: ")
+
+        bot.register_next_step_handler(reply_message, process_send_messages)
 
     else:
         is_command = False
@@ -395,25 +430,61 @@ def commands_handler(message):
     show_log(message, is_command)
 
 
+def send_not_register(chat_id, lang):
+    if lang == constants.lang_en:
+        bot.send_message(chat_id, constants.not_register_en)
+    else:
+        bot.send_message(chat_id, constants.not_register)
+
+
+def send_not_lessons(chat_id, lang, is_today=False):
+
+    if lang == constants.lang_en:
+
+        if is_today:
+            msg = constants.no_lessons_today_en
+        else:
+            msg = constants.no_lessons_tomorrow_en
+
+    else:
+
+        if is_today:
+            msg = constants.no_lessons_today
+        else:
+            msg = constants.no_lessons_tomorrow
+
+    bot.send_message(chat_id, msg)
+
+
 # handler text massages
 @bot.message_handler(content_types=["text"])
 def message_handler(message):
-    msg = message.text
-    chat_id = message.chat.id
+    msg = str(message.text)
+    chat_id = str(message.chat.id)
     current_week = db_manager.get_current_week()
     groups = db_manager.get_group_list()
     is_command = True
 
-    if msg == "lang":
-        bot.send_message(chat_id, lang)
+    user_lang = constants.lang_ua
+
+    if db_manager.is_user(chat_id):
+        user_lang = db_manager.get_user_by_chat_id(chat_id).language
+    else:
+        bot.send_message(chat_id, constants.not_register)
 
     if not current_week:
         db_manager.set_default_week()
 
-    if msg == constants.keyboard_setting:
-        parse_send_message(chat_id, constants.settings_answer)
+    if msg == constants.keyboard_setting or msg == constants.keyboard_setting_en:
 
-    elif msg == constants.keyboard_current_lessons:
+        answer = constants.settings_answer
+
+        if user_lang == constants.lang_en:
+            answer = constants.settings_answer_en
+
+        parse_send_message(chat_id, answer)
+
+    elif msg == constants.keyboard_current_lessons or msg == constants.keyboard_current_lessons_en:
         group_id = db_manager.get_user_group_id(chat_id)
         day_name = tools.get_current_day_name()
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
@@ -424,7 +495,9 @@ def message_handler(message):
             if lessons:
                 tools.sorted_lessons(lessons)
 
-                lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
+                lessons_str = tools.format_lessons_day_for_message(lessons,
+                                                                   day_name,
+                                                                   is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
             else:
                 bot.send_message(chat_id, constants.no_lessons_today)
@@ -432,23 +505,26 @@ def message_handler(message):
 
         if group_id:
             if not day_name:
-                bot.send_message(chat_id, constants.no_lessons_today)
+                # bot.send_message(chat_id, constants.no_lessons_today)
+                send_not_lessons(chat_id, user_lang, is_today=True)
                 return
 
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
                 if lessons:
-                    lessons_str = tools.format_lessons_day_for_message(lessons, day_name)
+                    lessons_str = tools.format_lessons_day_for_message(lessons, day_name, lang=user_lang)
                     parse_send_message(chat_id, lessons_str)
                 else:
-                    parse_send_message(chat_id, constants.no_lessons_today)
+                    send_not_lessons(chat_id, user_lang, is_today=True)
+                    # parse_send_message(chat_id, constants.no_lessons_today)
 
         else:
             # bot.send_message(chat_id, "Please, send /start")
-            bot.send_message(chat_id, constants.not_register)
 
-    elif msg == constants.keyboard_tomorrow_lessons:
+            send_not_register(chat_id, user_lang)
+
+    elif msg == constants.keyboard_tomorrow_lessons or msg == constants.keyboard_tomorrow_lessons_en:
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
         day_name = tools.get_next_day_name()
         group_id = db_manager.get_user_group_id(chat_id)
@@ -462,27 +538,30 @@ def message_handler(message):
                 lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
             else:
-                bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                # bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                send_not_lessons(chat_id, user_lang, is_today=False)
             return
 
         if group_id:
             if not day_name:
-                bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                # bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                send_not_lessons(chat_id, user_lang, is_today=False)
                 return
 
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
 
                 if lessons:
-                    lessons_str = tools.format_lessons_day_for_message(lessons, day_name)
+                    lessons_str = tools.format_lessons_day_for_message(lessons, day_name, lang=user_lang)
                     parse_send_message(chat_id, lessons_str)
                 else:
-                    bot.send_message(chat_id, constants.no_lessons_tomorrow)
+                    send_not_lessons(chat_id, user_lang, is_today=False)
+                    # bot.send_message(chat_id, constants.no_lessons_tomorrow)
         else:
             # bot.send_message(chat_id, "Please, send /start")
-            bot.send_message(chat_id, constants.not_register)
+            send_not_register(chat_id, user_lang)
 
-    elif msg == constants.keyboard_week_lessons:
+    elif msg == constants.keyboard_week_lessons or msg == constants.keyboard_week_lessons_en:
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
         group_id = db_manager.get_user_group_id(chat_id)
 
@@ -503,22 +582,22 @@ def message_handler(message):
 
             lessons = db_manager.get_lessons_by_week(group_id, current_week)
 
-            lessons_week_str = tools.format_lessons_week_for_message(lessons)
+            lessons_week_str = tools.format_lessons_week_for_message(lessons, lang=user_lang)
 
             parse_send_message(chat_id, lessons_week_str)
 
         else:
             # bot.send_message(chat_id, "Please, send /start")
-            bot.send_message(chat_id, constants.not_register)
+            send_not_register(chat_id, user_lang)
 
     else:
         is_command = False
 
         if groups:
             for group in groups:
-                if group == msg:
+                if str(group) == str(msg):
                     lessons = db_manager.get_lessons_by_week(group, current_week)
-                    answer = tools.format_lessons_week_for_message(lessons)
+                    answer = tools.format_lessons_week_for_message(lessons, lang=user_lang)
 
                     parse_send_message(chat_id, answer)
                     is_command = True
@@ -599,7 +678,11 @@ def process_change_group_step(message):
 
     if db_manager.is_group(message.text):
         db_manager.update_user_group(message.chat.id, message.text)
-        bot.send_message(message.chat.id, constants.change_group)
+
+        if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
+            bot.send_message(message.chat.id, constants.change_group_en)
+        else:
+            bot.send_message(message.chat.id, constants.change_group)
 
     else:
         groups = db_manager.get_group_list()
@@ -615,10 +698,17 @@ def process_group_step(message):
     chat_id = message.chat.id
     group_id = str(message.text)
 
-    if group_id == "/teacher":
+    global lang
+
+    if message.text == "/teacher":
         reply_message = bot.send_message(chat_id, "Enter you name: ")
         bot.register_next_step_handler(reply_message, process_register_teacher)
         return
+
+    if message.text == "/en":
+        lang = constants.lang_en
+    elif message.text == "/ua":
+        lang = constants.lang_ua
 
     is_group = db_manager.is_group(group_id)
 
@@ -632,29 +722,41 @@ def process_group_step(message):
 
             select_answer = constants.thanks_for_a_registration
 
-            if lang == "en":
+            if lang == constants.lang_en:
                 select_answer = constants.thanks_for_a_registration_en
 
             bot.send_message(chat_id, select_answer,
-                             reply_markup=tools.get_required_keyboard())
+                             reply_markup=tools.get_required_keyboard(lang))
 
             parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0} , {1}: {2}"
                                .format(user.name_user, tools.to_bold("group"), user.group_id))
     else:
         groups = tools.sorted_groups(db_manager.get_group_list())
         list_groups = tools.array_to_one_line(groups)
-        reply_message = bot.reply_to(message, constants.pick_your_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
+
+        select_answer = constants.pick_your_group
+
+        if lang == constants.lang_en:
+            select_answer = constants.pick_your_group_en
+
+        reply_message = bot.reply_to(message, select_answer + "\n\n" + list_groups[:-2], parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
 def process_send_messages(message):
     users = db_manager.get_users()
 
-    msg = message.text
+    msg = str(message.text)
 
     for user in users:
-        parse_send_message(user.chat_id, msg)
-        show_log(message, False)
+
+        if user.language == constants.lang_en:
+            answer = constants.warning_en + "\n\n" + msg
+        else:
+            answer = constants.warning + "\n\n" + msg
+
+        parse_send_message(user.chat_id, answer)
+        parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
 
 
 def check_current_week(current_time):
