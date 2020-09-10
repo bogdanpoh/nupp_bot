@@ -11,7 +11,7 @@ import os
 import threading
 
 
-current_token = config.test_token
+current_token = config.token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
