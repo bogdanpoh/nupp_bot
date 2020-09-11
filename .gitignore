@@ -6,6 +6,7 @@ config.py
 *.xlsx
 *.xls
 test_db.py
+test_lessons.py
 telegram_bot.db
 /documents/*
 /documents/
