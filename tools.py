@@ -49,9 +49,6 @@ def format_time_for_event(time):
 
 
 def format_lessons_day_for_message(lessons, day_name, is_teacher_format=False, lang=constants.lang_ua):
-
-    print(lang)
-
     lessons_str = ""
 
     if is_teacher_format:

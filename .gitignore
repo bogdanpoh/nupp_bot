@@ -8,3 +8,7 @@ config.py
 test_db.py
 telegram_bot.db
 /documents/*
+/documents/
+documents/
+/documents
+documents
