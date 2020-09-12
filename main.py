@@ -763,8 +763,11 @@ def process_send_messages(message):
         else:
             answer = constants.warning + "\n\n" + msg
 
-        parse_send_message(user.chat_id, answer)
-        parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
+        try:
+            parse_send_message(user.chat_id, answer)
+            parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
+        except:
+            bot.send_message(message.chat.id, "Error in send message to user {} id: {}".format(user.name_user, user.chat_id))
 
     bot.send_message(message.chat.id, "Success")
 
