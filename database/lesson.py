@@ -34,7 +34,7 @@ class Lesson(object):
             self.info = info
 
     def format_print(self):
-        return "{0}, {1}, {2} - {3}, {4}, {5}, {6}".format(
+        return "week: {6} №{0} day: {1} time: {2} - {3} group: {4} info: {5}".format(
             self.row,
             self.day_name,
             self.time_start,

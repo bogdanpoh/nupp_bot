@@ -9,9 +9,10 @@ from database import db_manager
 import tools
 import os
 import threading
+import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -467,6 +468,13 @@ def message_handler(message):
 
     user_lang = constants.lang_ua
 
+    if msg[0] == "_":
+        search_chat_id = msg.replace("_", "")
+
+        if db_manager.is_user(search_chat_id):
+            user = db_manager.get_user_by_chat_id(search_chat_id)
+            bot.send_message(chat_id, user.format_print())
+
     if db_manager.is_user(chat_id):
         user_lang = db_manager.get_user_by_chat_id(chat_id).language
     else:
@@ -749,7 +757,7 @@ def process_send_messages(message):
     msg = str(message.text)
 
     for user in users:
-
+        time.sleep(3)
         if user.language == constants.lang_en:
             answer = constants.warning_en + "\n\n" + msg
         else:
@@ -757,6 +765,8 @@ def process_send_messages(message):
 
         parse_send_message(user.chat_id, answer)
         parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
+
+    bot.send_message(message.chat.id, "Success")
 
 
 def check_current_week(current_time):
