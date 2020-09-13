@@ -23,11 +23,10 @@ db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
 
-command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events",
+command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events" "remove_weeks", "remove_group",
                 "drop_table_events", "drop_table_users",
-                "remove_weeks",
                 "start", "settings", "about", "en",
-                "change_group", "change_lang","change_week",
+                "change_group", "change_lang", "change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
                 "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
@@ -197,8 +196,6 @@ def commands_handler(message):
             db_manager.update_user_lang(chat_id, new_lang)
 
             bot.send_message(chat_id, "{} - {}".format(answer, new_lang), reply_markup=tools.get_required_keyboard(new_lang))
-
-
 
     elif msg == "/get_users":
         users = db_manager.get_users()
@@ -424,6 +421,11 @@ def commands_handler(message):
         reply_message = bot.send_message(chat_id, "Enter message: ")
 
         bot.register_next_step_handler(reply_message, process_send_messages)
+
+    elif msg == "/remove_group":
+        reply_message = bot.send_message(chat_id, "Enter group_id:")
+
+        bot.register_next_step_handler(reply_message, process_remove_group)
 
     else:
         is_command = False
@@ -751,6 +753,22 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
+def process_remove_group(message):
+
+    group_id = str(message.text)
+
+    if db_manager.is_group(group_id):
+        # db_manager.remove_group(group_id)
+        try:
+            db_manager.remove_group(group_id)
+            bot.send_message(message.chat.id, "Remove {} success".format(group_id))
+        except:
+            bot.send_message(message.chat.id, "Error remove group")
+
+    else:
+        bot.send_message(message.chat.id, "Dont found group: {}".format(group_id))
+
+
 def process_send_messages(message):
     users = db_manager.get_users()
 
@@ -767,7 +785,7 @@ def process_send_messages(message):
             parse_send_message(user.chat_id, answer)
             parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
         except:
-            bot.send_message(message.chat.id, "Error in send message to user {} id: {}".format(user.name_user, user.chat_id))
+            bot.send_message(constants.admin_log, "Error in send message to user {} id: {}".format(user.name_user, user.chat_id))
 
     bot.send_message(message.chat.id, "Success")
 

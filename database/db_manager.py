@@ -354,6 +354,18 @@ def is_group(group_id):
     return False
 
 
+def remove_group(group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "DELETE FROM {0} WHERE `group_id` = '{1}'".format(constants.table_lessons, group_id)
+
+    cursor.execute(query)
+    db.commit()
+
+    close_connection(cursor, db)
+
+
 def get_lessons_by_day_name(day_name, week, group_id):
     db = get_db_connect()
     cursor = get_cursor(db)
