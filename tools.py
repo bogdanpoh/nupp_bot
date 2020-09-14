@@ -533,6 +533,9 @@ def read_lessons(path, testing=False):
 
     if not group_name:
         group_name = clear_data[1][-2]
+    
+    if not group_name:
+        group_name = clear_data[0][-1]
 
     group_id = format_group_id(group_name)
 
