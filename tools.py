@@ -531,11 +531,17 @@ def read_lessons(path, testing=False):
 
     group_name = clear_data[1][-1]
 
+    print(group_name)
+
+    if not group_name:
+        group_name = clear_data[1][-2]
+
     if not group_name:
         group_name = clear_data[0][-1]
 
     if not group_name:
         group_name = clear_data[0][-2]
+
 
     group_id = format_group_id(group_name)
 
@@ -546,6 +552,7 @@ def read_lessons(path, testing=False):
         empty_element = remove_empty_element(data)
 
         clear_element = remove_digit(empty_element)
+
 
         if clear_element:
             first_element = clear_element[0]
