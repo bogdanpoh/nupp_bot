@@ -5,6 +5,7 @@ from database.lesson import Lesson
 from database.user import User
 from database.event import Event
 from database.teacher import Teacher
+from database.faculty import Faculty
 import datetime
 from datetime import timedelta
 import telebot
@@ -216,6 +217,8 @@ def data_to_list_class(data, to_class):
             list_answer.append(Teacher(data=el))
         elif to_class == "event":
             list_answer.append(Event(data=el))
+        elif to_class == "faculty":
+            list_answer.append(Faculty(data=el))
 
     return list_answer
 
@@ -316,6 +319,18 @@ def remove_empty_element(data):
             result.append(el)
 
     return list(result)
+
+
+def remove_digit(data):
+
+    result = []
+    #
+    for el in data:
+        if type(el) != float:
+            if len(el) > 5 and len(el) > 4:
+                result.append(el)
+
+    return result
 
 
 def remove_repetition(data):
@@ -420,34 +435,17 @@ def format_group_id(group_name):
 
     return group_id
 
+
 def format_enter_help(lessons):
 
     edit_lessons = []
 
     word = "Використовуйте".lower()
 
-    lection = "Л".lower()
-    practical = "пр."
-    lab = "лаб"
-
     enter_help = None
     enter_help_day_name = None
 
     for lesson in lessons:
-        # lection_index = lesson.info.lower().find(lection)
-        #
-        # if lection_index >= 0 and lesson.info[lection_index + 1] != "а":
-        #
-        #     new_info = lesson.info[2: -1]
-        #     lesson.info = "<b>Лекція</b> " + new_info
-        #
-        # elif lesson.info.find(practical) >= 0:
-        #     new_info = lesson.info[4: -1]
-        #     lesson.info = "<b>Практика</b> " + new_info
-        #
-        # elif lesson.info.find(lab) >= 0:
-        #     new_info = lesson.info[4: -1]
-        #     lesson.info = "<b>Лабораторна робота</b> " + new_info
 
         if lesson.info.lower().find(word) >= 0:
             enter_help = lesson.info.split(",")[-1]
@@ -465,131 +463,43 @@ def format_enter_help(lessons):
     return edit_lessons
 
 
-def read_lessons(path, testing=False):
-    # wb = xlrd.open_workbook(path)
-    # sheet = wb.sheet_by_index(0)
-    # sheet.cell_value(0, 0)
-    #
-    # data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
-    #
-    # row = None
-    # day_name = None
-    # time_start = None
-    # time_end = None
-    # group_id = None
-    # week = None
-    # info = None
-    #
-    # first_week = "І ТИЖДЕНЬ"
-    # second_week = "І I ТИЖДЕНЬ"
-    # second_week_a = "ІI ТИЖДЕНЬ"
-    # second_week_a_a = "ІІ ТИЖДЕНЬ"
-    #
-    # clear_data = []
-    #
-    # enter_help = None
-    #
-    # # group id
-    # group_id = ""
-    #
-    # for el in data:
-    #     clear_data.append(remove_repetition(el))
-    #
-    # group_name = clear_data[1][-1]
-    #
-    # if not group_name:
-    #     group_name = clear_data[1][-2]
-    #
-    # group_id = format_group_id(group_name)
-    #
-    # lessons = []
-    #
-    # for data in clear_data:
-    #
-    #     clear_element = remove_empty_element(data)
-    #
-    #     if clear_element:
-    #         first_element = clear_element[0]
-    #
-    #         # print(clear_element)
-    #
-    #         if len(str(clear_element)) > 3 and len(str(clear_element[-2])) != 9 and len(str(clear_element[-2])) != 11:
-    #             last_element = str(str(clear_element[-2]) + ", " + str(clear_element[-1]))
-    #         else:
-    #             last_element = str(clear_element[-1])
-    #
-    #         count_last_element = len(last_element)
-    #
-    #         if first_element == first_week:
-    #             week = constants.first_week
-    #             # print(week)
-    #
-    #         elif first_element == second_week or first_element == second_week_a or first_element == second_week_a_a:
-    #             week = constants.second_week
-    #             # print(week)
-    #
-    #         if first_element == constants.monday or first_element == constants.tuesday \
-    #                 or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
-    #             day_name = format_name_day(first_element)
-    #
-    #         if last_element.lower().find("Використовуйте".lower()) >= 0:
-    #             enter_help = last_element
-    #
-    #         if count_last_element > 9 and count_last_element > 11 and len(clear_element) > 2:
-    #
-    #             time = str(clear_element[1])
-    #             # print(last_element)
-    #
-    #             for element in clear_element:
-    #                 if len(str(element)) == 9 or len(str(element)) == 11:
-    #                     time = str(element)
-    #
-    #             # info = last_element
-    #             info = remove_repetition_in_str(last_element)
-    #
-    #             defis = 0
-    #
-    #             for symbol in time:
-    #                 if symbol == "-":
-    #                     defis += 1
-    #
-    #             if defis == 2:
-    #                 time_list = list(time)
-    #
-    #                 if len(time) == 9:
-    #                     time_list[1] = "."
-    #                 elif len(time) == 11:
-    #                     time_list[2] = "."
-    #
-    #                 time = "".join(time_list)
-    #
-    #             if time:
-    #                 time_start = format_start_time(str(time)).replace(" ", "")
-    #                 time_end = format_end_time(str(time)).replace(" ", "")
-    #
-    #             else:
-    #                 time_start = "00.00"
-    #                 time_end = "00.00"
-    #
-    #             row = format_index_lesson(time_start, is_covid=True)
-    #
-    #             if week is None:
-    #                 week = constants.first_week
-    #
-    #             lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
-    #
-    #             if row is not None and day_name is not None:
-    #                 if enter_help:
-    #                     lesson.info += ", {}".format(remove_repetition_in_str(enter_help))
-    #
-    #                 lessons.append(lesson)
-    #                 enter_help = ""
-    #
-    #             else:
-    #                 print(lesson.format_print())
-    #
-    # return format_enter_help(lessons)
+def read_faculty(path):
+    wb = xlrd.open_workbook(path)
 
+    sheet = wb.sheet_by_index(0)
+    sheet.cell_value(0, 0)
+
+    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
+
+    clear_data = []
+
+    faculties = []
+
+    for el in data:
+        for index in el:
+            if index:
+                try:
+                    if int(index):
+                        pass
+                except:
+                    new_index = remove_repetition_in_str(index)
+                    if len(format_group_id(new_index)) > 14:
+                        clear_data.append(new_index)
+                    else:
+                        clear_data.append(format_group_id(new_index))
+
+    faculty = ""
+
+    for el in clear_data[5:]:
+        if len(el) > 12:
+            faculty = str(el)
+        elif faculty:
+            faculties.append(Faculty(faculty, str(el)))
+
+    return faculties
+
+
+def read_lessons(path, testing=False):
     wb = xlrd.open_workbook(path)
     sheet = wb.sheet_by_index(0)
     sheet.cell_value(0, 0)
@@ -611,7 +521,9 @@ def read_lessons(path, testing=False):
 
     clear_data = []
 
-    #group id
+    enter_help = None
+
+    # group id
     group_id = ""
 
     for el in data:
@@ -628,15 +540,23 @@ def read_lessons(path, testing=False):
 
     for data in clear_data:
 
-        clear_element = remove_empty_element(data)
+        empty_element = remove_empty_element(data)
+
+        clear_element = remove_digit(empty_element)
 
         if clear_element:
             first_element = clear_element[0]
-            last_element = str(clear_element[-1])
+            last_element = clear_element[-1]
+
+            if last_element.lower().find("Використовуйте".lower()) >= 0:
+                enter_help = last_element
+
+            if len(clear_element) > 3 and len(clear_element[-2]) != 9 and len(clear_element[-2]) != 11:
+                last_element = str(str(clear_element[-2]) + ", " + str(clear_element[-1]))
+            else:
+                last_element = str(clear_element[-1])
 
             count_last_element = len(last_element)
-
-            first_element = remove_repetition_in_str(first_element)
 
             if first_element == first_week:
                 week = constants.first_week
@@ -650,39 +570,193 @@ def read_lessons(path, testing=False):
                     or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
                 day_name = format_name_day(first_element)
 
-                # print(day_name)
-
             if count_last_element > 9 and count_last_element > 11:
 
-                time = None
+                if len(last_element) > 9 and len(last_element) > 12:
+                    info = remove_repetition_in_str(last_element)
+                else:
+                    info = None
 
-                if len(clear_element) > 2:
-                    time = str(clear_element[-2]).replace(" ", "")
+                if last_element.lower().find("Використовуйте".lower()) == 0:
+                    info = None
 
-                # info = last_element
-                info = remove_repetition_in_str(last_element)
+                time = ""
+
+                if len(first_element) <= 12:
+                    if len(clear_element) == 3:
+                        time = str(clear_element[1]).replace(" ", "")
+                    else:
+                        time = str(first_element).replace(" ", "")
 
                 if time:
-                    time_start = format_start_time(str(time))
-                    time_end = format_end_time(str(time))
-                else:
-                    time = str(clear_element[-1]).replace(" ", "")
-                    time_start = format_start_time(str(time))
-                    time_end = format_end_time(str(time))
+                    time_start = format_start_time(str(time)).replace(" ", "")
+                    time_end = format_end_time(str(time)).replace(" ", "")
 
                 row = format_index_lesson(time_start, is_covid=True)
 
-
-
                 if week is None:
-                    week = constants.first_week
+                    week = constants.second_week
+
+                    if group_id is None:
+                        group_id = format_group_id(clear_data[0][-1])
 
                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
 
-                if row is not None and day_name is not None:
-                    lessons.append(lesson)
-                else:
-                    if testing:
-                        print(lesson.format_print())
+                if row is not None and day_name is not None and info is not None:
+                    if enter_help:
+                        lesson.info += ", {}".format(remove_repetition_in_str(enter_help))
 
-    return lessons
+                    lessons.append(lesson)
+                    enter_help = ""
+                else:
+                    pass
+                    # print(lesson.format_print())
+
+                # if len(clear_element[1]) > 1:
+                #     time = str(clear_element[1])
+                #
+                # for element in clear_element:
+                #     if len(str(element)) == 9 or len(str(element)) == 11:
+                #         time = str(element)
+                #
+                # # info = last_element
+                # info = remove_repetition_in_str(last_element)
+                #
+                # defis = 0
+                #
+                # for symbol in time:
+                #     if symbol == "-":
+                #         defis += 1
+                #
+                # if defis == 2:
+                #     time_list = list(time)
+                #
+                #     if len(time) == 9:
+                #         time_list[1] = "."
+                #     elif len(time) == 11:
+                #         time_list[2] = "."
+                #
+                #     time = "".join(time_list)
+                #
+                # if time:
+                #     time_start = format_start_time(str(time)).replace(" ", "")
+                #     time_end = format_end_time(str(time)).replace(" ", "")
+                #
+                # else:
+                #     time_start = "00.00"
+                #     time_end = "00.00"
+                #
+                # row = format_index_lesson(time_start, is_covid=True)
+                #
+                # if week is None:
+                #     week = constants.first_week
+                #
+                # lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
+                #
+                # if row is not None and day_name is not None:
+                #     if enter_help:
+                #         lesson.info += ", {}".format(remove_repetition_in_str(enter_help))
+                #
+                #     lessons.append(lesson)
+                #     enter_help = ""
+                # else:
+                #     print(lesson.format_print())
+
+    return format_enter_help(lessons)
+
+    # wb = xlrd.open_workbook(path)
+    # sheet = wb.sheet_by_index(0)
+    # sheet.cell_value(0, 0)
+    #
+    # data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
+    #
+    # row = None
+    # day_name = None
+    # time_start = None
+    # time_end = None
+    # group_id = None
+    # week = None
+    # info = None
+    #
+    # first_week = "І ТИЖДЕНЬ"
+    # second_week = "І I ТИЖДЕНЬ"
+    # second_week_a = "ІI ТИЖДЕНЬ"
+    # second_week_a_a = "ІІ ТИЖДЕНЬ"
+    #
+    # clear_data = []
+    #
+    # #group id
+    # group_id = ""
+    #
+    # for el in data:
+    #     clear_data.append(remove_repetition(el))
+    #
+    # group_name = clear_data[1][-1]
+    #
+    # if not group_name:
+    #     group_name = clear_data[1][-2]
+    #
+    # group_id = format_group_id(group_name)
+    #
+    # lessons = []
+    #
+    # for data in clear_data:
+    #
+    #     clear_element = remove_empty_element(data)
+    #
+    #     if clear_element:
+    #         first_element = clear_element[0]
+    #         last_element = str(clear_element[-1])
+    #
+    #         count_last_element = len(last_element)
+    #
+    #         first_element = remove_repetition_in_str(first_element)
+    #
+    #         if first_element == first_week:
+    #             week = constants.first_week
+    #             # print(week)
+    #
+    #         elif first_element == second_week or first_element == second_week_a or first_element == second_week_a_a:
+    #             week = constants.second_week
+    #             # print(week)
+    #
+    #         if first_element == constants.monday or first_element == constants.tuesday \
+    #                 or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:
+    #             day_name = format_name_day(first_element)
+    #
+    #             # print(day_name)
+    #
+    #         if count_last_element > 9 and count_last_element > 11:
+    #
+    #             time = None
+    #
+    #             if len(clear_element) > 2:
+    #                 time = str(clear_element[-2]).replace(" ", "")
+    #
+    #             # info = last_element
+    #             info = remove_repetition_in_str(last_element)
+    #
+    #             if time:
+    #                 time_start = format_start_time(str(time))
+    #                 time_end = format_end_time(str(time))
+    #             else:
+    #                 time = str(clear_element[-1]).replace(" ", "")
+    #                 time_start = format_start_time(str(time))
+    #                 time_end = format_end_time(str(time))
+    #
+    #             row = format_index_lesson(time_start, is_covid=True)
+    #
+    #
+    #
+    #             if week is None:
+    #                 week = constants.first_week
+    #
+    #             lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
+    #
+    #             if row is not None and day_name is not None:
+    #                 lessons.append(lesson)
+    #             else:
+    #                 if testing:
+    #                     print(lesson.format_print())
+    #
+    # return lessons

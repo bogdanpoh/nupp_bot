@@ -22,14 +22,65 @@ db_manager.create_table_teachers()
 db_manager.create_table_lessons()
 db_manager.create_table_week()
 db_manager.create_table_events()
+db_manager.create_table_faculty()
 
 command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events" "remove_weeks", "remove_group",
+                "remove_faculty",
                 "drop_table_events", "drop_table_users",
                 "start", "settings", "about", "en",
                 "change_group", "change_lang", "change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
                 "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
+
+
+def get_groups():
+    groups = db_manager.get_group_list()
+
+    if groups:
+        sorted_groups = tools.sorted_groups(groups)
+
+        answer = tools.array_to_one_line(sorted_groups)
+
+        return answer[:-2]
+    else:
+        return "DB Lessons is clear"
+
+    # lessons = db_manager.get_lessons()
+    # faculties = db_manager.get_faculties()
+    #
+    # faculties_name = []
+    #
+    # for faculty in faculties:
+    #     faculties_name.append(faculty.faculty)
+    #
+    # faculties_clear = tools.remove_repetition(faculties_name)
+    #
+    # answer = ""
+    #
+    # groups = []
+    #
+    # for faculty_name in faculties_clear:
+    #     answer += tools.to_bold(faculty_name) + " - "
+    #
+    #     groups_list = db_manager.get_group_id_by_faculty_name(faculty_name)
+    #
+    #     if groups_list:
+    #         for group in groups_list:
+    #             groups.append(group)
+
+        # fac = db_manager.get_group_id_by_faculty_name(faculty_name
+
+        # for f in fac:
+        #     # answer += f.group_id + ", "
+        #     groups.append(f.group_id)
+
+
+        # answer += tools.array_to_one_line(tools.sorted_groups(groups))
+        # answer += "\n\n"
+        # groups.clear()
+
+    return answer
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -63,6 +114,35 @@ def show_log(message, is_command):
     info = str(user.name_user + " - " + message.text)
 
     print(info)
+
+
+@bot.message_handler(regexp="/add_faculty")
+def handler(message):
+    reply_message = bot.send_message(message.chat.id, "Enter faculty_file: ")
+
+    bot.register_next_step_handler(reply_message, process_add_faculty)
+
+
+@bot.message_handler(regexp="/faculties")
+def handler(message):
+    lessons = db_manager.get_lessons()
+
+    faculties = db_manager.get_faculties()
+
+    # for fac in faculties:
+    #     print(fac.format_print())
+
+    for lesson in lessons:
+        faculty_name = db_manager.get_faculty(lesson.group_id)
+
+        if faculty_name:
+            print("{} {}".format(lesson.group_id, faculty_name))
+        else:
+            print("{} {} {}".format(lesson.group_id, "None", len(lesson.group_id)))
+
+    # if faculties:
+    #     for faculty in faculties:
+    #         print(faculty.format_print())
 
 
 @bot.message_handler(regexp="date")
@@ -137,14 +217,12 @@ def commands_handler(message):
         groups = db_manager.get_group_list()
 
         if groups:
-            list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
-
             select_answer_pick_group = constants.pick_your_group
 
             if lang == constants.lang_en:
                 select_answer_pick_group = constants.pick_your_group_en
 
-            reply_message = bot.reply_to(answer, select_answer_pick_group + "\n\n" + list_groups[:-2], parse_mode="HTML")
+            reply_message = bot.reply_to(answer, select_answer_pick_group + "\n\n" + get_groups(), parse_mode="HTML")
 
             bot.register_next_step_handler(reply_message, process_group_step)
 
@@ -348,11 +426,7 @@ def commands_handler(message):
         groups = db_manager.get_group_list()
 
         if groups:
-            sorted_groups = tools.sorted_groups(groups)
-
-            answer = tools.array_to_one_line(sorted_groups)
-
-            bot.send_message(chat_id, answer[:-2])
+            parse_send_message(chat_id, get_groups())
         else:
             bot.send_message(chat_id, "DB Lessons is clear")
 
@@ -427,6 +501,12 @@ def commands_handler(message):
 
         bot.register_next_step_handler(reply_message, process_remove_group)
 
+    elif msg == "/remove_faculty":
+        db_manager.remove_faculty()
+
+        if len(db_manager.get_faculties()) == 0:
+            bot.send_message(chat_id, "Table {} is clear".format(constants.table_faculty))
+
     else:
         is_command = False
 
@@ -476,6 +556,8 @@ def message_handler(message):
         if db_manager.is_user(search_chat_id):
             user = db_manager.get_user_by_chat_id(search_chat_id)
             bot.send_message(chat_id, user.format_print())
+        else:
+            bot.send_message(chat_id, "User dont found")
 
     if db_manager.is_user(chat_id):
         user_lang = db_manager.get_user_by_chat_id(chat_id).language
@@ -586,15 +668,18 @@ def message_handler(message):
                 parse_send_message(chat_id, lessons_str)
                 return
             else:
-                bot.send_message(chat_id, "Weeks not found")
+                bot.send_message(chat_id, "Dont found lessons")
 
         if group_id:
 
             lessons = db_manager.get_lessons_by_week(group_id, current_week)
 
-            lessons_week_str = tools.format_lessons_week_for_message(lessons, lang=user_lang)
+            if lessons:
+                lessons_week_str = tools.format_lessons_week_for_message(lessons, lang=user_lang)
 
-            parse_send_message(chat_id, lessons_week_str)
+                parse_send_message(chat_id, lessons_week_str)
+            else:
+                bot.send_message(chat_id, constants.dont_found_group)
 
         else:
             # bot.send_message(chat_id, "Please, send /start")
@@ -658,7 +743,10 @@ def file_handler(message):
                 except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
-            parse_send_message(message.chat.id, "Lessons {0} add to database".format(group_id))
+            answer_str = "Lessons {0} add to database".format(group_id)
+            parse_send_message(message.chat.id, answer_str)
+            parse_send_message(constants.admin_log, answer_str)
+            print(answer_str)
         else:
             bot.send_message(message.chat.id, "Lessons dont found")
     else:
@@ -741,15 +829,12 @@ def process_group_step(message):
             parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0} , {1}: {2}"
                                .format(user.name_user, tools.to_bold("group"), user.group_id))
     else:
-        groups = tools.sorted_groups(db_manager.get_group_list())
-        list_groups = tools.array_to_one_line(groups)
-
         select_answer = constants.pick_your_group
 
         if lang == constants.lang_en:
             select_answer = constants.pick_your_group_en
 
-        reply_message = bot.reply_to(message, select_answer + "\n\n" + list_groups[:-2], parse_mode="HTML")
+        reply_message = bot.reply_to(message, select_answer + "\n\n" + get_groups(), parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
@@ -758,12 +843,11 @@ def process_remove_group(message):
     group_id = str(message.text)
 
     if db_manager.is_group(group_id):
-        # db_manager.remove_group(group_id)
         try:
             db_manager.remove_group(group_id)
             bot.send_message(message.chat.id, "Remove {} success".format(group_id))
         except:
-            bot.send_message(message.chat.id, "Error remove group")
+            bot.send_message(message.chat.id, "Error remove group {}".format(group_id))
 
     else:
         bot.send_message(message.chat.id, "Dont found group: {}".format(group_id))
@@ -775,7 +859,7 @@ def process_send_messages(message):
     msg = str(message.text)
 
     for user in users:
-        time.sleep(3)
+        time.sleep(15)
         if user.language == constants.lang_en:
             answer = constants.warning_en + "\n\n" + msg
         else:
@@ -788,6 +872,28 @@ def process_send_messages(message):
             bot.send_message(constants.admin_log, "Error in send message to user {} id: {}".format(user.name_user, user.chat_id))
 
     bot.send_message(message.chat.id, "Success")
+
+
+def process_add_faculty(message):
+
+    path = os.path.join(constants.documents_directory, constants.excel_file_faculty)
+
+    file_info = bot.get_file(message.document.file_id)
+    type_file = str(file_info.file_path).split(".")[-1]
+
+    if type_file == constants.excel_file_type or type_file == constants.excel_file_type_a:
+        downloaded_file = bot.download_file(file_info.file_path)
+
+        tools.download_file(path + "." + type_file, downloaded_file)
+
+    path += "." + type_file
+
+    if os.path.isfile(path):
+        info = tools.read_faculty(path)
+
+        for el in info:
+            db_manager.add_faculty(el)
+
 
 
 def check_current_week(current_time):

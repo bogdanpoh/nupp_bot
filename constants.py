@@ -3,12 +3,13 @@ import emoji
 # database info
 db_name = "telegram_bot.db"
 
-# database names
+# tables names
 table_users = "users"
 table_teachers = "teachers"
 table_lessons = "lessons"
 table_week = "week"
 table_events = "events"
+table_faculty = "faculty"
 
 # for operation with time
 format_time = "%H:%M"
@@ -104,6 +105,7 @@ thanks_for_a_registration_en = "Thank you for registering \U0001F60B"
 file_not_found = "Файл не знайдено \U0001F614"
 change_group = "Ваша група обновлена \U0001F970"
 change_group_en = "Your group has been updated \U0001F970"
+dont_found_group = "Вашої групи наразі немає, повідомте про це нам @nupp_help"
 
 # keyboard buttons
 keyboard_setting = "Налаштування"
@@ -150,6 +152,7 @@ lang_en = "en"
 # paths
 documents_directory = "documents"
 excel_file = "excel_file"
+excel_file_faculty = "faculty_file"
 excel_file_type = "xlsx"
 excel_file_type_a = "xls"
 txt_file = "info.txt"

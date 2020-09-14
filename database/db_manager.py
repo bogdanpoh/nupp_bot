@@ -134,6 +134,25 @@ def create_table_events(db_name=None):
     close_connection(cursor, db)
 
 
+def create_table_faculty(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS {0} (
+    id INTEGER PRIMARY KEY,
+    faculty TEXT,
+    group_id TEXT)
+    """.format(constants.table_faculty))
+
+    db.commit()
+    close_connection(cursor, db)
+
+
 # user
 def add_user(user, db_name=None):
     if db_name:
@@ -178,7 +197,6 @@ def get_users(db_name=None):
 def get_user_by_chat_id(chat_id):
     db = get_db_connect()
     cursor = get_cursor(db)
-
     query = "SELECT * FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
 
     user = cursor.execute(query)
@@ -769,4 +787,98 @@ def drop_table(table_name):
     cursor.execute(query)
     db.commit()
 
+    close_connection(cursor, db)
+
+
+# faculty
+def add_faculty(faculty, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+
+    query = "INSERT INTO {0} (faculty, group_id) VALUES (?, ?)".format(constants.table_faculty)
+
+    val = (faculty.faculty, faculty.group_id)
+
+    try:
+        cursor.execute(query, val)
+    except:
+        print("dont add faculty to db")
+
+    db.commit()
+
+    close_connection(cursor, db)
+
+
+def get_faculties(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+
+    query = "SELECT * FROM {0}".format(constants.table_faculty)
+
+    data = cursor.execute(query)
+
+    if data:
+        faculties = tools.data_to_list_class(data, "faculty")
+        close_connection(cursor, db)
+        return faculties
+    else:
+        close_connection(cursor, db)
+        return None
+
+
+def get_faculty(group_id):
+    faculties = get_faculties()
+
+    for faculty in faculties:
+        if str(faculty.group_id) == str(group_id):
+            return faculty.faculty
+
+    return None
+
+def get_group_id_by_faculty_name(faculty_name):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    answer = []
+
+    query = str("SELECT * FROM {} WHERE `faculty` = '{}'") \
+        .format(constants.table_faculty, faculty_name)
+
+    data = cursor.execute(query)
+
+    faculties = tools.data_to_list_class(data, "faculty")
+    lessons = get_lessons()
+
+    for faculty in faculties:
+        if str(faculty.faculty) == faculty_name:
+
+            for lesson in lessons:
+                if str(lesson.group_id) == str(faculty.group_id):
+                    answer.append(faculty.group_id)
+                    break
+
+    if faculties:
+        close_connection(cursor, db)
+        return answer
+    else:
+        close_connection(cursor, db)
+        return None
+
+
+def remove_faculty():
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "DELETE FROM {0}".format(constants.table_faculty)
+
+    cursor.execute(query)
+    db.commit()
     close_connection(cursor, db)
