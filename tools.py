@@ -529,17 +529,15 @@ def read_lessons(path, testing=False):
     for el in data:
         clear_data.append(remove_repetition(el))
 
-    group_name = clear_data[1][-1]
+    group_name = clear_data[0][-1]
 
-    print(group_name)
-
-    if not group_name:
+    if group_name == "":
         group_name = clear_data[1][-2]
 
-    if not group_name:
+    if group_name == "":
         group_name = clear_data[0][-1]
 
-    if not group_name:
+    if group_name == "":
         group_name = clear_data[0][-2]
 
 
