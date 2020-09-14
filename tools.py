@@ -531,9 +531,8 @@ def read_lessons(path, testing=False):
 
     group_name = clear_data[1][-1]
 
-    if not group_name:
-        group_name = clear_data[1][-2]
-
+    # if not group_name:
+    #     group_name = clear_data[1][-2]
 
     if not group_name:
         group_name = clear_data[0][-1]
