@@ -652,8 +652,7 @@ def read_lessons(path, testing=False):
 
                 # print(day_name)
 
-
-            if count_last_element > 10 and count_last_element > 12:
+            if count_last_element > 9 and count_last_element > 11:
 
                 time = None
 
