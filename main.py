@@ -12,7 +12,7 @@ import threading
 import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -27,7 +27,7 @@ db_manager.create_table_faculty()
 command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events" "remove_weeks", "remove_group",
                 "remove_faculty",
                 "drop_table_events", "drop_table_users",
-                "start", "settings", "about", "en",
+                "start", "settings", "about", "help", "en",
                 "change_group", "change_lang", "change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
@@ -46,42 +46,6 @@ def get_groups():
     else:
         return "DB Lessons is clear"
 
-    # lessons = db_manager.get_lessons()
-    # faculties = db_manager.get_faculties()
-    #
-    # faculties_name = []
-    #
-    # for faculty in faculties:
-    #     faculties_name.append(faculty.faculty)
-    #
-    # faculties_clear = tools.remove_repetition(faculties_name)
-    #
-    # answer = ""
-    #
-    # groups = []
-    #
-    # for faculty_name in faculties_clear:
-    #     answer += tools.to_bold(faculty_name) + " - "
-    #
-    #     groups_list = db_manager.get_group_id_by_faculty_name(faculty_name)
-    #
-    #     if groups_list:
-    #         for group in groups_list:
-    #             groups.append(group)
-
-        # fac = db_manager.get_group_id_by_faculty_name(faculty_name
-
-        # for f in fac:
-        #     # answer += f.group_id + ", "
-        #     groups.append(f.group_id)
-
-
-        # answer += tools.array_to_one_line(tools.sorted_groups(groups))
-        # answer += "\n\n"
-        # groups.clear()
-
-    # return answer
-
 
 def parse_send_message(chat_id, text, keyboard=None):
 
@@ -97,7 +61,7 @@ def show_log(message, is_command):
     user = tools.get_user_info(message)
 
     if current_token == config.token:
-        format_info = str(tools.to_bold(user.name_user) + " - " + message.text)
+        format_info = str("@" + tools.to_bold(user.name_user) + " - " + message.text)
 
         if not is_command:
 
@@ -242,6 +206,9 @@ def commands_handler(message):
 
         parse_send_message(chat_id, answer)
 
+    elif msg == "/help":
+        bot.send_message(chat_id, constants.help_answer)
+
     elif msg == "/change_group":
 
         groups = db_manager.get_group_list()
@@ -254,7 +221,9 @@ def commands_handler(message):
             if db_manager.get_user_by_chat_id(chat_id).language == constants.lang_en:
                 answer_change_group = constants.pick_your_group_en.split("\n")[0]
 
-        reply_message = bot.send_message(chat_id, answer_change_group + "\n\n" + list_groups, parse_mode="HTML")
+        reply_message = bot.send_message(chat_id,
+                                         answer_change_group + "\n\n" + list_groups + "\n\n" + constants.cancel,
+                                         parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
     elif msg == "/change_lang":
@@ -355,7 +324,6 @@ def commands_handler(message):
 
         if not teachers:
             bot.send_message(chat_id, "Table {0} cleared".format(constants.table_teachers))
-
 
     elif msg == "/remove_events":
         db_manager.remove_events()
@@ -550,15 +518,6 @@ def message_handler(message):
 
     user_lang = constants.lang_ua
 
-    if msg[0] == "_":
-        search_chat_id = msg.replace("_", "")
-
-        if db_manager.is_user(search_chat_id):
-            user = db_manager.get_user_by_chat_id(search_chat_id)
-            bot.send_message(chat_id, user.format_print())
-        else:
-            bot.send_message(chat_id, "User dont found")
-
     if db_manager.is_user(chat_id):
         user_lang = db_manager.get_user_by_chat_id(chat_id).language
     else:
@@ -685,6 +644,15 @@ def message_handler(message):
             # bot.send_message(chat_id, "Please, send /start")
             send_not_register(chat_id, user_lang)
 
+    elif msg[0] == "_":
+        search_chat_id = msg.replace("_", "")
+
+        if db_manager.is_user(search_chat_id):
+            user = db_manager.get_user_by_chat_id(search_chat_id)
+            bot.send_message(chat_id, user.format_print())
+        else:
+            bot.send_message(chat_id, "User dont found")
+
     else:
         is_command = False
 
@@ -787,6 +755,11 @@ def process_change_group_step(message):
             bot.send_message(message.chat.id, constants.change_group)
 
     else:
+
+        if message.text == "/cancel":
+            bot.send_message(message.chat.id, constants.cancel_success)
+            return
+
         groups = db_manager.get_group_list()
 
         line_groups = tools.array_to_one_line(groups)
@@ -897,7 +870,6 @@ def process_add_faculty(message):
 
         for el in info:
             db_manager.add_faculty(el)
-
 
 
 def check_current_week(current_time):

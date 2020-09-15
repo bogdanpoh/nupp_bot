@@ -32,6 +32,7 @@ settings_answer = """
 /change_group - змінити групу
 /change_lang - змінити мову на англійську
 /groups - отримати список доступних груп
+/help - отримати інформацію про бота
 /about - детальніше про нас
 
 /enable_reminders - ввімкнути нагадування про розклад занять за 20 хвилин до початку
@@ -39,8 +40,6 @@ settings_answer = """
 
 Для отримання розкладу іншої групи, просто відправ її номер
 <b>(Наприклад 101ЕМ, де ЕМ - українськими літерами)</b>
-
-<a href="https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31">Ознайомитися детально:</a>
 
 З питань підтримки, допомоги, пропозицій писати - @nupp_help
 """
@@ -63,6 +62,8 @@ To get another group's schedule, just send her number
 
 For support, help, suggestions write - @nupp_help
 """
+
+help_answer = "https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31"
 
 about_answer = """
 Дизайнер аватара для бота - https://www.instagram.com/your_death_404/
@@ -106,6 +107,8 @@ file_not_found = "Файл не знайдено \U0001F614"
 change_group = "Ваша група обновлена \U0001F970"
 change_group_en = "Your group has been updated \U0001F970"
 dont_found_group = "Вашої групи наразі немає, повідомте про це нам @nupp_help"
+cancel = "/cancel - відмінити дію"
+cancel_success = "Дія зупинена \U0001F642"
 
 # keyboard buttons
 keyboard_setting = "Налаштування"
