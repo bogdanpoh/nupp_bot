@@ -12,7 +12,7 @@ import threading
 import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -117,9 +117,10 @@ def handler(message):
 def handler(message):
     # answer = db_manager.get_faculty_by_group_id("402ЕМ")
 
-    answer = db_manager.get_group_id_by_faculty_name("Навчально-науковий інститут фінансів, економіки та менеджменту")
+    answer = db_manager.get_faculties()
 
-    print(tools.array_to_one_line(answer))
+    for el in answer:
+        print(el.format_print())
 
 
 @bot.message_handler(regexp="date")
