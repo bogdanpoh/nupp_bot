@@ -117,10 +117,11 @@ def handler(message):
 def handler(message):
     # answer = db_manager.get_faculty_by_group_id("402ЕМ")
 
-    answer = db_manager.get_faculties()
+    # answer = db_manager.get_faculties()
+    answer = db_manager.get_lessons()
 
-    for el in answer:
-        print(el.format_print())
+    # for el in answer:
+    #     print(el.format_print())
 
 
 @bot.message_handler(regexp="date")
@@ -767,10 +768,11 @@ def process_change_group_step(message):
     if db_manager.is_group(message.text):
         db_manager.update_user_group(message.chat.id, message.text)
 
-        if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
-            bot.send_message(message.chat.id, constants.change_group_en)
-        else:
-            bot.send_message(message.chat.id, constants.change_group)
+        if db_manager.is_user(message.chat.id):
+            if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
+                bot.send_message(message.chat.id, constants.change_group_en)
+            else:
+                bot.send_message(message.chat.id, constants.change_group)
 
     else:
 
@@ -872,11 +874,16 @@ def process_send_messages(message):
         else:
             answer = constants.warning + "\n\n" + msg
 
+        log = "send to {}".format(user.name_user)
+
         try:
             parse_send_message(user.chat_id, answer)
-            parse_send_message(constants.admin_log, "send to {}".format(user.name_user))
+            parse_send_message(constants.admin_log, log)
+            print(log)
         except:
-            bot.send_message(constants.admin_log, "Error in send message to user {} id: {}".format(user.name_user, user.chat_id))
+            log = "Error in send message to user {} id: {}".format(user.name_user, user.chat_id)
+            bot.send_message(constants.admin_log, log)
+            print(log)
 
     bot.send_message(message.chat.id, "Success")
 
