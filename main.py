@@ -410,7 +410,7 @@ def commands_handler(message):
 
     elif msg == "/groups":
 
-        groups = db_manager.get_group_list()
+        groups = get_groups()
 
         if groups:
             parse_send_message(chat_id, get_groups())
