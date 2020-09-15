@@ -834,14 +834,22 @@ def get_faculties(db_name=None):
         return None
 
 
-def get_faculty(group_id):
-    faculties = get_faculties()
+def get_faculty_by_group_id(group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
 
-    for faculty in faculties:
-        if str(faculty.group_id) == str(group_id):
-            return faculty.faculty
+    query = "SELECT faculty FROM {} WHERE `group_id` = '{}'".format(constants.table_faculty, group_id)
 
-    return None
+    data = cursor.execute(query)
+
+    if data:
+        for el in data:
+            return str(el[0])
+        close_connection(cursor, db)
+    else:
+        close_connection(cursor, db)
+        return None
+
 
 def get_group_id_by_faculty_name(faculty_name):
     db = get_db_connect()

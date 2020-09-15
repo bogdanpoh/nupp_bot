@@ -35,16 +35,42 @@ command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_eve
 
 
 def get_groups():
-    groups = db_manager.get_group_list()
 
-    if groups:
-        sorted_groups = tools.sorted_groups(groups)
+    faculties = db_manager.get_faculties()
+    faculties_name = []
 
-        answer = tools.array_to_one_line(sorted_groups)
+    answer = ""
 
-        return answer[:-2]
-    else:
-        return "DB Lessons is clear"
+    for faculty in faculties:
+        faculties_name.append(faculty.faculty)
+
+    faculties_sorted = tools.remove_repetition(faculties_name)
+
+    for faculty in faculties_sorted:
+
+        groups = db_manager.get_group_id_by_faculty_name(faculty)
+
+        answer += tools.to_bold(faculty) + " - "
+
+        if groups:
+            answer += tools.array_to_one_line(tools.sorted_groups(groups))[:-2]
+        else:
+            answer += "None"
+
+        answer += "\n\n"
+
+    return answer
+
+    # groups = db_manager.get_group_list()
+    #
+    # if groups:
+    #     sorted_groups = tools.sorted_groups(groups)
+    #
+    #     answer = tools.array_to_one_line(sorted_groups)
+    #
+    #     return answer[:-2]
+    # else:
+    #     return "DB Lessons is clear"
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -89,24 +115,11 @@ def handler(message):
 
 @bot.message_handler(regexp="/faculties")
 def handler(message):
-    lessons = db_manager.get_lessons()
+    # answer = db_manager.get_faculty_by_group_id("402ЕМ")
 
-    faculties = db_manager.get_faculties()
+    answer = db_manager.get_group_id_by_faculty_name("Навчально-науковий інститут фінансів, економіки та менеджменту")
 
-    # for fac in faculties:
-    #     print(fac.format_print())
-
-    for lesson in lessons:
-        faculty_name = db_manager.get_faculty(lesson.group_id)
-
-        if faculty_name:
-            print("{} {}".format(lesson.group_id, faculty_name))
-        else:
-            print("{} {} {}".format(lesson.group_id, "None", len(lesson.group_id)))
-
-    # if faculties:
-    #     for faculty in faculties:
-    #         print(faculty.format_print())
+    print(tools.array_to_one_line(answer))
 
 
 @bot.message_handler(regexp="date")
@@ -211,18 +224,22 @@ def commands_handler(message):
 
     elif msg == "/change_group":
 
-        groups = db_manager.get_group_list()
+        # groups = db_manager.get_group_list()
 
-        list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
+        # list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
+
+        list_groups = get_groups()
 
         answer_change_group = constants.pick_your_group.split("\n")[0]
+        cancel = constants.cancel
 
         if db_manager.is_user(chat_id):
             if db_manager.get_user_by_chat_id(chat_id).language == constants.lang_en:
                 answer_change_group = constants.pick_your_group_en.split("\n")[0]
+                cancel = constants.cancel_en
 
         reply_message = bot.send_message(chat_id,
-                                         answer_change_group + "\n\n" + list_groups + "\n\n" + constants.cancel,
+                                         answer_change_group + "\n\n" + list_groups + cancel,
                                          parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
@@ -757,14 +774,26 @@ def process_change_group_step(message):
     else:
 
         if message.text == "/cancel":
-            bot.send_message(message.chat.id, constants.cancel_success)
+
+            if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
+                bot.send_message(message.chat.id, constants.cancel_success_en)
+            else:
+                bot.send_message(message.chat.id, constants.cancel_success)
             return
 
-        groups = db_manager.get_group_list()
+        # groups = db_manager.get_group_list()
 
-        line_groups = tools.array_to_one_line(groups)
+        # line_groups = tools.array_to_one_line(groups)
+        groups = get_groups()
 
-        reply_message = bot.send_message(message.chat.id, constants.pick_your_group + "\n\n" + line_groups, parse_mode="HTML")
+        answer_pick = constants.pick_your_group.split("\n")[0]
+        cancel = constants.cancel
+
+        if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
+            answer_pick = constants.pick_your_group_en.split("\n")[0]
+            cancel = constants.cancel_en
+
+        reply_message = bot.send_message(message.chat.id, answer_pick + "\n\n" + groups + cancel, parse_mode="HTML")
 
         bot.register_next_step_handler(reply_message, process_change_group_step)
 

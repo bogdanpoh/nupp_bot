@@ -108,7 +108,9 @@ change_group = "Ваша група обновлена \U0001F970"
 change_group_en = "Your group has been updated \U0001F970"
 dont_found_group = "Вашої групи наразі немає, повідомте про це нам @nupp_help"
 cancel = "/cancel - відмінити дію"
+cancel_en = "/cancel - cancel the action"
 cancel_success = "Дія зупинена \U0001F642"
+cancel_success_en = "Action stopped \U0001F642"
 
 # keyboard buttons
 keyboard_setting = "Налаштування"
