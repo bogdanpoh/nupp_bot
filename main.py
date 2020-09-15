@@ -80,7 +80,7 @@ def get_groups():
         # answer += "\n\n"
         # groups.clear()
 
-    return answer
+    # return answer
 
 
 def parse_send_message(chat_id, text, keyboard=None):
@@ -248,13 +248,13 @@ def commands_handler(message):
 
         list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
+        answer_change_group = constants.pick_your_group.split("\n")[0]
+
         if db_manager.is_user(chat_id):
             if db_manager.get_user_by_chat_id(chat_id).language == constants.lang_en:
-                answer = constants.pick_your_group_en.split("\n")[0]
-            else:
-                answer = constants.pick_your_group.split("\n")[0]
+                answer_change_group = constants.pick_your_group_en.split("\n")[0]
 
-        reply_message = bot.send_message(chat_id, answer + "\n\n" + list_groups, parse_mode="HTML")
+        reply_message = bot.send_message(chat_id, answer_change_group + "\n\n" + list_groups, parse_mode="HTML")
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
     elif msg == "/change_lang":
@@ -694,8 +694,12 @@ def message_handler(message):
                     lessons = db_manager.get_lessons_by_week(group, current_week)
                     answer = tools.format_lessons_week_for_message(lessons, lang=user_lang)
 
-                    parse_send_message(chat_id, answer)
                     is_command = True
+
+                    if answer:
+                        parse_send_message(chat_id, answer)
+                    else:
+                        parse_send_message(chat_id, constants.dont_found_group)
 
     show_log(message, is_command)
 

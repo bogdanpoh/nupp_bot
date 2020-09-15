@@ -518,6 +518,8 @@ def read_lessons(path, testing=False):
     second_week = "І I ТИЖДЕНЬ"
     second_week_a = "ІI ТИЖДЕНЬ"
     second_week_a_a = "ІІ ТИЖДЕНЬ"
+    second_week_a_a_a = "ІІ тиждень"
+    second_week_a_a_a_a = "вторая"
 
     clear_data = []
 
@@ -565,7 +567,12 @@ def read_lessons(path, testing=False):
                 week = constants.first_week
                 # print(week)
 
-            elif first_element == second_week or first_element == second_week_a or first_element == second_week_a_a:
+            elif first_element == second_week or\
+                    first_element == second_week_a or\
+                    first_element == second_week_a_a or \
+                    first_element == second_week_a_a_a or\
+                    first_element == second_week_a_a_a_a:
+
                 week = constants.second_week
                 # print(week)
 
@@ -614,56 +621,6 @@ def read_lessons(path, testing=False):
                 else:
                     pass
                     # print(lesson.format_print())
-
-                # if len(clear_element[1]) > 1:
-                #     time = str(clear_element[1])
-                #
-                # for element in clear_element:
-                #     if len(str(element)) == 9 or len(str(element)) == 11:
-                #         time = str(element)
-                #
-                # # info = last_element
-                # info = remove_repetition_in_str(last_element)
-                #
-                # defis = 0
-                #
-                # for symbol in time:
-                #     if symbol == "-":
-                #         defis += 1
-                #
-                # if defis == 2:
-                #     time_list = list(time)
-                #
-                #     if len(time) == 9:
-                #         time_list[1] = "."
-                #     elif len(time) == 11:
-                #         time_list[2] = "."
-                #
-                #     time = "".join(time_list)
-                #
-                # if time:
-                #     time_start = format_start_time(str(time)).replace(" ", "")
-                #     time_end = format_end_time(str(time)).replace(" ", "")
-                #
-                # else:
-                #     time_start = "00.00"
-                #     time_end = "00.00"
-                #
-                # row = format_index_lesson(time_start, is_covid=True)
-                #
-                # if week is None:
-                #     week = constants.first_week
-                #
-                # lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
-                #
-                # if row is not None and day_name is not None:
-                #     if enter_help:
-                #         lesson.info += ", {}".format(remove_repetition_in_str(enter_help))
-                #
-                #     lessons.append(lesson)
-                #     enter_help = ""
-                # else:
-                #     print(lesson.format_print())
 
     return format_enter_help(lessons)
 
