@@ -12,7 +12,7 @@ import threading
 import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -24,7 +24,7 @@ db_manager.create_table_week()
 db_manager.create_table_events()
 db_manager.create_table_faculty()
 
-command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events" "remove_weeks", "remove_group",
+command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events", "remove_weeks", "remove_group",
                 "remove_faculty",
                 "drop_table_events", "drop_table_users",
                 "start", "settings", "about", "help", "en",
@@ -100,6 +100,8 @@ def show_log(message, is_command):
             parse_send_message(message.chat.id, answer + " - " + tools.to_bold(message.text))
 
         parse_send_message(constants.admin_log, format_info)
+
+    time.sleep(2)
 
     info = str(user.name_user + " - " + message.text)
 

@@ -453,7 +453,7 @@ def format_enter_help(lessons):
 
         if enter_help_day_name:
             if lesson.day_name == enter_help_day_name and lesson.info.lower().find(word) < 0:
-                lesson.info += ", " + enter_help
+                lesson.info += ", " + str(enter_help)
 
             if lesson.day_name != enter_help_day_name:
                 enter_help = None
@@ -515,11 +515,14 @@ def read_lessons(path, testing=False):
     info = None
 
     first_week = "І ТИЖДЕНЬ"
+    first_week_a = "I тиждень"
     second_week = "І I ТИЖДЕНЬ"
     second_week_a = "ІI ТИЖДЕНЬ"
     second_week_a_a = "ІІ ТИЖДЕНЬ"
     second_week_a_a_a = "ІІ тиждень"
+    second_week_a_a_a_a_a = "II тиждень"
     second_week_a_a_a_a = "вторая"
+
 
     clear_data = []
 
@@ -563,15 +566,15 @@ def read_lessons(path, testing=False):
 
             count_last_element = len(last_element)
 
-            if first_element == first_week:
+            if first_element == first_week or first_element == first_week_a:
                 week = constants.first_week
                 # print(week)
 
-            elif first_element == second_week or\
+            if first_element == second_week or\
                     first_element == second_week_a or\
                     first_element == second_week_a_a or \
                     first_element == second_week_a_a_a or\
-                    first_element == second_week_a_a_a_a:
+                    first_element == second_week_a_a_a_a or first_element == second_week_a_a_a_a_a:
 
                 week = constants.second_week
                 # print(week)

@@ -422,7 +422,7 @@ def get_lessons_by_week(group_id, week):
 
 
 # week
-def set_default_week(db_name=None):
+def set_default_week(db_name=None, week=None):
 
     if db_name:
         db = get_db_connect(db_name)
@@ -431,7 +431,12 @@ def set_default_week(db_name=None):
 
     cursor = get_cursor(db)
 
-    query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, constants.first_week)
+    set_week = constants.first_week
+
+    if week:
+        set_week = week
+
+    query = "INSERT INTO {0} (current_week) VALUES ('{1}')".format(constants.table_week, set_week)
 
     cursor.execute(query)
     db.commit()
