@@ -47,17 +47,17 @@ class Lesson(object):
 
         row = ""
 
-        if self.row == 1:
+        if str(self.row) == str(1):
             row = constants.one_number
-        elif self.row == 2:
+        elif str(self.row) == str(2):
             row = constants.two_number
-        elif self.row == 3:
+        elif str(self.row) == str(3):
             row = constants.three_number
-        elif self.row == 4:
+        elif str(self.row) == str(4):
             row = constants.four_number
-        elif self.row == 5:
+        elif str(self.row) == str(5):
             row = constants.five_number
-        elif self.row == 6:
+        elif str(self.row) == str(6):
             row = constants.six_number
 
         if is_teacher_format:
