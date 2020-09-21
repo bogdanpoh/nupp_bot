@@ -47,27 +47,27 @@ class Lesson(object):
 
         row = ""
 
-        if self.row == "1":
+        if self.row == 1:
             row = constants.one_number
-        elif self.row == "2":
+        elif self.row == 2:
             row = constants.two_number
-        elif self.row == "3":
+        elif self.row == 3:
             row = constants.three_number
-        elif self.row == "4":
+        elif self.row == 4:
             row = constants.four_number
-        elif self.row == "5":
+        elif self.row == 5:
             row = constants.five_number
-        elif self.row == "6":
+        elif self.row == 6:
             row = constants.six_number
 
         if is_teacher_format:
             return "{0} <b>{1}-{2}</b> – <i>{3}, {4}</i>".format(row,
-                                                                       self.time_start,
-                                                                       self.time_end,
-                                                                       self.group_id,
-                                                                       self.info)
+                                                                 self.time_start,
+                                                                 self.time_end,
+                                                                 self.group_id,
+                                                                 self.info)
         else:
             return "{0} <b>{1}-{2}</b> – <i>{3}</i>".format(row,
-                                                        self.time_start,
-                                                        self.time_end,
-                                                        self.info)
+                                                            self.time_start,
+                                                            self.time_end,
+                                                            self.info)
