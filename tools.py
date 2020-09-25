@@ -585,7 +585,7 @@ def read_lessons(path, testing=False):
 
             if count_last_element > 9 and count_last_element > 11:
 
-                if len(last_element) > 9 and len(last_element) > 12:
+                if len(last_element) > 9 and len(last_element) > 12 or last_element.lower()[0] == "ф":
                     info = remove_repetition_in_str(last_element)
                 else:
                     info = None
@@ -622,8 +622,7 @@ def read_lessons(path, testing=False):
                     lessons.append(lesson)
                     enter_help = ""
                 else:
-                    pass
-                    # print(lesson.format_print())
+                    print(lesson.format_print())
 
     return format_enter_help(lessons)
 
