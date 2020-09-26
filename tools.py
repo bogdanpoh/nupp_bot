@@ -622,7 +622,8 @@ def read_lessons(path, testing=False):
                     lessons.append(lesson)
                     enter_help = ""
                 else:
-                    print(lesson.format_print())
+                    pass
+                    # print(lesson.format_print())
 
     return format_enter_help(lessons)
 

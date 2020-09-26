@@ -870,7 +870,7 @@ def process_send_messages(message):
     msg = str(message.text)
 
     for user in users:
-        time.sleep(15)
+        time.sleep(10)
         if user.language == constants.lang_en:
             answer = constants.warning_en + "\n\n" + msg
         else:
