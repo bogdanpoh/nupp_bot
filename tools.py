@@ -279,7 +279,7 @@ def get_required_keyboard(lang=None):
     return markup
 
 
-def get_user_info(message):
+def get_user_info_from_message(message):
 
     name = ""
 

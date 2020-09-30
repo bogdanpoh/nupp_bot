@@ -12,7 +12,7 @@ import threading
 import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -25,13 +25,13 @@ db_manager.create_table_events()
 db_manager.create_table_faculty()
 
 command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events", "remove_weeks", "remove_group",
-                "remove_faculty",
+                "remove_faculty", "rename_group_id",
                 "drop_table_events", "drop_table_users",
                 "start", "settings", "about", "help", "en",
                 "change_group", "change_lang", "change_week",
                 "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
-                "get_db_bot", "groups", "events", "time", "user", "count_groups", "count_lessons", "remove_me"]
+                "get_db_bot", "groups", "get_groups","events", "time", "user", "count_groups", "count_lessons", "remove_me"]
 
 
 def get_groups():
@@ -61,17 +61,6 @@ def get_groups():
 
     return answer
 
-    # groups = db_manager.get_group_list()
-    #
-    # if groups:
-    #     sorted_groups = tools.sorted_groups(groups)
-    #
-    #     answer = tools.array_to_one_line(sorted_groups)
-    #
-    #     return answer[:-2]
-    # else:
-    #     return "DB Lessons is clear"
-
 
 def parse_send_message(chat_id, text, keyboard=None):
 
@@ -84,7 +73,7 @@ def parse_send_message(chat_id, text, keyboard=None):
 
 
 def show_log(message, is_command):
-    user = tools.get_user_info(message)
+    user = tools.get_user_info_from_message(message)
 
     if current_token == config.token:
         format_info = str("@" + tools.to_bold(user.name_user) + " - " + message.text)
@@ -115,17 +104,6 @@ def handler(message):
     bot.register_next_step_handler(reply_message, process_add_faculty)
 
 
-@bot.message_handler(regexp="/faculties")
-def handler(message):
-    # answer = db_manager.get_faculty_by_group_id("402ЕМ")
-
-    # answer = db_manager.get_faculties()
-    answer = db_manager.get_lessons()
-
-    # for el in answer:
-    #     print(el.format_print())
-
-
 @bot.message_handler(regexp="date")
 def handler(message):
     current_week = db_manager.get_current_week()
@@ -146,6 +124,11 @@ def handler(message):
 
     bot.send_message(message.chat.id, current_week)
 
+
+@bot.message_handler(regexp="/check_group")
+def handler(message):
+    reply_message = bot.send_message(message.chat.id, "Enter group_id:")
+    bot.register_next_step_handler(reply_message, process_check_group_id)
 
 # commands admin
 @bot.message_handler(regexp="0001")
@@ -227,10 +210,6 @@ def commands_handler(message):
         bot.send_message(chat_id, constants.help_answer)
 
     elif msg == "/change_group":
-
-        # groups = db_manager.get_group_list()
-
-        # list_groups = tools.array_to_one_line(tools.sorted_groups(groups))
 
         list_groups = get_groups()
 
@@ -441,7 +420,7 @@ def commands_handler(message):
         user = db_manager.get_user_by_chat_id(chat_id)
 
         if user:
-            tools.get_user_info(message)
+            tools.get_user_info_from_message(message)
 
             bot.send_message(chat_id, user.format_print())
 
@@ -481,7 +460,7 @@ def commands_handler(message):
         bot.send_message(chat_id, "Table {} is drop".format(constants.table_users))
 
     elif msg == "/send_all_message":
-        reply_message = bot.send_message(chat_id, "Enter message: ")
+        reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
 
         bot.register_next_step_handler(reply_message, process_send_messages)
 
@@ -495,6 +474,21 @@ def commands_handler(message):
 
         if len(db_manager.get_faculties()) == 0:
             bot.send_message(chat_id, "Table {} is clear".format(constants.table_faculty))
+
+    elif msg == "/rename_group_id":
+        reply_message = bot.send_message(chat_id, "Enter group_id and new group_id (101еМ, 101ЕМ):")
+        bot.register_next_step_handler(reply_message, process_rename_group_id)
+
+    elif msg == "/get_groups":
+        groups = tools.sorted_groups(db_manager.get_group_list())
+
+        answer = ""
+
+        for group in groups:
+            answer += str(group) + "\n"
+
+
+        bot.send_message(chat_id, answer)
 
     else:
         is_command = False
@@ -822,7 +816,7 @@ def process_group_step(message):
     is_group = db_manager.is_group(group_id)
 
     if is_group:
-        user = tools.get_user_info(message)
+        user = tools.get_user_info_from_message(message)
 
         if user:
             user.group_id = group_id
@@ -978,6 +972,25 @@ def check_current_time():
                 print(str(error))
                 bot.send_message(constants.admin_chat_id, str(error))
                 bot.send_message(constants.admin_log, str(error))
+
+
+def process_rename_group_id(message):
+    group_id = str(message.text).replace(" ", "").split(",")
+
+    if db_manager.is_group(group_id[0]):
+        bot.send_message(message.chat.id, "this is correct group_id")
+        db_manager.rename_group_id(group_id[0], group_id[-1])
+    else:
+        bot.send_message(message.chat.id, "this is dont correct group_id")
+
+
+def process_check_group_id(message):
+    group_id = str(message.text)
+
+    if db_manager.is_group(group_id):
+        bot.send_message(message.chat.id, "{} is group".format(group_id))
+    else:
+        bot.send_message(message.chat.id, "{} is dont group".format(group_id))
 
 
 def main():

@@ -366,7 +366,7 @@ def is_group(group_id):
 
     if groups:
         for group in groups:
-            if group == group_id:
+            if str(group) == str(group_id):
                 return True
 
     return False
@@ -419,6 +419,18 @@ def get_lessons_by_week(group_id, week):
     close_connection(cursor, db)
 
     return lessons
+
+
+def rename_group_id(group_id, new_group_id):
+    db = get_db_connect()
+    cursor = get_cursor(db)
+
+    query = "UPDATE {0} SET `group_id` = '{1}' WHERE `group_id` = '{2}'" \
+        .format(constants.table_lessons, str(new_group_id), str(group_id))
+
+    db.execute(query)
+    db.commit()
+    close_connection(cursor, db)
 
 
 # week
