@@ -8,12 +8,24 @@
 # bot = telebot.TeleBot(token)
 #
 #
+# def is_admin(message):
+#     chat_id = message.chat.id
+#
+#     if chat_id == constants.admin_chat_id:
+#         return True
+#     else:
+#         return False
+#
+#
 # @bot.message_handler(commands=["start"])
 # def commands_handler(message):
 #     chat_id = message.chat.id
 #     msg = str(message.text)
 #
-#     if chat_id == constants.admin_chat_id:
+#     if is_admin(message):
+#
+#         # functions commands
+#
 #         if msg == "/start":
 #             bot.send_message(chat_id, "Hello world!")
 #     else:
@@ -25,7 +37,10 @@
 #     chat_id = message.chat.id
 #     msg = str(message.text)
 #
-#     if chat_id == constants.admin_chat_id:
+#     if is_admin(message):
+#
+#         # functions text
+#
 #         if msg == "test":
 #             bot.send_message(chat_id, "Ok")
 #     else:
