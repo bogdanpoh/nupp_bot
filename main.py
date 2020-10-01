@@ -12,7 +12,7 @@ import threading
 import time
 
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
@@ -668,12 +668,23 @@ def message_handler(message):
         else:
             bot.send_message(chat_id, "User dont found")
 
+    # elif msg[0] == "/":
+    #     group_id = msg.replace("/", "")
+    #
+    #     if db_manager.is_group(group_id):
+    #         db_manager.get_lessons_by_week(group_id, )
+
     else:
         is_command = False
 
+        a_group = None
+
+        if msg[0] == "/":
+            a_group = str(msg[1:-1])
+
         if groups:
             for group in groups:
-                if str(group) == str(msg):
+                if str(group) == str(msg) or a_group == str(group):
                     lessons = db_manager.get_lessons_by_week(group, current_week)
                     answer = tools.format_lessons_week_for_message(lessons, lang=user_lang)
 

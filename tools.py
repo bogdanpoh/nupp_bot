@@ -523,7 +523,6 @@ def read_lessons(path, testing=False):
     second_week_a_a_a_a_a = "II тиждень"
     second_week_a_a_a_a = "вторая"
 
-
     clear_data = []
 
     enter_help = None
