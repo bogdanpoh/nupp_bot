@@ -1,5 +1,6 @@
 /__pycache__/*
 /database/__pycache__/*
+/documents/excel_file.xlsx
 *.db
 config.py
 *.txt
