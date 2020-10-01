@@ -111,7 +111,6 @@
 
 import telebot
 import constants
-from telebot.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 token = "1330494074:AAEnuSDqmiBh04KvsnmSuCnrRA6jdIVXsOs"
 
@@ -119,13 +118,13 @@ bot = telebot.TeleBot(token)
 
 
 def get_number_markup():
-    markup = ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add(KeyboardButton("Get number", request_contact=True))
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup.add(telebot.types.KeyboardButton("Get number", request_contact=True))
     return markup
 
 
 def remove_markup():
-    return ReplyKeyboardRemove()
+    return telebot.types.ReplyKeyboardRemove()
 
 
 @bot.message_handler(content_types=["contact"])
@@ -137,7 +136,7 @@ def contact_handler(message):
     last_name = message.from_user.last_name
     username = message.from_user.username
 
-    answer = str("Номер телефону +{}".format(phone_number))
+    answer = str("Номер телефону: {}".format(phone_number))
 
     if chat_id:
         answer += "\nChat id: {}".format(chat_id)
