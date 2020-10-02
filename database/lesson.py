@@ -33,10 +33,11 @@ class Lesson(object):
             self.week = week
             self.info = info
 
-        if self.info.find("None") > 0:
-            index_start = self.info.find("None")
-            new_info = self.info[0:index_start-2]
-            self.info = new_info
+        if str(self.info).find("None"):
+            if self.info.find("None") > 0:
+                index_start = self.info.find("None")
+                new_info = self.info[0:index_start-2]
+                self.info = new_info
 
     def format_print(self):
         return "week: {6} №{0} day: {1} time: {2} - {3} group: {4} info: {5}".format(
