@@ -1,15 +1,17 @@
 from database import db_manager
 from database.lesson import Lesson
 from database.faculty import Faculty
+from excel import read_session
 import tools
 import os
 
+
 # root_path = "../../../Downloads/1-5"
-root_path = "../../../Downloads/New"
-# root_path = "../../../Downloads/1-5/ННІФЕтаМ/201ЕМ.xlsx"
+# root_path = "../../../Downloads/New"
+root_path = "../../../../Downloads/New/s401-БТ сесія.xlsx"
 
 read_faculty = False
-read_one_file = False
+read_one_file = True
 show_only_group_id = False
 show_only_group_id_and_info = False
 
@@ -24,13 +26,21 @@ if read_faculty:
                 print("{} {}".format(lesson.group_id, el.faculty))
 
 elif read_one_file:
-    lessons = tools.read_lessons(root_path, testing=True)
 
-    for lesson in lessons:
-        if show_only_group_id:
-            print("{} {} {}".format(lesson.week, lesson.day_name, lesson.group_id))
-        else:
-            print(lesson.format_print())
+    # path = os.path.abspath(root_path)
+
+    sessions = read_session.read_session(root_path)
+
+    for item in sessions:
+        print(item.format_print())
+
+    # lessons = tools.read_lessons(root_path, testing=True)
+    #
+    # for lesson in lessons:
+    #     if show_only_group_id:
+    #         print("{} {} {}".format(lesson.week, lesson.day_name, lesson.group_id))
+    #     else:
+    #         print(lesson.format_print())
 
 else:
     directories = os.listdir(root_path)

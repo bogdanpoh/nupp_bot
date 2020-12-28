@@ -1,6 +1,16 @@
 from itertools import groupby
+from datetime import time
 import xlrd
 import datetime
+
+
+def format_time(t):
+    if t > 1:
+        t = t % 1
+    seconds = round(t * 86400)
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return "%d:%d" % (hours, minutes)
 
 
 def format_audience_name(name):

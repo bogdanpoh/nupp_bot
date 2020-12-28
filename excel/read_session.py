@@ -21,6 +21,8 @@ def read_session(path):
 
     for item in info:
 
+        # print(item)
+
         index = info.index(item)
 
         if index == 2:
@@ -33,9 +35,16 @@ def read_session(path):
 
             teacher_name = excel_tools.remove_repetition_in_str(item[4])
 
+            time_value = item[1]
+
+            if type(time_value) is not str:
+                time = excel_tools.format_time(item[1])
+            else:
+                time = time_value
+
             session_item = Session(group_id=group_id,
                                    date=date,
-                                   time=item[1],
+                                   time=time,
                                    type=item[2],
                                    name=item[3],
                                    teacher_name=teacher_name,
