@@ -10,6 +10,7 @@ table_lessons = "lessons"
 table_week = "week"
 table_events = "events"
 table_faculty = "faculty"
+table_session = "session"
 
 # for operation with time
 format_time = "%H:%M"
@@ -34,6 +35,7 @@ settings_answer = """
 /groups - отримати список доступних груп
 /help - отримати інформацію про бота
 /about - детальніше про нас
+/session - отримати розклад сессії
 
 /enable_reminders - ввімкнути нагадування про розклад занять за 20 хвилин до початку
 /disable_reminders - вимкнути нагадування про розклад занять за 20 хвилин до початку 
@@ -51,6 +53,7 @@ Please select an action:
 /change_lang - change the language to Ukrainian
 /groups - get a list of available groups
 /about - more about us
+/session - get a session schedule
 
 /enable_reminders - enable class reminders 20 minutes before the start
 /disable_reminders - Disable class schedule reminders 20 minutes before the start
@@ -112,15 +115,18 @@ cancel_en = "/cancel - cancel the action"
 cancel_success = "Дія зупинена \U0001F642"
 cancel_success_en = "Action stopped \U0001F642"
 
+
 # keyboard buttons
 keyboard_setting = "Налаштування"
 keyboard_current_lessons = "Заняття на сьогодні"
 keyboard_tomorrow_lessons = "Заняття на завтра"
+keyboard_last_week = "Заняття минулого тижня"
 keyboard_week_lessons = "Заняття на тиждень"
 
 keyboard_setting_en = "Settings"
 keyboard_current_lessons_en = "Classes for today"
 keyboard_tomorrow_lessons_en = "Classes for tomorrow"
+keyboard_last_week_en = "Classes last week"
 keyboard_week_lessons_en = "Classes for a week"
 
 # day names
