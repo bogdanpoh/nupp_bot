@@ -494,7 +494,7 @@ def commands_handler(message):
         session_list = db_manager.get_session_list_by_group_id(group_id)
 
         if session_list:
-            session_str = tools.data_to_str(data=session_list, is_message=True, is_iteration=True)
+            session_str = tools.format_session_for_message(session_list)
             parse_send_message(chat_id, session_str)
 
         else:
@@ -746,12 +746,15 @@ def message_handler(message):
 @bot.message_handler(content_types=["document"])
 def file_handler(message):
     path = os.path.join(constants.documents_directory, constants.excel_file)
+    a_path = os.path.join(constants.documents_directory, constants.excel_file_type_a)
 
     if not os.path.exists(constants.documents_directory):
         os.mkdir(constants.documents_directory)
 
     if os.path.exists(path):
         os.remove(path)
+    elif os.path.exists(a_path):
+        os.remove(a_path)
 
     file_info = bot.get_file(message.document.file_id)
     name_file = str(message.document.file_name)

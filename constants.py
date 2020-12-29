@@ -1,5 +1,9 @@
 import emoji
 
+# str enter
+single_enter = "\n"
+double_enter = "\n\n"
+
 # database info
 db_name = "telegram_bot.db"
 

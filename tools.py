@@ -9,8 +9,8 @@ from database.session import Session
 import datetime
 from datetime import timedelta
 import telebot
-
-from excel import read_lessons
+import xlrd
+from excel import read_lessons, excel_tools
 
 time_delta = timedelta(minutes=20)
 
@@ -142,6 +142,34 @@ def get_lessons_days(lessons):
     return set(day_names)
 
 
+def format_session_for_message(sessions):
+
+    answer = ""
+
+    lesson_number = 1
+
+    show_lesson_number = False
+
+    for session in sessions:
+        enter = ""
+        index = sessions.index(session) % 2
+
+        if index == 0:
+            enter = constants.single_enter
+            show_lesson_number = True
+        else:
+            enter = constants.double_enter
+            show_lesson_number = False
+
+        if show_lesson_number:
+            answer += str(lesson_number) + constants.single_enter + str(session.format_message() + enter)
+            lesson_number += 1
+        else:
+            answer += str(session.format_message() + enter)
+
+    return answer
+
+
 def format_lessons_week_for_message(lessons, is_format_teacher=False, lang=constants.lang_ua):
 
     answer = ""
@@ -192,30 +220,14 @@ def data_to_str(data, is_class=False, is_message=False, is_iteration=False):
 
     answer = ""
 
-    single_enter = "\n"
-    double_enter = "\n\n"
-
     for el in data:
         try:
             if is_class:
-                answer += str(el.format_print() + double_enter)
+                answer += str(el.format_print() + constants.double_enter)
             elif is_message:
-                if is_iteration:
-
-                    enter = ""
-
-                    index = data.index(el) % 2
-
-                    if index == 0:
-                        enter = single_enter
-                    else:
-                        enter = double_enter
-
-                    answer += str(el.format_message() + enter)
-                else:
-                    answer += str(el.format_message() + double_enter)
+                answer += str(el.format_message() + constants.double_enter)
             else:
-                answer += str(el) + double_enter
+                answer += str(el) + constants.double_enter
         except Exception as ex:
             print("Error in func data_to_list_str", ex)
 
@@ -327,8 +339,6 @@ def get_user_info_from_message(message):
     return User(name_user=name, chat_id=user_id)
 
 
-
-
 def read_faculty(path):
     wb = xlrd.open_workbook(path)
 
@@ -348,11 +358,11 @@ def read_faculty(path):
                     if int(index):
                         pass
                 except:
-                    new_index = read_lessons.remove_repetition_in_str(index)
-                    if len(read_lessons.format_group_id(new_index)) > 14:
+                    new_index = excel_tools.remove_repetition_in_str(index)
+                    if len(excel_tools.format_group_id(new_index)) > 14:
                         clear_data.append(new_index)
                     else:
-                        clear_data.append(read_lessons.format_group_id(new_index))
+                        clear_data.append(excel_tools.format_group_id(new_index))
 
     faculty = ""
 
