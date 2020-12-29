@@ -286,9 +286,7 @@ def commands_handler(message):
 
     elif msg == "/change_week":
         db_manager.change_week()
-
         current_week = db_manager.get_current_week()
-
         bot.send_message(chat_id, current_week)
 
     elif msg == "/remove_weeks":
