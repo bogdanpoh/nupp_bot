@@ -22,7 +22,7 @@ class User(object):
             self.language = language
 
     def format_print(self):
-        return "id: {0}, name_user: {1}, group_id: {2}, chat_id: {3}, language: {4}".format(
+        return "id: {0} \n name_user: {1} \n group_id: {2} \n chat_id: {3} \n language: {4}".format(
             self.id,
             self.name_user,
             self.group_id,

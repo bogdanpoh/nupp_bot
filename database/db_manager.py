@@ -196,6 +196,7 @@ def add_session(session, db_name=None):
     close_connection(cursor, db)
 
 def get_sessions(db_name=None):
+
     if db_name:
         db = get_db_connect(db_name)
     else:
@@ -235,8 +236,8 @@ def get_session_list_by_group_id(group_id, db_name=None):
         close_connection(cursor, db)
         return None
 
-def is_group_on_session(group_id):
-    sessions = get_sessions()
+def is_group_on_session(group_id, db_name=None):
+    sessions = get_sessions(db_name)
 
     if sessions:
         for session in sessions:
@@ -245,8 +246,13 @@ def is_group_on_session(group_id):
 
     return False
 
-def remove_session_by_group_id(group_id):
-    db = get_db_connect()
+def remove_session_by_group_id(group_id, db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "DELETE FROM {0} WHERE `group_id` = '{1}'".format(constants.table_session, group_id)
@@ -374,8 +380,11 @@ def is_user(chat_id):
     return is_registration
 
 
-def remove_users():
-    db = get_db_connect()
+def remove_users(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
     cursor = get_cursor(db)
 
     query = "DELETE FROM {0}".format(constants.table_users)
@@ -385,8 +394,13 @@ def remove_users():
     close_connection(cursor, db)
 
 
-def remove_user_by_chat_id(chat_id):
-    db = get_db_connect()
+def remove_user_by_chat_id(chat_id, db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "DELETE FROM {0} WHERE `chat_id` = '{1}'".format(constants.table_users, chat_id)
@@ -421,8 +435,13 @@ def add_lesson(lesson, db_name=None):
     close_connection(cursor, db)
 
 
-def remove_lessons():
-    db = get_db_connect()
+def remove_lessons(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "DELETE FROM {0}".format(constants.table_lessons)
@@ -444,7 +463,11 @@ def remove_lessons_by_group_id(group_id):
 
 
 def get_lessons(db_name=None):
-    db = get_db_connect()
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "SELECT * FROM {0}".format(constants.table_lessons)
@@ -458,8 +481,11 @@ def get_lessons(db_name=None):
     return lessons
 
 
-def get_group_list():
-    db = get_db_connect()
+def get_group_list(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
     cursor = get_cursor(db)
 
     query = "SELECT * FROM {0}".format(constants.table_lessons)
@@ -478,8 +504,8 @@ def get_group_list():
     close_connection(cursor, db)
 
 
-def is_group(group_id):
-    groups = get_group_list()
+def is_group(group_id, db_name=None):
+    groups = get_group_list(db_name)
 
     if groups:
         for group in groups:
@@ -489,8 +515,13 @@ def is_group(group_id):
     return False
 
 
-def remove_group(group_id):
-    db = get_db_connect()
+def remove_group(group_id, db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "DELETE FROM {0} WHERE `group_id` = '{1}'".format(constants.table_lessons, group_id)
@@ -538,8 +569,12 @@ def get_lessons_by_week(group_id, week):
     return lessons
 
 
-def rename_group_id(group_id, new_group_id):
-    db = get_db_connect()
+def rename_group_id(group_id, new_group_id, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "UPDATE {0} SET `group_id` = '{1}' WHERE `group_id` = '{2}'" \
@@ -573,8 +608,12 @@ def set_default_week(db_name=None, week=None):
     close_connection(cursor, db)
 
 
-def get_current_week():
-    db = get_db_connect()
+def get_current_week(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "SELECT * FROM {0}".format(constants.table_week)
@@ -595,11 +634,16 @@ def get_current_week():
     return None
 
 
-def change_week():
-    db = get_db_connect()
+def change_week(db_name=None):
+
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
-    current_week = get_current_week()
+    current_week = get_current_week(db_name)
 
     week = ""
 
@@ -608,7 +652,7 @@ def change_week():
     elif current_week == constants.second_week:
         week = constants.first_week
 
-    query = "UPDATE {0} SET `current_week` ='{1}'".format(constants.table_week, week)
+    query = "UPDATE {0} SET `current_week` = '{1}' ".format(constants.table_week, week)
 
     cursor.execute(query)
     db.commit()
@@ -912,8 +956,12 @@ def remove_event_by_chat_id(chat_id):
     close_connection(cursor, db)
 
 
-def drop_table(table_name):
-    db = get_db_connect()
+def drop_table(table_name, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
     cursor = get_cursor(db)
 
     query = "DROP TABLE {0}".format(table_name)

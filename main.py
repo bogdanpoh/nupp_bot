@@ -28,16 +28,16 @@ db_manager.create_table_events()
 db_manager.create_table_faculty()
 db_manager.create_table_session()
 
-command_list = ["remove_lessons", "remove_teachers", "remove_users", "remove_events", "remove_weeks", "remove_group",
-                "remove_faculty", "rename_group_id",
-                "drop_table_events", "drop_table_users",
+command_list = ["remove_teachers", "remove_events", "remove_weeks",
+                "remove_faculty",
+                "drop_table_events",
                 "start", "settings", "about", "help", "en",
-                "change_group", "change_lang", "change_week",
-                "current_week", "get_users", "get_users_count", "send_all_message", "teacher", "get_teachers",
+                "change_group", "change_lang",
+                "current_week", "get_users", "teacher", "get_teachers",
                 "enable_reminders", "disable_reminders",
-                "get_db_bot", "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
+                "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
                 "remove_me",
-                "session", "drop_session", "session_all", "session_remove_by_id"]
+                "session", "session_all"]
 
 
 def get_groups():
@@ -139,7 +139,7 @@ def statistic_commands_handler(message):
     answer = """/count_groups - Загальна кількість груп, чий розклад в боті
 /groups - Список груп, які є в боті
 /get_users - отримати загальну кількість користувачів та список
-/get_users_count - отримати загальну кількість користувачів"""
+"""
 
     parse_send_message(message.chat.id, answer)
 
@@ -245,48 +245,12 @@ def commands_handler(message):
             answer = "Кількість користувачів: " + str(count_users) + "\n\n"
 
             bot.send_message(chat_id, answer)
-            #
-            # for user in users:
-            #     answer += "Нікнейм: " + user.name_user + ", група - " + user.group_id + "\n"
-            #
-            # path = os.path.join(constants.documents_directory, constants.txt_file)
-            #
-            # if os.path.isfile(path):
-            #     os.remove(path)
-            #
-            # tools.write_to_file(path, answer)
-            #
-            # if os.path.isfile(path):
-            #     info = open(path, "rb")
-            #
-            #     bot.send_document(chat_id, info)
 
         else:
             answer = "Таблиця користувачів <b>порожня</b>"
             parse_send_message(chat_id, answer)
 
-    elif msg == "/remove_users":
-        db_manager.remove_users()
-
-        users = db_manager.get_users()
-
-        if len(users) == 0:
-            bot.send_message(chat_id, "Table {0} cleared".format(constants.table_users))
-
-    elif msg == "/remove_lessons":
-        db_manager.remove_lessons()
-
-        lessons = db_manager.get_lessons()
-
-        if not lessons:
-            bot.send_message(chat_id, "Table {0} is cleared".format(constants.table_lessons))
-
     elif msg == "/current_week":
-        bot.send_message(chat_id, current_week)
-
-    elif msg == "/change_week":
-        db_manager.change_week()
-        current_week = db_manager.get_current_week()
         bot.send_message(chat_id, current_week)
 
     elif msg == "/remove_weeks":
@@ -375,10 +339,6 @@ def commands_handler(message):
         # else:
         bot.send_message(chat_id, "Функція запрацює з появою постійного розкладу")
 
-    elif msg == "/get_db_bot":
-        db_file = open("telegram_bot.db", "rb")
-        bot.send_document(chat_id, db_file)
-
     elif msg == "/groups":
 
         groups = get_groups()
@@ -430,44 +390,15 @@ def commands_handler(message):
 
         bot.send_message(chat_id, "You removed from DB")
 
-    elif msg == "/get_users_count":
-        users = db_manager.get_users()
-
-        if users:
-            count_users = str(len(users))
-            parse_send_message(chat_id, "Всього користувачів: <i>{}</i>".format(count_users))
-
-        else:
-            parse_send_message(chat_id, "Таблиця користувачів <b>порожня</b>")
-
     elif msg == "/drop_table_events":
         db_manager.drop_table(constants.table_events)
-
         bot.send_message(chat_id, "Table {0} is drop".format(constants.table_events))
-
-    elif msg == "/drop_table_users":
-        db_manager.drop_table(constants.table_users)
-        bot.send_message(chat_id, "Table {} is drop".format(constants.table_users))
-
-    elif msg == "/send_all_message":
-        reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
-
-        bot.register_next_step_handler(reply_message, process_send_messages)
-
-    elif msg == "/remove_group":
-        reply_message = bot.send_message(chat_id, "Enter group_id:")
-
-        bot.register_next_step_handler(reply_message, process_remove_group)
 
     elif msg == "/remove_faculty":
         db_manager.remove_faculty()
 
         if len(db_manager.get_faculties()) == 0:
             bot.send_message(chat_id, "Table {} is clear".format(constants.table_faculty))
-
-    elif msg == "/rename_group_id":
-        reply_message = bot.send_message(chat_id, "Enter group_id and new group_id (101еМ, 101ЕМ):")
-        bot.register_next_step_handler(reply_message, process_rename_group_id)
 
     elif msg == "/get_groups":
         groups = tools.sorted_groups(db_manager.get_group_list())
@@ -497,19 +428,6 @@ def commands_handler(message):
 
         else:
             bot.send_message(chat_id, constants.dont_found_group)
-
-    elif msg == "/session_remove_by_id":
-        reply_message = bot.send_message(chat_id, "Enter group id: ")
-        bot.register_next_step_handler(reply_message, process_remove_session_by_group_id)
-
-    elif msg == "/drop_session":
-        db_manager.drop_session()
-
-        count_session = len(db_manager.get_sessions())
-
-        print(count_session)
-        if count_session == 0:
-            bot.send_message(chat_id, "Table {} is clead".format(constants.table_session))
 
     else:
         is_command = False
@@ -820,21 +738,6 @@ def file_handler(message):
 
 
 # callback functions
-
-def process_remove_session_by_group_id(message):
-    group_id = str(message.text)
-    chat_id = message.chat.id
-
-    if db_manager.is_group_on_session(group_id):
-        db_manager.remove_session_by_group_id(group_id)
-
-        if not db_manager.is_group_on_session(group_id):
-            bot.send_message(chat_id, "Group {} is remove".format(group_id))
-
-    else:
-        bot.send_message(chat_id, "Group {} is don't found".format(group_id))
-
-
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
 
@@ -936,44 +839,7 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
-def process_remove_group(message):
-    group_id = str(message.text)
 
-    if db_manager.is_group(group_id):
-        try:
-            db_manager.remove_group(group_id)
-            bot.send_message(message.chat.id, "Remove {} success".format(group_id))
-        except:
-            bot.send_message(message.chat.id, "Error remove group {}".format(group_id))
-
-    else:
-        bot.send_message(message.chat.id, "Dont found group: {}".format(group_id))
-
-
-def process_send_messages(message):
-    users = db_manager.get_users()
-
-    msg = str(message.text)
-
-    for user in users:
-        time.sleep(10)
-        if user.language == constants.lang_en:
-            answer = constants.warning_en + "\n\n" + msg
-        else:
-            answer = constants.warning + "\n\n" + msg
-
-        log = "send to {}".format(user.name_user)
-
-        try:
-            parse_send_message(user.chat_id, answer, keyboard=tools.get_required_keyboard(user.language))
-            print(log)
-        except:
-            log = "Error in send message to user {} id: {}".format(user.name_user, user.chat_id)
-            db_manager.remove_user_by_chat_id(user.chat_id)
-            bot.send_message(constants.admin_log, log)
-            print(log)
-
-    bot.send_message(message.chat.id, "All users received the message")
 
 
 def process_add_faculty(message):
@@ -1062,16 +928,6 @@ def check_current_time():
                 print(str(error))
                 bot.send_message(constants.admin_chat_id, str(error))
                 bot.send_message(constants.admin_log, str(error))
-
-
-def process_rename_group_id(message):
-    group_id = str(message.text).replace(" ", "").split(",")
-
-    if db_manager.is_group(group_id[0]):
-        bot.send_message(message.chat.id, "this is correct group_id")
-        db_manager.rename_group_id(group_id[0], group_id[-1])
-    else:
-        bot.send_message(message.chat.id, "this is dont correct group_id")
 
 
 def process_check_group_id(message):
