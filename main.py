@@ -15,7 +15,7 @@ from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.test_token
+current_token = config.token
 bot = telebot.TeleBot(current_token)
 lang = constants.lang_ua
 
