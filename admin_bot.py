@@ -15,9 +15,6 @@ admin_commands = ["start",
                   "get_db_bot", "send_all_message", "change_week"
                   ]
 
-db_path = os.path.join("..", constants.db_name)
-
-
 def is_admin(message):
     chat_id = message.chat.id
 
@@ -44,17 +41,17 @@ def commands_handler(message):
             bot.register_next_step_handler(reply_message, process_send_messages)
 
         elif msg == "/remove_lessons":
-            db_manager.remove_lessons(db_path)
+            db_manager.remove_lessons()
 
-            lessons = db_manager.get_lessons(db_path)
+            lessons = db_manager.get_lessons()
 
             if not lessons:
                 bot.send_message(chat_id, "Table {0} is cleared".format(constants.table_lessons))
 
         elif msg == "/remove_users":
-            db_manager.remove_users(db_path)
+            db_manager.remove_users()
 
-            users = db_manager.get_users(db_path)
+            users = db_manager.get_users()
 
             if len(users) == 0:
                 bot.send_message(chat_id, "Table {0} cleared".format(constants.table_users))
@@ -69,24 +66,24 @@ def commands_handler(message):
             bot.register_next_step_handler(reply_message, process_remove_group)
 
         elif msg == "/get_db_bot":
-            db_file = open(db_path, "rb")
+            db_file = open(constants.db_name, "rb")
             bot.send_document(chat_id, db_file)
 
         elif msg == "/drop_table_users":
-            db_manager.drop_table(constants.table_users, db_path)
+            db_manager.drop_table(constants.table_users)
             bot.send_message(chat_id, "Table {} is drop".format(constants.table_users))
 
         elif msg == "/drop_session":
-            db_manager.drop_session(db_path)
+            db_manager.drop_session()
 
-            count_session = len(db_manager.get_sessions(db_path))
+            count_session = len(db_manager.get_sessions())
 
             if count_session == 0:
                 bot.send_message(chat_id, "Table {} is clead".format(constants.table_session))
 
         elif msg == "/change_week":
-            db_manager.change_week(db_path)
-            current_week = db_manager.get_current_week(db_path)
+            db_manager.change_week()
+            current_week = db_manager.get_current_week()
             bot.send_message(chat_id, current_week)
 
         elif msg == "/session_remove_by_id":
@@ -113,7 +110,7 @@ def text_handler(message):
 
         elif msg == "s":
 
-            sessions = db_manager.get_sessions(db_path)
+            sessions = db_manager.get_sessions()
 
             if len(sessions) == 0:
                 bot.send_message(chat_id, "Table {} is clear".format(constants.table_session))
@@ -128,7 +125,7 @@ def text_handler(message):
 
 # process
 def process_send_messages(message):
-    users = db_manager.get_users(db_path)
+    users = db_manager.get_users()
 
     msg = str(message.text)
 
@@ -146,7 +143,7 @@ def process_send_messages(message):
 
         except:
             log = "Error in send message to user {} \n id: {} \n Remove user from database".format(user.name_user, user.chat_id)
-            db_manager.remove_user_by_chat_id(user.chat_id, db_path)
+            db_manager.remove_user_by_chat_id(user.chat_id)
             print(log)
 
     bot.send_message(message.chat.id, "All users received the message")
@@ -155,19 +152,19 @@ def process_send_messages(message):
 def process_rename_group_id(message):
     group_id = str(message.text).replace(" ", "").split(",")
 
-    if db_manager.is_group(group_id[0], db_path):
+    if db_manager.is_group(group_id[0]):
         bot.send_message(message.chat.id, "this is correct group_id")
-        db_manager.rename_group_id(group_id[0], group_id[-1], db_path)
+        db_manager.rename_group_id(group_id[0], group_id[-1])
     else:
         bot.send_message(message.chat.id, "this is dont correct group_id")
 
 def process_remove_group(message):
     group_id = str(message.text)
 
-    if db_manager.is_group(group_id, db_path):
+    if db_manager.is_group(group_id):
 
         try:
-            db_manager.remove_group(group_id, db_path)
+            db_manager.remove_group(group_id)
             bot.send_message(message.chat.id, "Remove {} success".format(group_id))
 
         except:
@@ -180,10 +177,10 @@ def process_remove_session_by_group_id(message):
     group_id = str(message.text)
     chat_id = message.chat.id
 
-    if db_manager.is_group_on_session(group_id, db_path):
-        db_manager.remove_session_by_group_id(group_id, db_path)
+    if db_manager.is_group_on_session(group_id):
+        db_manager.remove_session_by_group_id(group_id)
 
-        if not db_manager.is_group_on_session(group_id, db_path):
+        if not db_manager.is_group_on_session(group_id):
             bot.send_message(chat_id, "Group {} is remove".format(group_id))
 
     else:
