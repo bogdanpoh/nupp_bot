@@ -15,8 +15,8 @@ from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.token
-bot = telebot.TeleBot(current_token)
+current_token = config.test_token
+bot = telebot.TeleBot(current_token, threaded=False)
 lang = constants.lang_ua
 
 # if not exists tables, create it
@@ -662,15 +662,26 @@ def message_handler(message):
 @bot.message_handler(content_types=["document"])
 def file_handler(message):
     path = os.path.join(constants.documents_directory, constants.excel_file)
-    a_path = os.path.join(constants.documents_directory, constants.excel_file_type_a)
 
     if not os.path.exists(constants.documents_directory):
         os.mkdir(constants.documents_directory)
 
-    if os.path.exists(path):
-        os.remove(path)
-    elif os.path.exists(a_path):
-        os.remove(a_path)
+    xlsx_file = "{}.{}".format(path, constants.excel_file_type)
+    xls_file = "{}.{}".format(path, constants.excel_file_type_a)
+
+    if os.path.exists(xlsx_file):
+        os.remove(xlsx_file)
+
+    elif os.path.exists(xls_file):
+        os.remove(xls_file)
+
+    # if os.path.isfile(xlsx_file):
+    #     print(xlsx_file)
+    #
+    #
+    # elif os.path.isfile(xls_file):
+    #     print(xls_file)
+    #     os.remove(xls_file)
 
     file_info = bot.get_file(message.document.file_id)
     name_file = str(message.document.file_name)
@@ -839,9 +850,6 @@ def process_group_step(message):
         bot.register_next_step_handler(reply_message, process_group_step)
 
 
-
-
-
 def process_add_faculty(message):
     path = os.path.join(constants.documents_directory, constants.excel_file_faculty)
 
@@ -941,7 +949,8 @@ def process_check_group_id(message):
 
 def main():
     try:
-        bot.polling(none_stop=True, interval=0)
+        # bot.polling(none_stop=True, interval=0)
+        bot.infinity_polling(True)
     except Exception as ex:
         print(str(ex))
         bot.send_message(constants.admin_chat_id, str(ex))
