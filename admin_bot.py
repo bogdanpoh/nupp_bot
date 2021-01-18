@@ -189,6 +189,7 @@ def process_remove_session_by_group_id(message):
 def main():
     try:
         bot.infinity_polling(True)
+        # bot.polling(none_stop=True)
     except Exception as ex:
         print(str(ex))
         bot.send_message(constants.admin_chat_id, "Admin bot is off..")
