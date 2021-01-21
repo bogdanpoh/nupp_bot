@@ -30,7 +30,12 @@ def read_session(path):
                 group_id = excel_tools.format_group_id(item[0])
 
         if index > 3:
-            audience = excel_tools.format_audience_name(item[5])
+
+            if len(info) < 5:
+                audience = excel_tools.format_audience_name(item[5])
+            else:
+                audience = "-"
+
             date = excel_tools.format_date_from_excel(wb, item[0])
 
             teacher_name = excel_tools.remove_repetition_in_str(item[4])

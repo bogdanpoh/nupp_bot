@@ -15,7 +15,7 @@ from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token, threaded=False)
 lang = constants.lang_ua
 
@@ -674,14 +674,6 @@ def file_handler(message):
 
     elif os.path.exists(xls_file):
         os.remove(xls_file)
-
-    # if os.path.isfile(xlsx_file):
-    #     print(xlsx_file)
-    #
-    #
-    # elif os.path.isfile(xls_file):
-    #     print(xls_file)
-    #     os.remove(xls_file)
 
     file_info = bot.get_file(message.document.file_id)
     name_file = str(message.document.file_name)
