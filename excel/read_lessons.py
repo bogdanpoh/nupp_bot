@@ -153,6 +153,7 @@ def read_lessons(path):
     second_week_a_a_a = "ІІ тиждень"
     second_week_a_a_a_a_a = "II тиждень"
     second_week_a_a_a_a = "вторая"
+    test_week = "Начитка"
 
     clear_data = []
 
@@ -171,6 +172,9 @@ def read_lessons(path):
 
     if not group_name:
         group_name = clear_data[1][-2]
+
+    if not group_name:
+        group_name = clear_data[0][-1]
 
     group_id = excel_tools.format_group_id(group_name)
 
@@ -198,16 +202,14 @@ def read_lessons(path):
 
             if first_element == first_week or first_element == first_week_a:
                 week = constants.first_week
-                # print(week)
 
             if first_element == second_week or\
                     first_element == second_week_a or\
                     first_element == second_week_a_a or \
                     first_element == second_week_a_a_a or\
-                    first_element == second_week_a_a_a_a or first_element == second_week_a_a_a_a_a:
+                    first_element == second_week_a_a_a_a or first_element == second_week_a_a_a_a_a or first_week == test_week:
 
                 week = constants.second_week
-                # print(week)
 
             if first_element == constants.monday or first_element == constants.tuesday \
                     or first_element == constants.wednesday or first_element == constants.thursday or first_element == constants.friday:

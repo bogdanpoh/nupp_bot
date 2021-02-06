@@ -15,3 +15,4 @@ telegram_bot.db
 documents/
 /documents
 documents
+excel/__pycache__/*
