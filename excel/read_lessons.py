@@ -33,54 +33,54 @@ def format_enter_help(lessons):
 
 def format_index_lesson(time, markup=False, is_covid=False):
 
-    if time == '8.30':
+    if time == '8.30' or time == '8:30':
         if markup:
             return "\U00000031"
         else:
             return 1
-    elif time == '10.00':
+    elif time == '10.00' or time == '10:00':
         if markup:
             return "\U00000032"
         else:
             return 2
-    elif time == '11.50':
+    elif time == '11.50' or time == '11:50':
         if markup:
             return "\U00000033"
         else:
             return 3
-    elif time == '13.20':
+    elif time == '13.20' or time == '13:20':
         if markup:
             return "\U00000034"
         else:
             return 4
-    elif time == '14.50':
+    elif time == '14.50' or time == '14:50':
         if markup:
             return "\U00000035"
         else:
             return 5
-    elif time == '16.20':
+    elif time == '16.20' or time == '16:20':
         if markup:
             return "\U00000036"
         else:
             return 6
     elif is_covid:
-        if time == "11.30":
+        if time == '11.30' or time == '11:30':
             if markup:
                 return "\U00000033"
             else:
                 return 3
 
-        elif time == "13.30":
+        elif time == '13.30' or time == '13:30':
             if markup:
                 return "\U00000034"
             else:
                 return 4
-        elif time == "15.00":
+        elif time == '15.00' or time == '15:00':
             if markup:
                 return "\U00000035"
             else:
                 return 5
-        elif time == "16.30":
+        elif time == '16.30' or time == '16:30':
             if markup:
                 return "\U00000036"
             else:
