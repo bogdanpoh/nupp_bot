@@ -135,8 +135,8 @@ def process_send_messages(message):
             log = "Send to {}".format(user.name_user)
             bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
             print(log)
-        except:
-            log = "Error in send message to user {} \n id: {} \n Remove user from database".format(user.name_user, user.chat_id)
+        except Exception as e:
+            log = "Error in send message to user {} \n Error: {}".format(user.name_user, e)
             # db_manager.remove_user_by_chat_id(user.chat_id)
             print(log)
 
