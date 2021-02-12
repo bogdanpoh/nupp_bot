@@ -9,6 +9,7 @@ config.py
 *.xls
 testing/test_db.py
 test_lessons.py
+testing/test_session.py
 telegram_bot.db
 /documents/*
 /documents/
