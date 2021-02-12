@@ -126,25 +126,21 @@ def text_handler(message):
 # process
 def process_send_messages(message):
     users = db_manager.get_users()
-
     msg = str(message.text)
 
     for user in users:
-
-        time.sleep(5)
-
         answer = constants.warning_en if user.language == constants.lang_en + "\n\n" + msg else constants.warning + "\n\n" + msg
 
-        log = "Send to {}".format(user.name_user)
-
         try:
+            log = "Send to {}".format(user.name_user)
             bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
             print(log)
-
         except:
             log = "Error in send message to user {} \n id: {} \n Remove user from database".format(user.name_user, user.chat_id)
-            db_manager.remove_user_by_chat_id(user.chat_id)
+            # db_manager.remove_user_by_chat_id(user.chat_id)
             print(log)
+
+        time.sleep(5)
 
     bot.send_message(message.chat.id, "All users received the message")
 
