@@ -90,10 +90,7 @@ def show_log(message, is_command):
     user = tools.get_user_info_from_message(message)
 
     if current_token == config.token:
-        format_info = str("@" + tools.to_bold(user.name_user) + " - " + message.text)
-
         if not is_command:
-
             answer = constants.not_found_answer
 
             if db_manager.is_user(user.chat_id):
@@ -102,13 +99,11 @@ def show_log(message, is_command):
 
             parse_send_message(message.chat.id, answer + " - " + tools.to_bold(message.text))
 
-        parse_send_message(constants.admin_log, format_info)
-
     time.sleep(2)
 
-    info = str(user.name_user + " - " + message.text)
+    format_info = str("@" + tools.to_bold(user.name_user) + " - " + message.text)
 
-    print(info)
+    print(format_info)
 
 
 @bot.message_handler(regexp="/add_faculty")
