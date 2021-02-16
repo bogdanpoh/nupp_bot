@@ -41,9 +41,6 @@ settings_answer = """
 /about - детальніше про нас
 /session - отримати розклад сессії
 
-/enable_reminders - ввімкнути нагадування про розклад занять за 20 хвилин до початку
-/disable_reminders - вимкнути нагадування про розклад занять за 20 хвилин до початку 
-
 Для отримання розкладу іншої групи, просто відправ її номер
 <b>(Наприклад 101ЕМ, де ЕМ - українськими літерами)</b>
 
@@ -58,9 +55,6 @@ Please select an action:
 /groups - get a list of available groups
 /about - more about us
 /session - get a session schedule
-
-/enable_reminders - enable class reminders 20 minutes before the start
-/disable_reminders - Disable class schedule reminders 20 minutes before the start
 
 To get another group's schedule, just send her number
 <b> (For example, 101EM, where EM is in Ukrainian letters) </b>
