@@ -1,6 +1,5 @@
 import telebot
 import constants
-import os
 import tools
 import config
 from database import db_manager
@@ -12,7 +11,8 @@ admin_commands = ["start",
                   "drop_table_users", "drop_session",
                   "remove_lessons", "remove_users", "remove_group", "session_remove_by_id",
                   "rename_group_id",
-                  "get_db_bot", "send_all_message", "change_week"
+                  "get_db_bot", "send_all_message", "change_week",
+                  "remove_lessons_by_id"
                   ]
 
 def is_admin(message):
@@ -89,6 +89,10 @@ def commands_handler(message):
         elif msg == "/session_remove_by_id":
             reply_message = bot.send_message(chat_id, "Enter group id: ")
             bot.register_next_step_handler(reply_message, process_remove_session_by_group_id)
+
+        elif msg == "/remove_lessons_by_id":
+            reply_message = bot.send_message(chat_id, "Enter group id: ")
+            bot.register_next_step_handler(reply_message, process_remove_lessons_by_course)
     else:
         bot.send_message(chat_id, "Sorry, you is not admin")
 
@@ -136,7 +140,7 @@ def process_send_messages(message):
             bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
             print(log)
         except Exception as e:
-            log = "Error in send message to user {} \n Error: {}".format(user.name_user, e)
+            log = "User {} \n Error: {}".format(user.name_user, e)
             # db_manager.remove_user_by_chat_id(user.chat_id)
             print(log)
 
@@ -181,6 +185,22 @@ def process_remove_session_by_group_id(message):
 
     else:
         bot.send_message(chat_id, "Group {} is don't found".format(group_id))
+
+
+def process_remove_lessons_by_course(message):
+    pick_group = message.text
+    groups = db_manager.get_group_list()
+
+    for group in groups:
+        if pick_group in group:
+            print("removed {}".format(group))
+
+            try:
+                db_manager.remove_lessons_by_group_id(group)
+
+            except Exception as e:
+                print("error when remove lesson by course: {}".format(e))
+
 
 def main():
     try:
