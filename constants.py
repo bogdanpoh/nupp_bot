@@ -169,3 +169,7 @@ txt_file = "info.txt"
 # admin
 admin_chat_id = 330926012
 admin_log = -1001357315497
+
+# info
+for_four_course_student = "Розклад буде доступний в понеділок після проходження переддипломної практики"
+for_four_course_student_en = "The schedule will be available on Monday after the undergraduate internship"

@@ -15,7 +15,7 @@ from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token, threaded=False)
 lang = constants.lang_ua
 
@@ -74,6 +74,17 @@ def parse_send_message(chat_id, text, keyboard=None):
 
     return message
 
+
+def send_info_for_course(course, chat_id, info=None):
+    user_group = db_manager.get_user_group_id(chat_id)
+
+    if str(course) in user_group:
+        if not info:
+            info = constants.for_four_course_student if db_manager.get_user_by_chat_id(chat_id).language == "ua" else constants.for_four_course_student_en
+
+        bot.send_message(chat_id, info)
+    else:
+        print(user_group)
 
 def show_log(message, is_command):
     user = tools.get_user_info_from_message(message)
@@ -415,7 +426,6 @@ def message_handler(message):
     current_week = db_manager.get_current_week()
     groups = db_manager.get_group_list()
     is_command = True
-
     user_lang = constants.lang_ua
 
     if db_manager.is_user(chat_id):
@@ -439,6 +449,8 @@ def message_handler(message):
         group_id = db_manager.get_user_group_id(chat_id)
         day_name = tools.get_current_day_name()
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
+
+        send_info_for_course(4, chat_id)
 
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
@@ -480,6 +492,8 @@ def message_handler(message):
         day_name = tools.get_next_day_name()
         group_id = db_manager.get_user_group_id(chat_id)
 
+        send_info_for_course(4, chat_id)
+
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
 
@@ -516,6 +530,8 @@ def message_handler(message):
         teacher = db_manager.get_teacher_by_chat_id(chat_id)
         group_id = db_manager.get_user_group_id(chat_id)
 
+        send_info_for_course(4, chat_id)
+
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week(teacher.name_teacher, current_week)
 
@@ -545,10 +561,10 @@ def message_handler(message):
             send_not_register(chat_id, user_lang)
 
     elif msg == constants.keyboard_last_week or msg == constants.keyboard_last_week_en:
-
         week = db_manager.get_current_week()
-
         last_week = ""
+
+        send_info_for_course(4, chat_id)
 
         if week == constants.first_week:
             last_week = constants.second_week
@@ -602,6 +618,9 @@ def message_handler(message):
                         parse_send_message(chat_id, answer)
                     else:
                         parse_send_message(chat_id, constants.dont_found_group)
+                else:
+                    send_info_for_course(4, chat_id)
+                    return
 
     show_log(message, is_command)
 
