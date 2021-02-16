@@ -76,23 +76,26 @@ def parse_send_message(chat_id, text, keyboard=None):
 
 
 def send_info_for_course(course, chat_id, info=None):
-    user_group = db_manager.get_user_group_id(chat_id)
+    try :
+        user_group = db_manager.get_user_group_id(chat_id)
 
-    if str(course) in user_group:
-        if not info:
-            info = constants.for_four_course_student if db_manager.get_user_by_chat_id(chat_id).language == "ua" else constants.for_four_course_student_en
+    except Exception as e:
+        bot.send_message(constants.admin_chat_id, "error for course: {}".format(e))
 
-        bot.send_message(chat_id, info)
-    else:
-        print(user_group)
+    if user_group:
+        if str(course) in user_group:
+            if not info:
+                info = constants.for_four_course_student if db_manager.get_user_by_chat_id(chat_id).language == "ua" else constants.for_four_course_student_en
+
+            bot.send_message(chat_id, info)
+        else:
+            print(user_group)
 
 def show_log(message, is_command):
     user = tools.get_user_info_from_message(message)
 
     if current_token == config.token:
-
         if not is_command:
-
             answer = constants.not_found_answer
 
             if db_manager.is_user(user.chat_id):
@@ -891,6 +894,9 @@ def check_current_time():
                 print(str(error))
                 bot.send_message(constants.admin_chat_id, str(error))
                 bot.send_message(constants.admin_log, str(error))
+
+            except Exception as e:
+                print(e)
 
 
 def process_check_group_id(message):
