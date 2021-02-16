@@ -90,7 +90,9 @@ def show_log(message, is_command):
     user = tools.get_user_info_from_message(message)
 
     if current_token == config.token:
+
         if not is_command:
+
             answer = constants.not_found_answer
 
             if db_manager.is_user(user.chat_id):
@@ -101,9 +103,9 @@ def show_log(message, is_command):
 
     time.sleep(2)
 
-    format_info = str("@" + tools.to_bold(user.name_user) + " - " + message.text)
+    info = str(user.name_user + " - " + message.text)
 
-    print(format_info)
+    print(info)
 
 
 @bot.message_handler(regexp="/add_faculty")
