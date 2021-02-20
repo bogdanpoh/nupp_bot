@@ -11,7 +11,7 @@ admin_commands = ["start",
                   "drop_table_users", "drop_session",
                   "remove_lessons", "remove_users", "remove_group", "session_remove_by_id",
                   "rename_group_id",
-                  "get_db_bot", "send_all_message", "change_week",
+                  "get_db_bot", "change_week",
                   "remove_lessons_by_id"
                   ]
 
@@ -33,12 +33,6 @@ def commands_handler(message):
 
         if msg == "/start":
             bot.send_message(chat_id, "Hi, admin")
-
-        elif msg == "/send_all_message":
-
-            reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
-
-            bot.register_next_step_handler(reply_message, process_send_messages)
 
         elif msg == "/remove_lessons":
             db_manager.remove_lessons()
@@ -128,27 +122,6 @@ def text_handler(message):
 
 
 # process
-def process_send_messages(message):
-    users = db_manager.get_users()
-    msg = str(message.text)
-
-    for user in users:
-        answer = constants.warning_en if user.language == constants.lang_en + "\n\n" + msg else constants.warning + "\n\n" + msg
-
-        try:
-            log = "Send to {}".format(user.name_user)
-            bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
-            print(log)
-        except Exception as e:
-            log = "User {} \n Error: {}".format(user.name_user, e)
-            # db_manager.remove_user_by_chat_id(user.chat_id)
-            print(log)
-
-        time.sleep(5)
-
-    bot.send_message(message.chat.id, "All users received the message")
-
-
 def process_rename_group_id(message):
     group_id = str(message.text).replace(" ", "").split(",")
 

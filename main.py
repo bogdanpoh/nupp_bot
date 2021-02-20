@@ -36,7 +36,8 @@ command_list = ["remove_teachers", "remove_events", "remove_weeks",
                 "current_week", "get_users", "teacher", "get_teachers",
                 "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
                 "remove_me",
-                "session", "session_all"]
+                "session", "session_all",
+                "send_all_message"]
 
 
 def get_groups():
@@ -388,6 +389,12 @@ def commands_handler(message):
         else:
             bot.send_message(chat_id, constants.dont_found_group)
 
+    elif msg == "/send_all_message":
+
+        reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
+
+        bot.register_next_step_handler(reply_message, process_send_messages)
+
     else:
         is_command = False
 
@@ -697,6 +704,30 @@ def file_handler(message):
 
 
 # callback functions
+def process_send_messages(message):
+    users = db_manager.get_users()
+    msg = str(message.text)
+    chat_id = message.chat.id
+
+    if str(chat_id) != str(constants.admin_chat_id):
+        bot.send_message(message.chat.id, "You is not admin")
+        return
+
+    for user in users:
+        answer = constants.warning_en if user.language == constants.lang_en + "\n\n" + msg else constants.warning + "\n\n" + msg
+
+        try:
+            log = "Send to {}".format(user.name_user)
+            bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
+        except Exception as e:
+            log = "User {} \n Error: {}".format(user.name_user, e)
+            db_manager.remove_user_by_chat_id(user.chat_id)
+
+        print(log)
+        time.sleep(5)
+
+    bot.send_message(chat_id, "All users received the message")
+
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
 
