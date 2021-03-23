@@ -68,14 +68,14 @@ help_answer = "https://telegra.ph/Tvіj-nadіjnij-pomіchnik-v-navchannі-08-31"
 
 about_answer = """
 Дизайнер аватара для бота - https://www.instagram.com/your_death_404/
-Програмний код - https://www.instagram.com/bogdan.poh/
+Програмний код - https://www.instagram.com/bohdan.pokhidnia/
 
 <b>З питань підтримки, допомоги, пропозицій</b> –– @nupp_help
 """
 
 about_answer_en = """
 Avatar designer for a bot - https://www.instagram.com/your_death_404/
-Program code - https://www.instagram.com/bogdan.poh/
+Program code - https://www.instagram.com/bohdan.pokhidnia/
 
 <b>On issues of support, assistance, suggestions</b> –– @nupp_help
 """
