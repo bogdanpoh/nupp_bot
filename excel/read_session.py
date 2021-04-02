@@ -20,9 +20,6 @@ def read_session(path):
             info.append(new_item)
 
     for item in info:
-
-        # print(item)
-
         index = info.index(item)
 
         if index == 2:
@@ -30,11 +27,7 @@ def read_session(path):
                 group_id = excel_tools.format_group_id(item[0])
 
         if index > 3:
-
-            if len(info) < 5:
-                audience = excel_tools.format_audience_name(item[5])
-            else:
-                audience = "-"
+            audience = excel_tools.format_audience_name(item[5]) if item[5] else "-"
 
             date = excel_tools.format_date_from_excel(wb, item[0])
 
