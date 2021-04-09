@@ -10,6 +10,7 @@ config.py
 testing/test_db.py
 test_lessons.py
 testing/test_session.py
+testing/*`
 telegram_bot.db
 /documents/*
 /documents/
