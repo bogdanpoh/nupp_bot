@@ -9,3 +9,8 @@ config.py
 testing/*
 /documents/*
 /excel/__pycache__/*
+.idea/misc.xml
+.idea/modules.xml
+.idea/nupp_bot.iml
+.idea/vcs.xml
+.idea/inspectionProfiles/profiles_settings.xml
