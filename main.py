@@ -349,9 +349,9 @@ def commands_handler(message):
     elif msg == "/qualification":
         user = db_manager.get_user_by_chat_id(chat_id)
         group_id = user.group_id
-        lang = user.language
+        language = user.language
         qualification_list = db_manager.get_qualification_list_by_group_id(group_id)
-        title = constants.qualification_ua if lang == constants.lang_ua else constants.qualification_en
+        title = constants.qualification_ua if language == constants.lang_ua else constants.qualification_en
 
         if qualification_list:
             qualification_str = tools.format_session_for_message(qualification_list)
