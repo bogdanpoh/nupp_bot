@@ -1,5 +1,5 @@
 import xlrd
-from database.session import Session
+from database.model.session import Session
 from excel import excel_tools
 
 def read_session(path):
