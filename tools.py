@@ -1,11 +1,12 @@
 import constants
 
-from database.lesson import Lesson
-from database.user import User
-from database.event import Event
-from database.teacher import Teacher
-from database.faculty import Faculty
-from database.session import Session
+from database.model.lesson import Lesson
+from database.model.user import User
+from database.model.event import Event
+from database.model.teacher import Teacher
+from database.model.faculty import Faculty
+from database.model.session import Session
+from database.model.qualification import Qualification
 import datetime
 from datetime import timedelta
 import telebot
@@ -235,9 +236,7 @@ def data_to_str(data, is_class=False, is_message=False, is_iteration=False):
 
 
 def data_to_list_class(data, to_class):
-
     list_answer = []
-
     for el in data:
         if to_class == "user":
             list_answer.append(User(data=el))
@@ -251,6 +250,8 @@ def data_to_list_class(data, to_class):
             list_answer.append(Faculty(data=el))
         elif to_class == "session":
             list_answer.append(Session(data=el))
+        elif to_class == "qualification":
+            list_answer.append(Qualification(data=el))
 
     return list_answer
 

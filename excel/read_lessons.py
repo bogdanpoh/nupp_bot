@@ -1,13 +1,11 @@
 import xlrd
 import constants
-from database.lesson import Lesson
+from database.model.lesson import Lesson
 from excel import excel_tools
 
 
 def format_enter_help(lessons):
-
     edit_lessons = []
-
     word = "Використовуйте".lower()
 
     enter_help = None

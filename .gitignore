@@ -8,7 +8,6 @@ config.py
 *.xls
 testing/*
 /documents/*
-/excel/__pycache__/*
 .idea/misc.xml
 .idea/modules.xml
 .idea/nupp_bot.iml

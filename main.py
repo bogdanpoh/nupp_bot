@@ -2,48 +2,39 @@ import telebot
 import constants
 import config
 import sqlite3
-from database.user import User
-from database.teacher import Teacher
-from database.event import Event
-from database.session import Session
+from database.model.teacher import Teacher
 from database import db_manager
 import tools
 import os
-import threading
 import time
 from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token, threaded=False)
 lang = constants.lang_ua
 
 # if not exists tables, create it
-db_manager.create_table_users()
-db_manager.create_table_teachers()
-db_manager.create_table_lessons()
-db_manager.create_table_week()
-db_manager.create_table_events()
-db_manager.create_table_faculty()
-db_manager.create_table_session()
+db_manager.create_tables()
 
-command_list = ["remove_teachers", "remove_events", "remove_weeks",
-                "remove_faculty",
-                "drop_table_events",
-                "start", "settings", "about", "help", "en",
-                "change_group", "change_lang",
-                "current_week", "get_users", "teacher", "get_teachers",
-                "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
-                "remove_me",
-                "session", "session_all",
-                "send_all_message"]
-
+command_list = [
+    "remove_teachers", "remove_events", "remove_weeks",
+    "remove_faculty",
+    "drop_table_events",
+    "start", "settings", "about", "help", "en",
+    "change_group", "change_lang",
+    "current_week", "get_users", "teacher", "get_teachers",
+    "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
+    "remove_me",
+    "session", "session_all",
+    "send_all_message",
+    "qualification"
+]
 
 def get_groups():
     faculties = db_manager.get_faculties()
     faculties_name = []
-
     answer = ""
 
     for faculty in faculties:
@@ -52,9 +43,7 @@ def get_groups():
     faculties_sorted = excel_tools.remove_repetition(faculties_name)
 
     for faculty in faculties_sorted:
-
         groups = db_manager.get_group_id_by_faculty_name(faculty)
-
         answer += tools.to_bold(faculty) + " - "
 
         if groups:
@@ -68,18 +57,11 @@ def get_groups():
 
 
 def parse_send_message(chat_id, text, keyboard=None):
-    if keyboard:
-        message = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
-    else:
-        message = bot.send_message(chat_id, text, parse_mode="HTML")
-
-    return message
-
+    return bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard) if keyboard else bot.send_message(chat_id, text, parse_mode="HTML")
 
 def send_info_for_course(course, chat_id, info=None):
-    try :
+    try:
         user_group = db_manager.get_user_group_id(chat_id)
-
         if user_group:
             if str(course) in user_group:
                 if not info:
@@ -96,36 +78,30 @@ def send_info_for_course(course, chat_id, info=None):
 def show_log(message, is_command):
     user = tools.get_user_info_from_message(message)
 
-    if current_token == config.token:
-        if not is_command:
-            answer = constants.not_found_answer
+    if not is_command:
+        answer = constants.not_found_answer
 
-            if db_manager.is_user(user.chat_id):
-                if db_manager.get_user_by_chat_id(user.chat_id).language == constants.lang_en:
-                    answer = constants.not_found_answer_en
+        if db_manager.is_user(user.chat_id):
+            if db_manager.get_user_by_chat_id(user.chat_id).language == constants.lang_en:
+                answer = constants.not_found_answer_en
 
-            parse_send_message(message.chat.id, answer + " - " + tools.to_bold(message.text))
+        parse_send_message(message.chat.id, answer + " - " + tools.to_bold(message.text))
 
     time.sleep(2)
-
     info = str(user.name_user + " - " + message.text)
-
     print(info)
 
 
 @bot.message_handler(regexp="/add_faculty")
 def handler(message):
     reply_message = bot.send_message(message.chat.id, "Enter faculty_file: ")
-
     bot.register_next_step_handler(reply_message, process_add_faculty)
 
 
 @bot.message_handler(regexp="def_week")
 def handler(message):
     db_manager.set_default_week()
-
     current_week = db_manager.get_current_week()
-
     bot.send_message(message.chat.id, current_week)
 
 
@@ -146,27 +122,17 @@ def regexp_handler(message):
     bot.send_message(message.chat.id, commands)
 
 
-@bot.message_handler(regexp="statistics_info")
-def statistic_commands_handler(message):
-    answer = """/count_groups - Загальна кількість груп, чий розклад в боті
-/groups - Список груп, які є в боті
-/get_users - отримати загальну кількість користувачів та список
-"""
-
-    parse_send_message(message.chat.id, answer)
-
-
 # commands handler
 @bot.message_handler(commands=command_list)
 def commands_handler(message):
     msg = message.text
     chat_id = message.chat.id
     current_week = db_manager.get_current_week()
-
     is_command = True
 
     if msg == "/start":
         users = db_manager.get_users()
+        select_answer = constants.start_answer if lang == constants.lang_ua else constants.start_answer_en
 
         if users:
             for user in users:
@@ -174,13 +140,7 @@ def commands_handler(message):
                     bot.send_message(chat_id, constants.you_is_register, reply_markup=tools.get_required_keyboard())
                     return
 
-        select_answer = constants.start_answer
-
-        if lang == constants.lang_en:
-            select_answer = constants.start_answer_en
-
         answer = parse_send_message(chat_id, select_answer)
-
         groups = db_manager.get_group_list()
 
         if groups:
@@ -377,22 +337,30 @@ def commands_handler(message):
             print(item.format_print())
 
     elif msg == "/session":
-
         group_id = db_manager.get_user_group_id(chat_id)
-
         session_list = db_manager.get_session_list_by_group_id(group_id)
 
         if session_list:
             session_str = tools.format_session_for_message(session_list)
             parse_send_message(chat_id, session_str)
+        else:
+            bot.send_message(chat_id, constants.dont_found_group)
 
+    elif msg == "/qualification":
+        user = db_manager.get_user_by_chat_id(chat_id)
+        group_id = user.group_id
+        language = user.language
+        qualification_list = db_manager.get_qualification_list_by_group_id(group_id)
+        title = constants.qualification_ua if language == constants.lang_ua else constants.qualification_en
+
+        if qualification_list:
+            qualification_str = tools.format_session_for_message(qualification_list)
+            parse_send_message(chat_id, "{}\n\n{}".format(title, qualification_str))
         else:
             bot.send_message(chat_id, constants.dont_found_group)
 
     elif msg == "/send_all_message":
-
         reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
-
         bot.register_next_step_handler(reply_message, process_send_messages)
 
     else:
@@ -410,19 +378,9 @@ def send_not_register(chat_id, lang):
 
 def send_not_lessons(chat_id, lang, is_today=False):
     if lang == constants.lang_en:
-
-        if is_today:
-            msg = constants.no_lessons_today_en
-        else:
-            msg = constants.no_lessons_tomorrow_en
-
+        msg = constants.no_lessons_today_en if is_today else constants.no_lessons_tomorrow_en
     else:
-
-        if is_today:
-            msg = constants.no_lessons_today
-        else:
-            msg = constants.no_lessons_tomorrow
-
+        msg = constants.no_lessons_today if is_today else constants.no_lessons_tomorrow
     bot.send_message(chat_id, msg)
 
 
@@ -445,9 +403,7 @@ def message_handler(message):
         db_manager.set_default_week()
 
     if msg == constants.keyboard_setting or msg == constants.keyboard_setting_en:
-
         answer = constants.settings_answer
-
         if user_lang == constants.lang_en:
             answer = constants.settings_answer_en
 
@@ -460,10 +416,8 @@ def message_handler(message):
 
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
-
             if lessons:
                 tools.sorted_lessons(lessons)
-
                 lessons_str = tools.format_lessons_day_for_message(lessons,
                                                                    day_name,
                                                                    is_teacher_format=True)
@@ -474,23 +428,16 @@ def message_handler(message):
 
         if group_id:
             if not day_name:
-                # bot.send_message(chat_id, constants.no_lessons_today)
                 send_not_lessons(chat_id, user_lang, is_today=True)
                 return
-
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
-
                 if lessons:
                     lessons_str = tools.format_lessons_day_for_message(lessons, day_name, lang=user_lang)
                     parse_send_message(chat_id, lessons_str)
                 else:
                     send_not_lessons(chat_id, user_lang, is_today=True)
-                    # parse_send_message(chat_id, constants.no_lessons_today)
-
         else:
-            # bot.send_message(chat_id, "Please, send /start")
-
             send_not_register(chat_id, user_lang)
 
     elif msg == constants.keyboard_tomorrow_lessons or msg == constants.keyboard_tomorrow_lessons_en:
@@ -500,34 +447,26 @@ def message_handler(message):
 
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week_and_day_name(teacher.name_teacher, day_name, current_week)
-
             if lessons:
                 tools.sorted_lessons(lessons)
-
                 lessons_str = tools.format_lessons_day_for_message(lessons, day_name, is_teacher_format=True)
                 parse_send_message(chat_id, lessons_str)
             else:
-                # bot.send_message(chat_id, constants.no_lessons_tomorrow)
                 send_not_lessons(chat_id, user_lang, is_today=False)
             return
 
         if group_id:
             if not day_name:
-                # bot.send_message(chat_id, constants.no_lessons_tomorrow)
                 send_not_lessons(chat_id, user_lang, is_today=False)
                 return
-
             else:
                 lessons = db_manager.get_lessons_by_day_name(day_name, current_week, group_id)
-
                 if lessons:
                     lessons_str = tools.format_lessons_day_for_message(lessons, day_name, lang=user_lang)
                     parse_send_message(chat_id, lessons_str)
                 else:
                     send_not_lessons(chat_id, user_lang, is_today=False)
-                    # bot.send_message(chat_id, constants.no_lessons_tomorrow)
         else:
-            # bot.send_message(chat_id, "Please, send /start")
             send_not_register(chat_id, user_lang)
 
     elif msg == constants.keyboard_week_lessons or msg == constants.keyboard_week_lessons_en:
@@ -536,30 +475,23 @@ def message_handler(message):
 
         if teacher:
             lessons = db_manager.get_teacher_lessons_by_week(teacher.name_teacher, current_week)
-
             if lessons:
                 tools.sorted_lessons(lessons)
-
                 lessons_str = tools.format_lessons_week_for_message(lessons, is_format_teacher=True)
-
                 parse_send_message(chat_id, lessons_str)
                 return
             else:
                 bot.send_message(chat_id, "Dont found lessons")
 
         if group_id:
-
             lessons = db_manager.get_lessons_by_week(group_id, current_week)
-
             if lessons:
                 lessons_week_str = tools.format_lessons_week_for_message(lessons, lang=user_lang)
-
                 parse_send_message(chat_id, lessons_week_str)
             else:
                 bot.send_message(chat_id, constants.dont_found_group)
 
         else:
-            # bot.send_message(chat_id, "Please, send /start")
             send_not_register(chat_id, user_lang)
 
     elif msg == constants.keyboard_last_week or msg == constants.keyboard_last_week_en:
@@ -575,9 +507,7 @@ def message_handler(message):
 
         if group_id:
             lessons = db_manager.get_lessons_by_week(group_id, last_week)
-
             lessons_str = tools.format_lessons_week_for_message(lessons, lang=user_lang)
-
             answer = ""
 
             if user_lang == constants.lang_en:
@@ -600,7 +530,6 @@ def message_handler(message):
 
     else:
         is_command = False
-
         a_group = None
 
         if msg[0] == "/":
@@ -611,7 +540,6 @@ def message_handler(message):
                 if str(group) == str(msg) or a_group == str(group):
                     lessons = db_manager.get_lessons_by_week(group, current_week)
                     answer = tools.format_lessons_week_for_message(lessons, lang=user_lang)
-
                     is_command = True
 
                     if answer:
@@ -625,6 +553,7 @@ def message_handler(message):
 @bot.message_handler(content_types=["document"])
 def file_handler(message):
     path = os.path.join(constants.documents_directory, constants.excel_file)
+    file_path = ""
 
     if not os.path.exists(constants.documents_directory):
         os.mkdir(constants.documents_directory)
@@ -641,12 +570,8 @@ def file_handler(message):
     file_info = bot.get_file(message.document.file_id)
     name_file = str(message.document.file_name)
     type_file = str(file_info.file_path).split(".")[-1]
-
     downloaded_file = bot.download_file(file_info.file_path)
-
     tools.download_file(path + "." + type_file, downloaded_file)
-
-    file_path = ""
 
     if os.path.isfile(
             os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)):
@@ -659,7 +584,6 @@ def file_handler(message):
 
     if name_file[0] == "s":
         session_array = read_session.read_session(file_path)
-
         group_id = session_array[0].group_id
 
         if db_manager.is_group_on_session(group_id):
@@ -670,17 +594,34 @@ def file_handler(message):
                 try:
                     db_manager.add_session(session)
                 except sqlite3.Error as error:
-                    bot.send_message(constants.admin_chat_id, "Error in add lesson to DB\n\n" + str(error))
+                    bot.send_message(constants.admin_chat_id, "Error in add session to DB\n\n" + str(error))
 
         answer_str = "Session {0} group add to database".format(group_id)
         parse_send_message(message.chat.id, answer_str)
         parse_send_message(constants.admin_log, answer_str)
         print(answer_str)
 
+    elif name_file[0] == "q":
+        qualification_array = read_session.read_session(file_path)
+        group_id = qualification_array[0].group_id
+
+        if db_manager.is_group_on_qualification(group_id):
+            db_manager.remove_qualification_by_group_id(group_id)
+
+        if qualification_array:
+            for item in qualification_array:
+                try:
+                    db_manager.add_qualification(item)
+                except sqlite3.Error as error:
+                    bot.send_message(constants.admin_chat_id, "Error in add qualification to DB\n\n" + str(error))
+
+            answer_str = "Qualification {0} group add to database".format(group_id)
+            parse_send_message(message.chat.id, answer_str)
+            parse_send_message(constants.admin_log, answer_str)
+            print(answer_str)
+
     elif type_file == constants.excel_file_type or type_file == constants.excel_file_type_a:
-
         lessons = read_lessons.read_lessons(file_path)
-
         if lessons:
             group_id = lessons[0].group_id
 
@@ -715,7 +656,6 @@ def process_send_messages(message):
 
     for user in users:
         answer = constants.warning_en if user.language == constants.lang_en + "\n\n" + msg else constants.warning + "\n\n" + msg
-
         try:
             log = "Send to {}".format(user.name_user)
             bot.send_message(user.chat_id, answer, parse_mode="HTML", reply_markup=tools.get_required_keyboard(user.language))
@@ -730,14 +670,11 @@ def process_send_messages(message):
 
 def process_register_teacher(message):
     lessons = db_manager.get_lessons()
-
-    list = []
-
     entered_name = str(message.text)
+    list = []
 
     for lesson in lessons:
         result = tools.search_teacher_in_str(lesson, entered_name)
-
         if result:
             list.append(result)
 
@@ -757,20 +694,14 @@ def process_change_group_step(message):
                 bot.send_message(message.chat.id, constants.change_group)
 
     else:
-
         if message.text == "/cancel":
-
             if db_manager.get_user_by_chat_id(message.chat.id).language == constants.lang_en:
                 bot.send_message(message.chat.id, constants.cancel_success_en)
             else:
                 bot.send_message(message.chat.id, constants.cancel_success)
             return
 
-        # groups = db_manager.get_group_list()
-
-        # line_groups = tools.array_to_one_line(groups)
         groups = get_groups()
-
         answer_pick = constants.pick_your_group.split("\n")[0]
         cancel = constants.cancel
 
@@ -779,15 +710,14 @@ def process_change_group_step(message):
             cancel = constants.cancel_en
 
         reply_message = bot.send_message(message.chat.id, answer_pick + "\n\n" + groups + cancel, parse_mode="HTML")
-
         bot.register_next_step_handler(reply_message, process_change_group_step)
 
 
 def process_group_step(message):
+    global lang
     chat_id = message.chat.id
     group_id = str(message.text)
-
-    global lang
+    is_group = db_manager.is_group(group_id)
 
     if message.text == "/teacher":
         reply_message = bot.send_message(chat_id, "Enter you name: ")
@@ -799,8 +729,6 @@ def process_group_step(message):
     elif message.text == "/ua":
         lang = constants.lang_ua
 
-    is_group = db_manager.is_group(group_id)
-
     if is_group:
         user = tools.get_user_info_from_message(message)
 
@@ -808,17 +736,16 @@ def process_group_step(message):
             user.group_id = group_id
             user.language = lang
             db_manager.add_user(user)
-
             select_answer = constants.thanks_for_a_registration
 
             if lang == constants.lang_en:
                 select_answer = constants.thanks_for_a_registration_en
 
-            bot.send_message(chat_id, select_answer,
-                             reply_markup=tools.get_required_keyboard(lang))
-
-            parse_send_message(constants.admin_log, tools.to_bold("New user") + " - {0} , {1}: {2}"
-                               .format(user.name_user, tools.to_bold("group"), user.group_id))
+            bot.send_message(chat_id, select_answer, reply_markup=tools.get_required_keyboard(lang))
+            parse_send_message(
+                constants.admin_log,
+                tools.to_bold("New user") + " - @{0} , {1}: {2}".format(user.name_user, tools.to_bold("group"), user.group_id)
+            )
     else:
         select_answer = constants.pick_your_group
 
@@ -831,98 +758,23 @@ def process_group_step(message):
 
 def process_add_faculty(message):
     path = os.path.join(constants.documents_directory, constants.excel_file_faculty)
-
     file_info = bot.get_file(message.document.file_id)
     type_file = str(file_info.file_path).split(".")[-1]
 
     if type_file == constants.excel_file_type or type_file == constants.excel_file_type_a:
         downloaded_file = bot.download_file(file_info.file_path)
-
         tools.download_file(path + "." + type_file, downloaded_file)
 
     path += "." + type_file
 
     if os.path.isfile(path):
         info = tools.read_faculty(path)
-
         for el in info:
             db_manager.add_faculty(el)
 
 
-def check_current_week(current_time):
-    if current_time == constants.change_week_time:
-        if tools.get_current_day_name() == read_lessons.format_name_day(constants.monday):
-            db_manager.change_week()
-            current_week = db_manager.get_current_week()
-            bot.send_message(constants.admin_log, "week is change, current week - {}".format(current_week))
-            print("week is change, current week - {}".format(current_week))
-        else:
-            bot.send_message(constants.admin_log, "Current day: {}".format(tools.get_current_day_name()))
-
-
-def check_current_time():
-    next_time = tools.get_current_time()
-
-    while True:
-        week = db_manager.get_current_week()
-        day_name = tools.get_current_day_name()
-        current_time = tools.get_current_time()
-
-        if next_time != current_time:
-            check_current_week(current_time)
-            next_time = current_time
-
-            print(current_time)
-            bot.send_message(constants.admin_log, str(current_time))
-
-            try:
-                time_events = db_manager.get_list_time_events()
-
-                if time_events:
-                    for time in time_events:
-                        if time == current_time:
-                            events = db_manager.get_event(day_name, week, time)
-
-                            if events:
-                                for event in events:
-                                    if not event.is_send and day_name == event.day_name and week == event.week:
-                                        lessons = db_manager.get_lessons_by_day_name(event.day_name, event.week,
-                                                                                     event.group_id)
-                                        parse_send_message(event.chat_id,
-                                                           tools.format_lessons_day_for_message(lessons,
-                                                                                                event.day_name))
-
-                                        next_day_name = tools.get_next_day_name()
-
-                                        next_week = week
-
-                                        if not next_day_name:
-                                            next_day_name = read_lessons.format_name_day(constants.monday)
-                                            next_week = tools.get_next_week(week)
-
-                                        next_lessons = db_manager.get_lessons_by_day_name(next_day_name, next_week,
-                                                                                          event.group_id)
-
-                                        lesson_time_start = tools.format_time_for_event(next_lessons[0].time_start)
-                                        lesson_time_start_with_delta = tools.format_time_for_start_event(
-                                            lesson_time_start)
-                                        event.set_send_time(lesson_time_start_with_delta)
-                                        event.set_week(next_week)
-                                        event.set_day_name(next_day_name)
-
-                                        db_manager.update_event(event)
-            except sqlite3.OperationalError as error:
-                print(str(error))
-                bot.send_message(constants.admin_chat_id, str(error))
-                bot.send_message(constants.admin_log, str(error))
-
-            except Exception as e:
-                print(e)
-
-
 def process_check_group_id(message):
     group_id = str(message.text)
-
     if db_manager.is_group(group_id):
         bot.send_message(message.chat.id, "{} is group".format(group_id))
     else:
@@ -932,7 +784,6 @@ def process_check_group_id(message):
 def main():
     try:
         bot.polling(none_stop=True)
-        # bot.infinity_polling(True)
     except Exception as ex:
         print(str(ex))
         bot.send_message(constants.admin_chat_id, str(ex))
@@ -940,9 +791,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # check_time_thread = threading.Thread(target=check_current_time, daemon=True)
-    # check_time_thread.start()
-
-    # bot.send_message(constants.admin_chat_id, "Bot is run")
-    # bot.send_message(constants.admin_log, "Bot is run")
     main()

@@ -15,6 +15,7 @@ table_week = "week"
 table_events = "events"
 table_faculty = "faculty"
 table_session = "session"
+table_qualification = "qualification"
 
 # for operation with time
 format_time = "%H:%M"
@@ -40,6 +41,7 @@ settings_answer = """
 /help - отримати інформацію про бота
 /about - детальніше про нас
 /session - отримати розклад сессії
+/qualification - розклад кваліфікаційних іспитів
 
 Для отримання розкладу іншої групи, просто відправ її номер
 <b>(Наприклад 101ЕМ, де ЕМ - українськими літерами)</b>
@@ -55,6 +57,7 @@ Please select an action:
 /groups - get a list of available groups
 /about - more about us
 /session - get a session schedule
+/qualification - schedule of qualifying exams
 
 To get another group's schedule, just send her number
 <b> (For example, 101EM, where EM is in Ukrainian letters) </b>
@@ -173,3 +176,7 @@ admin_log = -1001357315497
 # info
 for_four_course_student = "Розклад буде доступний в понеділок після проходження переддипломної практики"
 for_four_course_student_en = "The schedule will be available on Monday after the undergraduate internship"
+
+# qualification
+qualification_ua = "Розклад кваліфікаційних іспитів"
+qualification_en = "Schedule of qualifying exams"

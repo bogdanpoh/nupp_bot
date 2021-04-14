@@ -77,3 +77,4 @@ class Lesson(object):
                                                             self.time_start,
                                                             self.time_end,
                                                             self.info)
+

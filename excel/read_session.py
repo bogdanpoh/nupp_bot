@@ -1,21 +1,18 @@
 import xlrd
-from database.session import Session
+from database.model.session import Session
 from excel import excel_tools
 
 def read_session(path):
-    wb = xlrd.open_workbook(path)
-    sheet = wb.sheet_by_index(0)
-    sheet.cell_value(0, 0)
-
-    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
-
     group_id = ""
     info = []
     session_array = []
+    wb = xlrd.open_workbook(path)
+    sheet = wb.sheet_by_index(0)
+    sheet.cell_value(0, 0)
+    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
 
     for item in data:
         new_item = excel_tools.remove_empty_element_in_array(item)
-
         if new_item:
             info.append(new_item)
 
@@ -35,7 +32,6 @@ def read_session(path):
                 teacher_name = "-"
 
             date = excel_tools.format_date_from_excel(wb, item[0])
-
             time_value = item[1]
 
             if type(time_value) is not str:
@@ -44,7 +40,6 @@ def read_session(path):
                 time = time_value
 
             name = excel_tools.remove_repetition_in_str(item[3])
-
             session_item = Session(group_id=group_id,
                                    date=date,
                                    time=time,
