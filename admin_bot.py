@@ -7,7 +7,7 @@ from managers.file_manager import FileManager
 from excel import read_lessons
 from excel import read_session
 
-bot = telebot.TeleBot(config.test_token)
+bot = telebot.TeleBot(config.token)
 
 admin_commands = [
     "start",
