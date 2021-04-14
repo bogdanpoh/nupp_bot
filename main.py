@@ -583,12 +583,31 @@ def file_handler(message):
                 try:
                     db_manager.add_session(session)
                 except sqlite3.Error as error:
-                    bot.send_message(constants.admin_chat_id, "Error in add lesson to DB\n\n" + str(error))
+                    bot.send_message(constants.admin_chat_id, "Error in add session to DB\n\n" + str(error))
 
         answer_str = "Session {0} group add to database".format(group_id)
         parse_send_message(message.chat.id, answer_str)
         parse_send_message(constants.admin_log, answer_str)
         print(answer_str)
+
+    elif name_file[0] == "q":
+        qualification_array = read_session.read_session(file_path)
+        group_id = qualification_array[0].group_id
+
+        if db_manager.is_group_on_qualification(group_id):
+            db_manager.remove_qualification_by_group_id(group_id)
+
+        if qualification_array:
+            for item in qualification_array:
+                try:
+                    db_manager.add_qualification(item)
+                except sqlite3.Error as error:
+                    bot.send_message(constants.admin_chat_id, "Error in add qualification to DB\n\n" + str(error))
+
+            answer_str = "Qualification {0} group add to database".format(group_id)
+            parse_send_message(message.chat.id, answer_str)
+            parse_send_message(constants.admin_log, answer_str)
+            print(answer_str)
 
     elif type_file == constants.excel_file_type or type_file == constants.excel_file_type_a:
         lessons = read_lessons.read_lessons(file_path)

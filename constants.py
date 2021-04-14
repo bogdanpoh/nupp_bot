@@ -15,6 +15,7 @@ table_week = "week"
 table_events = "events"
 table_faculty = "faculty"
 table_session = "session"
+table_qualification = "qualification"
 
 # for operation with time
 format_time = "%H:%M"

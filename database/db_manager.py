@@ -14,6 +14,7 @@ def create_tables():
     create_table_events()
     create_table_faculty()
     create_table_session()
+    create_table_qualification()
 
 def get_db_connect(name_db=None):
 
@@ -160,7 +161,6 @@ def create_table_faculty(db_name=None):
     db.commit()
     close_connection(cursor, db)
 
-
 def create_table_session(db_name=None):
     if db_name:
         db = get_db_connect(db_name)
@@ -186,34 +186,27 @@ def create_table_session(db_name=None):
 
 # session
 def add_session(session, db_name=None):
-
     if db_name:
         db = get_db_connect(db_name)
     else:
         db = get_db_connect()
 
     cursor = get_cursor(db)
-
     query = "INSERT INTO {0} (group_id, date, time, type, name, teacher_name, audience) VALUES (?, ?, ?, ?, ?, ?, ?)".format(constants.table_session)
-
     val = (session.group_id, session.date, session.time, session.type, session.name, session.teacher_name, session.audience)
-
     cursor.execute(query, val)
 
     db.commit()
     close_connection(cursor, db)
 
 def get_sessions(db_name=None):
-
     if db_name:
         db = get_db_connect(db_name)
     else:
         db = get_db_connect()
 
     cursor = get_cursor(db)
-
     query = "SELECT * FROM {0}".format(constants.table_session)
-
     data = cursor.execute(query)
 
     if data:
@@ -231,9 +224,7 @@ def get_session_list_by_group_id(group_id, db_name=None):
         db = get_db_connect()
 
     cursor = get_cursor(db)
-
     query = "SELECT * FROM {0}  WHERE `group_id` = '{1}'".format(constants.table_session, group_id)
-
     data = cursor.execute(query)
 
     if data:
@@ -255,14 +246,12 @@ def is_group_on_session(group_id, db_name=None):
     return False
 
 def remove_session_by_group_id(group_id, db_name=None):
-
     if db_name:
         db = get_db_connect(db_name)
     else:
         db = get_db_connect()
 
     cursor = get_cursor(db)
-
     query = "DELETE FROM {0} WHERE `group_id` = '{1}'".format(constants.table_session, group_id)
 
     cursor.execute(query)
@@ -276,9 +265,125 @@ def drop_session(db_name=None):
         db = get_db_connect()
 
     cursor = get_cursor(db)
-
     query = "DELETE FROM {0} ".format(constants.table_session)
+    cursor.execute(query)
 
+    db.commit()
+    close_connection(cursor, db)
+
+# qualification
+def create_table_qualification(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS {0} (
+    id INTEGER PRIMARY KEY,
+    group_id TEXT,
+    date TEXT,
+    time TEXT,
+    type TEXT,
+    name TEXT,
+    teacher_name TEXT,
+    audience TEXT
+    )
+    """.format(constants.table_qualification))
+
+    db.commit()
+    close_connection(cursor, db)
+
+def add_qualification(qualification, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    query = "INSERT INTO {0} (group_id, date, time, type, name, teacher_name, audience) VALUES (?, ?, ?, ?, ?, ?, ?)".format(constants.table_qualification)
+    val = (
+        qualification.group_id,
+        qualification.date,
+        qualification.time,
+        qualification.type,
+        qualification.name,
+        qualification.teacher_name,
+        qualification.audience
+    )
+    cursor.execute(query, val)
+
+    db.commit()
+    close_connection(cursor, db)
+
+def get_qualifications(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    query = "SELECT * FROM {0}".format(constants.table_qualification)
+    data = cursor.execute(query)
+
+    if data:
+        qualification_list = tools.data_to_list_class(data, to_class="qualification")
+        close_connection(cursor, db)
+        return qualification_list
+    else:
+        close_connection(cursor, db)
+        return None
+
+def is_group_on_qualification(group_id, db_name=None):
+    qualifications = get_qualifications(db_name)
+
+    if qualifications:
+        for item in qualifications:
+            if str(item.group_id) == str(group_id):
+                return True
+
+    return False
+
+def get_qualification_list_by_group_id(group_id, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    query = "SELECT * FROM {0}  WHERE `group_id` = '{1}'".format(constants.table_qualification, group_id)
+    data = cursor.execute(query)
+
+    if data:
+        session_list = tools.data_to_list_class(data, to_class="qualification")
+        close_connection(cursor, db)
+        return session_list
+    else:
+        close_connection(cursor, db)
+        return None
+
+def remove_qualification_by_group_id(group_id, db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    query = "DELETE FROM {0} WHERE `group_id` = '{1}'".format(constants.table_qualification, group_id)
+
+    cursor.execute(query)
+    db.commit()
+    close_connection(cursor, db)
+
+def drop_qualification(db_name=None):
+    if db_name:
+        db = get_db_connect(db_name)
+    else:
+        db = get_db_connect()
+
+    cursor = get_cursor(db)
+    query = "DELETE FROM {0} ".format(constants.table_qualification)
     cursor.execute(query)
 
     db.commit()
