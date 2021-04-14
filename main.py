@@ -18,16 +18,19 @@ lang = constants.lang_ua
 # if not exists tables, create it
 db_manager.create_tables()
 
-command_list = ["remove_teachers", "remove_events", "remove_weeks",
-                "remove_faculty",
-                "drop_table_events",
-                "start", "settings", "about", "help", "en",
-                "change_group", "change_lang",
-                "current_week", "get_users", "teacher", "get_teachers",
-                "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
-                "remove_me",
-                "session", "session_all",
-                "send_all_message"]
+command_list = [
+    "remove_teachers", "remove_events", "remove_weeks",
+    "remove_faculty",
+    "drop_table_events",
+    "start", "settings", "about", "help", "en",
+    "change_group", "change_lang",
+    "current_week", "get_users", "teacher", "get_teachers",
+    "groups", "get_groups", "events", "time", "user", "count_groups", "count_lessons",
+    "remove_me",
+    "session", "session_all",
+    "send_all_message",
+    "qualification"
+]
 
 def get_groups():
     faculties = db_manager.get_faculties()
@@ -334,22 +337,30 @@ def commands_handler(message):
             print(item.format_print())
 
     elif msg == "/session":
-
         group_id = db_manager.get_user_group_id(chat_id)
-
         session_list = db_manager.get_session_list_by_group_id(group_id)
 
         if session_list:
             session_str = tools.format_session_for_message(session_list)
             parse_send_message(chat_id, session_str)
+        else:
+            bot.send_message(chat_id, constants.dont_found_group)
 
+    elif msg == "/qualification":
+        user = db_manager.get_user_by_chat_id(chat_id)
+        group_id = user.group_id
+        lang = user.language
+        qualification_list = db_manager.get_qualification_list_by_group_id(group_id)
+        title = constants.qualification_ua if lang == constants.lang_ua else constants.qualification_en
+
+        if qualification_list:
+            qualification_str = tools.format_session_for_message(qualification_list)
+            parse_send_message(chat_id, "{}\n\n{}".format(title, qualification_str))
         else:
             bot.send_message(chat_id, constants.dont_found_group)
 
     elif msg == "/send_all_message":
-
         reply_message = bot.send_message(chat_id, "Напешіть повідомлення:")
-
         bot.register_next_step_handler(reply_message, process_send_messages)
 
     else:

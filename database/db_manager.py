@@ -17,7 +17,6 @@ def create_tables():
     create_table_qualification()
 
 def get_db_connect(name_db=None):
-
     if name_db:
         return sqlite3.connect(name_db, check_same_thread=False)
     else:
