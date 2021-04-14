@@ -1,11 +1,19 @@
 import sqlite3
 import constants
-from database.user import User
-from database.lesson import Lesson
-from database.teacher import Teacher
-from database.event import Event
+from database.model.user import User
+from database.model.lesson import Lesson
+from database.model.teacher import Teacher
+from database.model.event import Event
 import tools
 
+def create_tables():
+    create_table_users()
+    create_table_lessons()
+    create_table_week()
+    create_table_teachers()
+    create_table_events()
+    create_table_faculty()
+    create_table_session()
 
 def get_db_connect(name_db=None):
 

@@ -1,11 +1,11 @@
 import constants
 
-from database.lesson import Lesson
-from database.user import User
-from database.event import Event
-from database.teacher import Teacher
-from database.faculty import Faculty
-from database.session import Session
+from database.model.lesson import Lesson
+from database.model.user import User
+from database.model.event import Event
+from database.model.teacher import Teacher
+from database.model.faculty import Faculty
+from database.model.session import Session
 import datetime
 from datetime import timedelta
 import telebot
