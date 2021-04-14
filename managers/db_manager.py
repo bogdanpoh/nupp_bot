@@ -1,9 +1,9 @@
 import sqlite3
 import constants
-from database.model.user import User
-from database.model.lesson import Lesson
-from database.model.teacher import Teacher
-from database.model.event import Event
+from model.user import User
+from model.lesson import Lesson
+from model.teacher import Teacher
+from model.event import Event
 import tools
 
 def create_tables():

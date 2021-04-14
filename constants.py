@@ -4,7 +4,7 @@ import emoji
 single_enter = "\n"
 double_enter = "\n\n"
 
-# database info
+# model info
 db_name = "telegram_bot.db"
 
 # tables names

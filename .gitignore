@@ -10,6 +10,6 @@ config.py
 *.xls
 /__pycache__/*
 /excel/__pycache__/*
-/database/__pycache__/*
+/model/__pycache__/*
 /testing/*
 /documents/*

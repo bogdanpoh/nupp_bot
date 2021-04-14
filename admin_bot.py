@@ -1,9 +1,13 @@
 import telebot
 import constants
 import config
-from database import db_manager
+import tools
+from managers import db_manager
+from managers.file_manager import FileManager
+from excel import read_lessons
+from excel import read_session
 
-bot = telebot.TeleBot(config.admin_token)
+bot = telebot.TeleBot(config.token)
 
 admin_commands = [
     "start",
@@ -13,6 +17,7 @@ admin_commands = [
     "get_db_bot", "change_week",
     "remove_lessons_by_id"
 ]
+
 
 def is_admin(message):
     return True if message.chat.id == constants.admin_chat_id else False
@@ -24,7 +29,6 @@ def commands_handler(message):
     msg = str(message.text)
 
     if is_admin(message):
-
         if msg == "/start":
             bot.send_message(chat_id, "Hi, admin")
 
@@ -102,6 +106,65 @@ def text_handler(message):
         bot.send_message(chat_id, "Sorry, you is not admin")
 
 
+@bot.message_handler(content_types=["document"])
+def file_handler(message):
+    answer_succes = "success"
+    answer_failed = "failed"
+    file_path = FileManager.download_file(bot, message, FileManager.path_for_excel)
+    file_first_symbol = message.document.file_name[0]
+    type_of_file = None
+    answer = "file: {} - ".format(str(message.document.file_name))
+    data = ""
+
+    FileManager.if_file_exists_remove(FileManager.path_for_txt)
+    FileManager.if_file_exists_remove(FileManager.path_for_excel)
+
+    if file_first_symbol == "s":
+        type_of_file = constants.table_session
+        sessions = read_session.read_session(file_path)
+        count_sessions = len(sessions)
+        if sessions:
+            for session in sessions:
+                data += session.format_print() + "\n"
+            if count_sessions > 0:
+                answer += answer_succes
+        else:
+            answer += answer_failed
+
+    elif file_first_symbol == "q":
+        type_of_file = constants.table_session
+        qualifications = read_session.read_session(file_path)
+        count_qualifications = len(qualifications)
+        if qualifications:
+            for item in qualifications:
+                data += item.format_print() + "\n"
+            if count_qualifications > 0:
+                answer += answer_succes
+        else:
+            answer += answer_failed
+    else:
+        type_of_file = constants.table_lessons
+        lessons = read_lessons.read_lessons(file_path)
+        if lessons:
+            weeks = set()
+            for lesson in lessons:
+                weeks.add(lesson.week)
+                data += lesson.format_print() + "\n"
+            if len(weeks) == 2:
+                answer += answer_succes
+        else:
+            answer += answer_failed
+
+    if data:
+        tools.write_to_file(FileManager.path_for_txt, data)
+        with open(FileManager.path_for_txt, "rb") as file:
+            bot.send_document(message.chat.id, file)
+
+    bot.send_message(message.chat.id, answer)
+
+    if type_of_file is None:
+        bot.send_message(message.chat.id, "don`t found info")
+
 # process
 def process_rename_group_id(message):
     group_id = str(message.text).replace(" ", "").split(",")
@@ -112,18 +175,19 @@ def process_rename_group_id(message):
     else:
         bot.send_message(message.chat.id, "this is dont correct group_id")
 
+
 def process_remove_group(message):
     group_id = str(message.text)
     if db_manager.is_group(group_id):
         try:
             db_manager.remove_group(group_id)
             bot.send_message(message.chat.id, "Remove {} success".format(group_id))
-
         except:
             bot.send_message(message.chat.id, "Error remove group {}".format(group_id))
 
     else:
         bot.send_message(message.chat.id, "Dont found group: {}".format(group_id))
+
 
 def process_remove_session_by_group_id(message):
     group_id = str(message.text)

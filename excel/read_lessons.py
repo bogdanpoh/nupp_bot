@@ -1,6 +1,6 @@
 import xlrd
 import constants
-from database.model.lesson import Lesson
+from model.lesson import Lesson
 from excel import excel_tools
 
 
