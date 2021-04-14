@@ -2,16 +2,17 @@ import telebot
 import constants
 import config
 import sqlite3
-from database.model.teacher import Teacher
-from database import db_manager
 import tools
 import os
 import time
+from model.teacher import Teacher
+from managers import db_manager
+from managers.file_manager import FileManager
 from excel import excel_tools
 from excel import read_lessons
 from excel import read_session
 
-current_token = config.token
+current_token = config.test_token
 bot = telebot.TeleBot(current_token, threaded=False)
 lang = constants.lang_ua
 
@@ -552,35 +553,26 @@ def message_handler(message):
 
 @bot.message_handler(content_types=["document"])
 def file_handler(message):
-    path = os.path.join(constants.documents_directory, constants.excel_file)
+    path = FileManager.path_for_excel
     file_path = ""
 
-    if not os.path.exists(constants.documents_directory):
-        os.mkdir(constants.documents_directory)
+    FileManager.if_not_exists_dir_make(constants.documents_directory)
 
     xlsx_file = "{}.{}".format(path, constants.excel_file_type)
     xls_file = "{}.{}".format(path, constants.excel_file_type_a)
-
-    if os.path.exists(xlsx_file):
-        os.remove(xlsx_file)
-
-    elif os.path.exists(xls_file):
-        os.remove(xls_file)
+    FileManager.if_file_exists_remove(xlsx_file)
+    FileManager.if_file_exists_remove(xls_file)
+    FileManager.download_file(bot, message, FileManager.path_for_excel)
 
     file_info = bot.get_file(message.document.file_id)
     name_file = str(message.document.file_name)
     type_file = str(file_info.file_path).split(".")[-1]
-    downloaded_file = bot.download_file(file_info.file_path)
-    tools.download_file(path + "." + type_file, downloaded_file)
 
-    if os.path.isfile(
-            os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type)):
-        file_path = os.path.join(constants.documents_directory,
-                                 constants.excel_file + "." + constants.excel_file_type)
-    elif os.path.isfile(
-            os.path.join(constants.documents_directory, constants.excel_file + "." + constants.excel_file_type_a)):
-        file_path = os.path.join(constants.documents_directory,
-                                 constants.excel_file + "." + constants.excel_file_type_a)
+    if os.path.isfile(xlsx_file):
+        file_path = xlsx_file
+
+    elif os.path.isfile(xls_file):
+        file_path = xls_file
 
     if name_file[0] == "s":
         session_array = read_session.read_session(file_path)
@@ -596,7 +588,7 @@ def file_handler(message):
                 except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add session to DB\n\n" + str(error))
 
-        answer_str = "Session {0} group add to database".format(group_id)
+        answer_str = "Session {0} group add to db".format(group_id)
         parse_send_message(message.chat.id, answer_str)
         parse_send_message(constants.admin_log, answer_str)
         print(answer_str)
@@ -615,7 +607,7 @@ def file_handler(message):
                 except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add qualification to DB\n\n" + str(error))
 
-            answer_str = "Qualification {0} group add to database".format(group_id)
+            answer_str = "Qualification {0} group add to db".format(group_id)
             parse_send_message(message.chat.id, answer_str)
             parse_send_message(constants.admin_log, answer_str)
             print(answer_str)
@@ -634,7 +626,7 @@ def file_handler(message):
                 except sqlite3.Error as error:
                     bot.send_message(constants.admin_chat_id, "Error in add lesson to DB " + str(error))
 
-            answer_str = "Lessons {0} add to database".format(group_id)
+            answer_str = "Lessons {0} add to db".format(group_id)
             parse_send_message(message.chat.id, answer_str)
             parse_send_message(constants.admin_log, answer_str)
             print(answer_str)
