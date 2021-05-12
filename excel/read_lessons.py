@@ -4,33 +4,7 @@ from model.lesson import Lesson
 from excel import excel_tools
 
 
-def format_enter_help(lessons):
-    edit_lessons = []
-    word = "Використовуйте".lower()
-
-    enter_help = None
-    enter_help_day_name = None
-
-    for lesson in lessons:
-
-        if lesson.info.lower().find(word) >= 0:
-            enter_help = lesson.info.split(",")[-1]
-            enter_help_day_name = lesson.day_name
-
-        if enter_help_day_name:
-            if lesson.day_name == enter_help_day_name and lesson.info.lower().find(word) < 0:
-                lesson.info += ", " + str(enter_help)
-
-            if lesson.day_name != enter_help_day_name:
-                enter_help = None
-
-        edit_lessons.append(lesson)
-
-    return edit_lessons
-
-
 def format_index_lesson(time, markup=False, is_covid=False):
-
     if time == '8.30' or time == '8:30':
         if markup:
             return "\U00000031"
@@ -116,9 +90,7 @@ def format_end_time(time):
 
 
 def remove_digit(data):
-
     result = []
-    #
     for el in data:
         if type(el) != float:
             if len(el) > 5 and len(el) > 4:
@@ -126,15 +98,7 @@ def remove_digit(data):
 
     return result
 
-
-
 def read_lessons(path):
-    wb = xlrd.open_workbook(path)
-    sheet = wb.sheet_by_index(0)
-    sheet.cell_value(0, 0)
-
-    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
-
     row = None
     day_name = None
     time_start = None
@@ -142,23 +106,14 @@ def read_lessons(path):
     group_id = None
     week = None
     info = None
-
-    first_week = "І ТИЖДЕНЬ"
-    first_week_a = "I тиждень"
-    second_week = "І I ТИЖДЕНЬ"
-    second_week_a = "ІI ТИЖДЕНЬ"
-    second_week_a_a = "ІІ ТИЖДЕНЬ"
-    second_week_a_a_a = "ІІ тиждень"
-    second_week_a_a_a_a_a = "II тиждень"
-    second_week_a_a_a_a = "вторая"
-    test_week = "Начитка"
-
     clear_data = []
-
     enter_help = None
 
-    # group id
-    group_id = ""
+    wb = xlrd.open_workbook(path)
+    sheet = wb.sheet_by_index(0)
+    sheet.cell_value(0, 0)
+
+    data = [sheet.row_values(row_num) for row_num in range(sheet.nrows)]
 
     for el in data:
         clear_data.append(excel_tools.remove_repetition(el))
@@ -167,29 +122,21 @@ def read_lessons(path):
 
     if not group_name:
         group_name = clear_data[1][-1]
-
-    if not group_name:
-        group_name = clear_data[1][-2]
-
-    if not group_name:
-        group_name = clear_data[0][-1]
+        if not group_name:
+            group_name = clear_data[1][-2]
+            if not group_name:
+                group_name = clear_data[0][-1]
 
     group_id = excel_tools.format_group_id(group_name)
-
     lessons = []
 
     for data in clear_data:
-
         empty_element = excel_tools.remove_empty_element_in_array(data)
-
         clear_element = remove_digit(empty_element)
 
         if clear_element:
             first_element = clear_element[0]
             last_element = clear_element[-1]
-
-            if last_element.lower().find("Використовуйте".lower()) >= 0:
-                enter_help = last_element
 
             if len(clear_element) > 3 and len(clear_element[-2]) != 9 and len(clear_element[-2]) != 11:
                 last_element = str(str(clear_element[-2]) + ", " + str(clear_element[-1]))
@@ -198,15 +145,19 @@ def read_lessons(path):
 
             count_last_element = len(last_element)
 
-            if first_element == first_week or first_element == first_week_a:
+            if first_element == constants.first_week_name or\
+                    first_element == constants.first_week_name_alternative or\
+                    first_element == constants.first_week_name.upper() or\
+                    first_element == constants.first_week_name_alternative.upper():
                 week = constants.first_week
 
-            if first_element == second_week or\
-                    first_element == second_week_a or\
-                    first_element == second_week_a_a or \
-                    first_element == second_week_a_a_a or\
-                    first_element == second_week_a_a_a_a or first_element == second_week_a_a_a_a_a or first_week == test_week:
-
+            if first_element == constants.second_week or\
+                    first_element == constants.second_week_name_alternative or\
+                    first_element == constants.second_week_name_alternative_1 or\
+                    constants.first_week == constants.test_week_name or\
+                    first_element == constants.second_week_name.upper() or\
+                    first_element == constants.second_week_name_alternative.upper() or\
+                    first_element == constants.second_week_name_alternative_1.upper():
                 week = constants.second_week
 
             if first_element == constants.monday or first_element == constants.tuesday \
@@ -214,7 +165,6 @@ def read_lessons(path):
                 day_name = format_name_day(first_element)
 
             if count_last_element > 9 and count_last_element > 11:
-
                 if len(last_element) > 9 and len(last_element) > 12 or last_element.lower()[0] == "ф":
                     info = excel_tools.remove_repetition_in_str(last_element)
                 else:
@@ -244,14 +194,6 @@ def read_lessons(path):
                         group_id = excel_tools.format_group_id(clear_data[0][-1])
 
                 lesson = Lesson(row, day_name, time_start, time_end, group_id, week, info)
+                lessons.append(lesson)
 
-                if row is not None and day_name is not None and info is not None:
-                    if enter_help:
-                        lesson.info += ", {}".format(excel_tools.remove_repetition_in_str(enter_help))
-
-                    lessons.append(lesson)
-                    enter_help = ""
-                else:
-                    pass
-
-    return format_enter_help(lessons)
+    return lessons

@@ -130,6 +130,14 @@ keyboard_tomorrow_lessons_en = "Classes for tomorrow"
 keyboard_last_week_en = "Classes last week"
 keyboard_week_lessons_en = "Classes for a week"
 
+# weeks
+first_week_name = "I тиждень"
+first_week_name_alternative = "І тиждень"
+second_week_name = "II тиждень"
+second_week_name_alternative = "ІІ тиждень"
+second_week_name_alternative_1 = "ІI тиждень"
+test_week_name = "НАЧИТКА"
+
 # day names
 monday = "Понеділок"
 tuesday = "Вівторок"
@@ -150,7 +158,6 @@ six_number = emoji.emojize(":keycap_digit_six:", use_aliases=True)
 # weeks
 first_week = "first_week"
 second_week = "second_week"
-change_week_time = "07:00"
 
 # remindes
 reminders_enable = "Нагадування ввімкнено \U00002705"
